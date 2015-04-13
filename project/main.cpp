@@ -19,13 +19,23 @@ void drawPyramid(float width);
 
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
+float runningSpeed = 5.0f;
+float jumpingHeight = 10.0f;
+
+glm::vec3 jumpingHeight3(0.0f, -0.1f, 0.0f);
 
 GLuint myLandscapeDisplayList = 0;
-const int landscapeSize = 50;
+const int landscapeSize = 200;
 const int numberOfPyramids = 150;
 
 bool arrowButtons[4];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT };
+
+//Used for running
+bool runningButton = false;
+
+//Used for jumping
+bool jumpingButton = false;
 
 //to check if left mouse button is pressed
 bool mouseLeftButton = false;
@@ -127,14 +137,52 @@ void myPreSyncFun()
 
 		glm::vec3 right = glm::cross(view, up);
 
-		if( arrowButtons[FORWARD] )
+		if( arrowButtons[FORWARD] ) {
+			if (runningButton) {
+				walkingSpeed = runningSpeed;
+			}
+			else {
+				walkingSpeed = 2.5f;
+			}
 			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
-		if( arrowButtons[BACKWARD] )
+
+		}
+		if( arrowButtons[BACKWARD] ) {
+			if (runningButton) {
+				walkingSpeed = runningSpeed;
+			}
+			else {
+				walkingSpeed = 2.5f;
+			}
 			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
-		if( arrowButtons[LEFT] )
+		}
+		if( arrowButtons[LEFT] ) {
+			if (runningButton) {
+				walkingSpeed = runningSpeed;
+			}
+			else {
+				walkingSpeed = 2.5f;
+			}
 			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
-		if( arrowButtons[RIGHT] )
+
+		}
+		if( arrowButtons[RIGHT] ) {
+			if (runningButton) {
+				walkingSpeed = runningSpeed;
+			}
+			else {
+				walkingSpeed = 2.5f;
+			}
 			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
+
+		}
+
+		/*
+		if( jumpingButton ) {
+			pos += (jumpingHeight3 + view);
+			printf("JUMP!");
+		}
+		*/
 
 		/*
 			To get a first person camera, the world needs
@@ -212,6 +260,15 @@ void keyCallback(int key, int action)
 		case SGCT_KEY_D:
 			arrowButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
+
+		case SGCT_KEY_SPACE:
+			jumpingButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			break;
+
+		case SGCT_KEY_LEFT_SHIFT:
+		case SGCT_KEY_RIGHT_SHIFT:
+			runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			break;
 		}
 	}
 }
@@ -220,13 +277,20 @@ void mouseButtonCallback(int button, int action)
 {
 	if( gEngine->isMaster() )
 	{
-		switch( button )
-		{
-		case SGCT_MOUSE_BUTTON_LEFT:
-			mouseLeftButton = (action == SGCT_PRESS ? true : false);
-			double tmpYPos;
-			//set refPos
-			sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[1], &tmpYPos );
+		switch( button ) {
+			case SGCT_MOUSE_BUTTON_LEFT:
+				mouseLeftButton = (action == SGCT_PRESS ? true : false);
+				double tmpYPos;
+				//set refPos
+				sgct::Engine::getMousePos(gEngine->getFocusedWindowIndex(), &mouseXPos[1], &tmpYPos);
+			break;
+
+			//Is this needed?
+			case SGCT_KEY_SPACE:
+				runningButton = (action == SGCT_PRESS ? true : false);
+
+				printf("space is pressed");
+
 			break;
 		}
 	}
@@ -241,7 +305,7 @@ void drawXZGrid(int size, float yPos)
 
 	glTranslatef(0.0f, yPos, 0.0f);
 
-	glLineWidth(3.0f);
+	glLineWidth(1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
 
 	glBegin( GL_LINES );
@@ -269,7 +333,7 @@ void drawPyramid(float width)
 
 	glPolygonOffset(1.0f, 0.1f); //offset to avoid z-buffer fighting
 	//enhance the pyramids with lines in the edges
-	glLineWidth(2.0f);
+	glLineWidth(1.0f);
 	glColor4f(1.0f, 0.0f, 0.5f, 0.8f);
 
 	glBegin(GL_LINE_LOOP);
