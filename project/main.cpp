@@ -17,27 +17,31 @@ void mouseButtonCallback(int button, int action);
 void drawXZGrid(int size, float yPos);
 void drawPyramid(float width);
 
-float rotationSpeed = 0.1f;
-float walkingSpeed = 2.5f;
+float rotationSpeed = 0.5f;
+float walkingSpeed = 3.5f;
 
 GLuint myLandscapeDisplayList = 0;
 const int landscapeSize = 50;
 const int numberOfPyramids = 150;
 
-bool arrowButtons[4];
-enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT };
+bool dirButtons[6];
+enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 //to check if left mouse button is pressed
 bool mouseLeftButton = false;
 /* Holds the difference in position between when the left mouse button
     is pressed and when the mouse button is held. */
 double mouseDx = 0.0;
+double mouseDy = 0.0;
 /* Stores the positions that will be compared to measure the difference. */
 double mouseXPos[] = { 0.0, 0.0 };
+double mouseYPos[] = { 0.0, 0.0 };
 
-glm::vec3 view(0.0f, 0.0f, 1.0f);
+glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
+
+glm::vec3 cView(0.0f, 0.0f, 0.0f);
 
 sgct::SharedObject<glm::mat4> xform;
 
@@ -52,8 +56,8 @@ int main( int argc, char* argv[] )
 	gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
 	gEngine->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-	for(int i=0; i<4; i++)
-		arrowButtons[i] = false;
+	for(int i=0; i<6; i++)
+		dirButtons[i] = false;
 
 	if( !gEngine->init() )
 	{
@@ -105,36 +109,54 @@ void myPreSyncFun()
 	{
 		if( mouseLeftButton )
 		{
-			double tmpYPos;
+			//double tmpYPos;
 			//get the mouse pos from first window
-			sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &tmpYPos );
+			sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &mouseYPos[0] );
 			mouseDx = mouseXPos[0] - mouseXPos[1];
+			mouseDy = mouseYPos[0] - mouseYPos[1];
 		}
 		else
 		{
+            mouseDy = 0.0;
 			mouseDx = 0.0;
 		}
 
 		static float panRot = 0.0f;
 		panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
+        static float tiltRot = 0.0f;
+        tiltRot += (static_cast<float>(mouseDy) * rotationSpeed * static_cast<float>(gEngine->getDt()));
+
 
 		glm::mat4 ViewRotateX = glm::rotate(
 			glm::mat4(1.0f),
 			panRot,
 			glm::vec3(0.0f, 1.0f, 0.0f)); //rotation around the y-axis
 
-		view = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
 
-		glm::vec3 right = glm::cross(view, up);
+		bView = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
+		//cView = glm::inverse(glm::mat3(ViewRotateY)) * glm::vec3(0.0f, 0.0f, 1.0f);
 
-		if( arrowButtons[FORWARD] )
-			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
-		if( arrowButtons[BACKWARD] )
-			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
-		if( arrowButtons[LEFT] )
+		glm::vec3 right = glm::cross(bView, up);
+
+        glm::mat4 ViewRotateY = glm::rotate(
+		glm::mat4(1.0f),
+		tiltRot,
+		-right); //rotation around the movavble x-axis
+
+
+		if( dirButtons[FORWARD] )
+			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
+		if( dirButtons[BACKWARD] )
+			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
+		if( dirButtons[LEFT] )
 			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
-		if( arrowButtons[RIGHT] )
+		if( dirButtons[RIGHT] )
 			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
+        if( dirButtons[UP] )
+			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
+        if( dirButtons[DOWN] )
+			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
+
 
 		/*
 			To get a first person camera, the world needs
@@ -155,6 +177,8 @@ void myPreSyncFun()
 		result = glm::translate( glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos() );
 		//3. apply view rotation
 		result *= ViewRotateX;
+		result *= ViewRotateY;
+
 		//2. apply navigation translation
 		result *= glm::translate(glm::mat4(1.0f), pos);
 		//1. transform user to coordinate system origin
@@ -169,7 +193,7 @@ void myDrawFun()
 	//glEnable(GL_DEPTH_TEST);
 	//glDepthFunc(GL_LESS);
 	glDisable(GL_DEPTH_TEST);
-	
+
 	glMultMatrixf(glm::value_ptr(xform.getVal()));
 	glCallList(myLandscapeDisplayList);
 
@@ -195,22 +219,30 @@ void keyCallback(int key, int action)
 		{
 		case SGCT_KEY_UP:
 		case SGCT_KEY_W:
-			arrowButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
 
 		case SGCT_KEY_DOWN:
 		case SGCT_KEY_S:
-			arrowButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
 
 		case SGCT_KEY_LEFT:
 		case SGCT_KEY_A:
-			arrowButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
 
 		case SGCT_KEY_RIGHT:
 		case SGCT_KEY_D:
-			arrowButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			break;
+
+        case SGCT_KEY_Q:
+            dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+			break;
+
+        case SGCT_KEY_E:
+            dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
 		}
 	}
@@ -224,9 +256,9 @@ void mouseButtonCallback(int button, int action)
 		{
 		case SGCT_MOUSE_BUTTON_LEFT:
 			mouseLeftButton = (action == SGCT_PRESS ? true : false);
-			double tmpYPos;
+			//double tmpYPos;
 			//set refPos
-			sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[1], &tmpYPos );
+			sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[1], &mouseYPos[1] );
 			break;
 		}
 	}
