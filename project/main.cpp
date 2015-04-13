@@ -2,6 +2,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <string>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
 
 sgct::Engine * gEngine;
 
@@ -16,6 +23,13 @@ void mouseButtonCallback(int button, int action);
 
 void drawXZGrid(int size, float yPos);
 void drawPyramid(float width);
+
+//Loading .obj files
+bool loadOBJ(const char * path,
+             std::vector < glm::vec3 > & out_vertices,
+             std::vector < glm::vec2 > & out_uvs,
+             std::vector < glm::vec3 > & out_normals
+             );
 
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
@@ -70,6 +84,11 @@ int main( int argc, char* argv[] )
 		delete gEngine;
 		return EXIT_FAILURE;
 	}
+
+	// Read our .obj file
+	std::vector< glm::vec3 > vertices;
+	std::vector< glm::vec2 > uvs;
+	std::vector< glm::vec3 > normals; // Won't be used at the moment.
 
 	sgct::SharedData::instance()->setEncodeFunction( myEncodeFun );
 	sgct::SharedData::instance()->setDecodeFunction( myDecodeFun );
@@ -221,6 +240,8 @@ void myDrawFun()
 	glMultMatrixf(glm::value_ptr(xform.getVal()));
 	glCallList(myLandscapeDisplayList);
 
+	
+
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_DEPTH_TEST);
 }
@@ -284,14 +305,6 @@ void mouseButtonCallback(int button, int action)
 				//set refPos
 				sgct::Engine::getMousePos(gEngine->getFocusedWindowIndex(), &mouseXPos[1], &tmpYPos);
 			break;
-
-			//Is this needed?
-			case SGCT_KEY_SPACE:
-				runningButton = (action == SGCT_PRESS ? true : false);
-
-				printf("space is pressed");
-
-			break;
 		}
 	}
 }
@@ -305,9 +318,10 @@ void drawXZGrid(int size, float yPos)
 
 	glTranslatef(0.0f, yPos, 0.0f);
 
-	glLineWidth(1.0f);
-	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
+    glLineWidth(1.0f);
 
+	glColor4f(0.0f, 153.0/255.0f, 0.0f, 0.8f);
+    
 	glBegin( GL_LINES );
 	for(int x = -(size/2); x < (size/2); x++)
 	{
@@ -378,3 +392,84 @@ void drawPyramid(float width)
 
 	glDisable(GL_BLEND);
 }
+
+//Used for loading .obj files
+bool loadOBJ(const char * path, std::vector < glm::vec3 > & out_vertices, std::vector < glm::vec2 > & out_uvs, std::vector < glm::vec3 > & out_normals)
+{
+    //Temporary vectors
+    std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
+    std::vector< glm::vec3 > temp_vertices;
+    std::vector< glm::vec2 > temp_uvs;
+    std::vector< glm::vec3 > temp_normals;
+    
+    //Test if file could be opened
+    FILE * file = fopen(path, "r");
+    if( file == NULL ){
+        printf("Impossible to open the file !\n");
+        return false;
+    }
+    
+    while( 1 ){
+        
+        char lineHeader[128];
+        // read the first word of the line
+        int res = fscanf(file, "%s", lineHeader);
+        if (res == EOF)
+            break; // EOF = End Of File. Quit the loop.
+        
+        //Vertex
+        if ( strcmp( lineHeader, "v" ) == 0 ){
+            glm::vec3 vertex;
+            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+            temp_vertices.push_back(vertex);
+        }
+        
+        //Texture Coords
+        else if ( strcmp( lineHeader, "vt" ) == 0 ){
+            glm::vec2 uv;
+            fscanf(file, "%f %f\n", &uv.x, &uv.y );
+            temp_uvs.push_back(uv);
+        }
+        
+        //Normals of vertex
+        else if ( strcmp( lineHeader, "vn" ) == 0 ){
+            glm::vec3 normal;
+            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+            temp_normals.push_back(normal);
+        }
+        
+        //Face
+        else if ( strcmp( lineHeader, "f" ) == 0 ){
+            std::string vertex1, vertex2, vertex3;
+            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
+            if (matches != 9){
+                printf("File can't be read by our simple parser : ( Try exporting with other options\n");
+                return false;
+            }
+            vertexIndices.push_back(vertexIndex[0]);
+            vertexIndices.push_back(vertexIndex[1]);
+            vertexIndices.push_back(vertexIndex[2]);
+            uvIndices    .push_back(uvIndex[0]);
+            uvIndices    .push_back(uvIndex[1]);
+            uvIndices    .push_back(uvIndex[2]);
+            normalIndices.push_back(normalIndex[0]);
+            normalIndices.push_back(normalIndex[1]);
+            normalIndices.push_back(normalIndex[2]);
+        }
+    }
+    
+    // For each vertex of each triangle
+    for( unsigned int i=0; i<vertexIndices.size(); i++){
+        unsigned int vertexIndex = vertexIndices[i];
+        glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
+        out_vertices.push_back(vertex);
+    }
+    return true;
+}
+
+
+
+
+
+
