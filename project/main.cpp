@@ -65,7 +65,7 @@ GLint NM_Loc = -1;
 sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 
-bool dirButtons[4];
+bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 //Used for running
@@ -105,7 +105,7 @@ int main( int argc, char* argv[] )
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
 
     
-    for(int i=0; i<4; i++)
+    for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
     
@@ -199,8 +199,8 @@ void myPreSyncFun()
         
         glm::mat4 ViewRotateY = glm::rotate(
                                             glm::mat4(1.0f),
-                                            tiltRot,
-                                            -right); //rotation around the movavble x-axis
+											tiltRot,
+											-right); //rotation around the movavble x-axis
         
         
         if( dirButtons[FORWARD] ){
@@ -477,6 +477,15 @@ void keyCallback(int key, int action)
                 printf("Shift is pressed\n");
                 break;
 
+        	case SGCT_KEY_Q:
+            	dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+            	printf("Q is pressed\n");
+				break;
+
+        	case SGCT_KEY_E:
+	            dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+	            printf("E is pressed\n");
+				break;               
         }
     }
 }
@@ -490,7 +499,7 @@ void mouseButtonCallback(int button, int action)
                 mouseLeftButton = (action == SGCT_PRESS ? true : false);
                 double tmpYPos;
                 //set refPos
-                sgct::Engine::getMousePos(gEngine->getFocusedWindowIndex(), &mouseXPos[1], &tmpYPos);
+                sgct::Engine::getMousePos(gEngine->getFocusedWindowIndex(), &mouseXPos[1], &mouseYPos[1]);
                 break;
         }
     }
