@@ -34,8 +34,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		656545F61AE1291100334045 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 656545F41AE128B900334045 /* main.cpp */; };
 		A6C5B2E7C4D44948BF435CB0 /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E5A556216E46ADA8068FEB /* objloader.cpp */; settings = {COMPILER_FLAGS = ""; }; };
-		D9E06599045A481F8839D67F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD1C96378884E7BAEFBA231 /* main.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +65,7 @@
 /* Begin PBXFileReference section */
 		1D8AEDD309694027A0AB0B3F /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 		5AFF74D0E67C47038079865F /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		7AD1C96378884E7BAEFBA231 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
+		656545F41AE128B900334045 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		94E5A556216E46ADA8068FEB /* objloader.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = objloader.cpp; sourceTree = SOURCE_ROOT; };
 		ACDAA59A4B6D4AD0B4C78544 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 		C7283DB913B64B7492962339 /* objloader.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = objloader.hpp; sourceTree = SOURCE_ROOT; };
@@ -84,8 +84,8 @@
 		28B14219FBA34623A580C371 /* Source Files */ = {
 			isa = PBXGroup;
 			children = (
-				7AD1C96378884E7BAEFBA231 /* main.cpp */,
 				94E5A556216E46ADA8068FEB /* objloader.cpp */,
+				656545F41AE128B900334045 /* main.cpp */,
 			);
 			name = "Source Files";
 			sourceTree = "<group>";
@@ -242,7 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9E06599045A481F8839D67F /* main.cpp in Sources */,
+				656545F61AE1291100334045 /* main.cpp in Sources */,
 				A6C5B2E7C4D44948BF435CB0 /* objloader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
