@@ -65,8 +65,8 @@ GLint NM_Loc = -1;
 sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 
-bool arrowButtons[4];
-enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT };
+bool dirButtons[4];
+enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 //Used for running
 bool runningButton = false;
@@ -106,7 +106,7 @@ int main( int argc, char* argv[] )
 
     
     for(int i=0; i<4; i++)
-        arrowButtons[i] = false;
+        dirButtons[i] = false;
 
     
     if( !gEngine->init( sgct::Engine::OpenGL_3_3_Core_Profile ) )
@@ -206,18 +206,24 @@ void myPreSyncFun()
                                             -right); //rotation around the movavble x-axis
         
         
-        if( dirButtons[FORWARD] )
+        if( dirButtons[FORWARD] ){
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
-        if( dirButtons[BACKWARD] )
+        }
+        if( dirButtons[BACKWARD] ){
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
-        if( dirButtons[LEFT] )
+        }
+        if( dirButtons[LEFT] ){
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
-        if( dirButtons[RIGHT] )
+        }
+        if( dirButtons[RIGHT] ){
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
-        if( dirButtons[UP] )
+        }
+        if( dirButtons[UP] ){
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
-        if( dirButtons[DOWN] )
+        }
+        if( dirButtons[DOWN] ){
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
+        }
         
         
         /*
@@ -439,25 +445,25 @@ void keyCallback(int key, int action)
                 break;
             case SGCT_KEY_UP:
             case SGCT_KEY_W:
-                arrowButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 printf("W is pressed\n");
                 break;
                 
             case SGCT_KEY_DOWN:
             case SGCT_KEY_S:
-                arrowButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 printf("S is pressed\n");
                 break;
                 
             case SGCT_KEY_LEFT:
             case SGCT_KEY_A:
-                arrowButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 printf("A is pressed\n");
                 break;
                 
             case SGCT_KEY_RIGHT:
             case SGCT_KEY_D:
-                arrowButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 printf("D is pressed\n");
                 break;
                 
