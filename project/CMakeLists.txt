@@ -15,7 +15,11 @@ set_property (TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY}
 endmacro (set_xcode_property)
 
 add_executable(${APP_NAME}
-	main.cpp)
+	main.cpp 
+	objloader.hpp
+	objloader.cpp
+	objects/box.obj
+	objects/box.png)
 	
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${EXAMPE_TARGET_PATH})

@@ -8,39 +8,72 @@
 #include <fstream>
 #include <sstream>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include "objloader.hpp"
+#include <glm/gtc/matrix_inverse.hpp>
+
 using namespace std;
 
 sgct::Engine * gEngine;
 
-void myDrawFun();
-void myPreSyncFun();
 void myInitOGLFun();
-void myEncodeFun();
-void myDecodeFun();
-//input callbacks
-void keyCallback(int key, int action);
-void mouseButtonCallback(int button, int action);
+//      |
+//      V
+void myPreSyncFun();//<---------------------------------┐
+//      |                                               |
+//      V                                               |
+void myPostSyncPreDrawFun(); //                         |
+//      |                                               |
+//      V                                               |
+void myDrawFun();//                                     |
+//      |                                               |
+//      V                                               |
+void myEncodeFun();//                                   |
+//      |                                               |
+//      V                                               |
+void myDecodeFun();//                                   |
+//      |                                               |
+//      V                                               |
+void myCleanUpFun();//                                  |
+//      |                                               |
+//      V                                               |
+void keyCallback(int key, int action);//                |
+//      |                                               |
+//      V                                               |
+void mouseButtonCallback(int button, int action);//     |
+//      |                                               ^
+//      └-----------------------------------------------┘
 
 void drawXZGrid(int size, float yPos);
 void drawPyramid(float width);
-
-//Loading .obj files
-bool loadOBJ(const char * path,
-             std::vector < glm::vec3 > & out_vertices,
-             std::vector < glm::vec2 > & out_uvs,
-             std::vector < glm::vec3 > & out_normals
-             );
 
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
 float jumpingHeight = 10.0f;
 
+//load functions
+void loadModel( std::string filename );
+
+enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
+GLuint vertexBuffers[3];
+GLuint VertexArrayID = GL_FALSE;
+GLsizei numberOfVertices = 0;
+
+//shader locations
+GLint MVP_Loc = -1;
+GLint NM_Loc = -1;
+
+//variables to share across cluster
+sgct::SharedDouble curr_time(0.0);
+sgct::SharedBool reloadShader(false);
+
 glm::vec3 jumpingHeight3(0.0f, -0.1f, 0.0f);
 
 GLuint myLandscapeDisplayList = 0;
 const int landscapeSize = 200;
-const int numberOfPyramids = 150;
+const int numberOfPyramids = 500;
 
 bool arrowButtons[4];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT };
@@ -72,9 +105,10 @@ int main( int argc, char* argv[] )
 	gEngine->setInitOGLFunction( myInitOGLFun );
 	gEngine->setDrawFunction( myDrawFun );
 	gEngine->setPreSyncFunction( myPreSyncFun );
+    gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
 	gEngine->setKeyboardCallbackFunction( keyCallback );
 	gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
-	gEngine->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	//gEngine->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	for(int i=0; i<4; i++)
 		arrowButtons[i] = false;
@@ -85,13 +119,8 @@ int main( int argc, char* argv[] )
 		return EXIT_FAILURE;
 	}
 
-	// Read our .obj file
-	std::vector< glm::vec3 > vertices;
-	std::vector< glm::vec2 > uvs;
-	std::vector< glm::vec3 > normals; // Won't be used at the moment.
-
-	sgct::SharedData::instance()->setEncodeFunction( myEncodeFun );
-	sgct::SharedData::instance()->setDecodeFunction( myDecodeFun );
+    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
+    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
 
 	// Main loop
 	gEngine->render();
@@ -106,12 +135,35 @@ int main( int argc, char* argv[] )
 
 void myInitOGLFun()
 {
-	//create and compile display list
-	myLandscapeDisplayList = glGenLists(1);
-	glNewList(myLandscapeDisplayList, GL_COMPILE);
-
-	drawXZGrid(landscapeSize, -1.5f);
-
+    sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
+    sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
+    sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
+    sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
+    
+    loadModel( "box.obj" );
+    
+    //Set up backface culling
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW); //our polygon winding is counter clockwise
+    
+    sgct::ShaderManager::instance()->addShaderProgram( "xform",
+                                                      "simple.vert",
+                                                      "simple.frag" );
+    
+    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    
+    MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform" ).getUniformLocation( "MVP" );
+    NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform" ).getUniformLocation( "NM" );
+    GLint Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform" ).getUniformLocation( "Tex" );
+    glUniform1i( Tex_Loc, 0 );
+    
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+    
+    /*
+    //create and compile display list
+    myLandscapeDisplayList = glGenLists(1);
+    glNewList(myLandscapeDisplayList, GL_COMPILE);
+    
 	//pick a seed for the random function (must be same on all nodes)
 	srand(9745);
 	for(int i=0; i<numberOfPyramids; i++)
@@ -126,134 +178,214 @@ void myInitOGLFun()
 	}
 
 	glEndList();
+     */
 }
 
 void myPreSyncFun()
 {
-	if( gEngine->isMaster() )
-	{
-		if( mouseLeftButton )
-		{
-			double tmpYPos;
-			//get the mouse pos from first window
-			sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &tmpYPos );
-			mouseDx = mouseXPos[0] - mouseXPos[1];
-		}
-		else
-		{
-			mouseDx = 0.0;
-		}
+    if( gEngine->isMaster() )
+    {
+        curr_time.setVal( sgct::Engine::getTime() );
 
-		static float panRot = 0.0f;
-		panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
+        if( mouseLeftButton )
+        {
+            double tmpYPos;
+            //get the mouse pos from first window
+            sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &tmpYPos );
+            mouseDx = mouseXPos[0] - mouseXPos[1];
+        }
+        else
+        {
+            mouseDx = 0.0;
+        }
+        
+        static float panRot = 0.0f;
+        panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
+        
+        glm::mat4 ViewRotateX = glm::rotate(
+                                            glm::mat4(1.0f),
+                                            panRot,
+                                            glm::vec3(0.0f, 1.0f, 0.0f)); //rotation around the y-axis
+        
+        view = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
+        
+        glm::vec3 right = glm::cross(view, up);
+        
+        if( arrowButtons[FORWARD] ) {
+            if (runningButton) {
+                walkingSpeed = runningSpeed;
+            }
+            else {
+                walkingSpeed = 2.5f;
+            }
+            pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
+            
+        }
+        if( arrowButtons[BACKWARD] ) {
+            if (runningButton) {
+                walkingSpeed = runningSpeed;
+            }
+            else {
+                walkingSpeed = 2.5f;
+            }
+            pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
+        }
+        if( arrowButtons[LEFT] ) {
+            if (runningButton) {
+                walkingSpeed = runningSpeed;
+            }
+            else {
+                walkingSpeed = 2.5f;
+            }
+            pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
+            
+        }
+        if( arrowButtons[RIGHT] ) {
+            if (runningButton) {
+                walkingSpeed = runningSpeed;
+            }
+            else {
+                walkingSpeed = 2.5f;
+            }
+            
+            pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
+            
+        }
+        
+        /*
+         if( jumpingButton ) {
+         pos += (jumpingHeight3 + view);
+         printf("JUMP!");
+         }
+         */
+        
+        /*
+         To get a first person camera, the world needs
+         to be transformed around the users head.
+         
+         This is done by:
+         1, Transform the user to coordinate system origin
+         2, Apply navigation
+         3, Apply rotation
+         4, Transform the user back to original position
+         
+         However, mathwise this process need to be reversed
+         due to the matrix multiplication order.
+         */
+        
+        glm::mat4 result;
+        //4. transform user back to original position
+        result = glm::translate( glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos() );
+        //3. apply view rotation
+        result *= ViewRotateX;
+        //2. apply navigation translation
+        result *= glm::translate(glm::mat4(1.0f), pos);
+        //1. transform user to coordinate system origin
+        result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
+        
+        xform.setVal( result );
+    }
+}
 
-		glm::mat4 ViewRotateX = glm::rotate(
-			glm::mat4(1.0f),
-			panRot,
-			glm::vec3(0.0f, 1.0f, 0.0f)); //rotation around the y-axis
-
-		view = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
-
-		glm::vec3 right = glm::cross(view, up);
-
-		if( arrowButtons[FORWARD] ) {
-			if (runningButton) {
-				walkingSpeed = runningSpeed;
-			}
-			else {
-				walkingSpeed = 2.5f;
-			}
-			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
-
-		}
-		if( arrowButtons[BACKWARD] ) {
-			if (runningButton) {
-				walkingSpeed = runningSpeed;
-			}
-			else {
-				walkingSpeed = 2.5f;
-			}
-			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * view);
-		}
-		if( arrowButtons[LEFT] ) {
-			if (runningButton) {
-				walkingSpeed = runningSpeed;
-			}
-			else {
-				walkingSpeed = 2.5f;
-			}
-			pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
-
-		}
-		if( arrowButtons[RIGHT] ) {
-			if (runningButton) {
-				walkingSpeed = runningSpeed;
-			}
-			else {
-				walkingSpeed = 2.5f;
-			}
-			pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
-
-		}
-
-		/*
-		if( jumpingButton ) {
-			pos += (jumpingHeight3 + view);
-			printf("JUMP!");
-		}
-		*/
-
-		/*
-			To get a first person camera, the world needs
-			to be transformed around the users head.
-
-			This is done by:
-			1, Transform the user to coordinate system origin
-			2, Apply navigation
-			3, Apply rotation
-			4, Transform the user back to original position
-
-			However, mathwise this process need to be reversed
-			due to the matrix multiplication order.
-		*/
-
-		glm::mat4 result;
-		//4. transform user back to original position
-		result = glm::translate( glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos() );
-		//3. apply view rotation
-		result *= ViewRotateX;
-		//2. apply navigation translation
-		result *= glm::translate(glm::mat4(1.0f), pos);
-		//1. transform user to coordinate system origin
-		result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
-
-		xform.setVal( result );
-	}
+void myPostSyncPreDrawFun()
+{
+    if( reloadShader.getVal() )
+    {
+        sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "xform" );
+        sp.reload();
+        
+        //reset locations
+        sp.bind();
+        
+        MVP_Loc = sp.getUniformLocation( "MVP" );
+        NM_Loc = sp.getUniformLocation( "NM" );
+        GLint Tex_Loc = sp.getUniformLocation( "Tex" );
+        glUniform1i( Tex_Loc, 0 );
+        
+        sp.unbind();
+        reloadShader.setVal(false);
+    }
 }
 
 void myDrawFun()
 {
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
-	glDisable(GL_DEPTH_TEST);
-	
-	glMultMatrixf(glm::value_ptr(xform.getVal()));
-	glCallList(myLandscapeDisplayList);
-
-	
-
-	//glDisable(GL_DEPTH_TEST);
-	glEnable(GL_DEPTH_TEST);
+    glEnable( GL_DEPTH_TEST );
+    glEnable( GL_CULL_FACE );
+    
+    double speed = 25.0;
+    
+    //create scene transform (animation)
+    glm::mat4 scene_mat = glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, 0.0f, -3.0f) );
+    scene_mat = glm::rotate( scene_mat, static_cast<float>( curr_time.getVal() * speed ), glm::vec3(0.0f, -1.0f, 0.0f));
+    
+    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
+    glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+    
+    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    
+    glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &MVP[0][0]);
+    
+    // ------ draw model --------------- //
+    glBindVertexArray(VertexArrayID);
+    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
+    glBindVertexArray(GL_FALSE); //unbind
+    // ----------------------------------//
+    
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+    
+    glDisable( GL_CULL_FACE );
+    glDisable( GL_DEPTH_TEST );
+    
+    /*
+     //glEnable(GL_DEPTH_TEST);
+     //glDepthFunc(GL_LESS);
+     glDisable(GL_DEPTH_TEST);
+     
+     glMultMatrixf(glm::value_ptr(xform.getVal()));
+     glCallList(myLandscapeDisplayList);
+     
+     //glDisable(GL_DEPTH_TEST);
+     glEnable(GL_DEPTH_TEST);
+     */
 }
 
 void myEncodeFun()
 {
 	sgct::SharedData::instance()->writeObj( &xform );
+    sgct::SharedData::instance()->writeDouble( &curr_time );
+    sgct::SharedData::instance()->writeBool( &reloadShader );
 }
 
 void myDecodeFun()
 {
 	sgct::SharedData::instance()->readObj( &xform );
+    sgct::SharedData::instance()->readDouble( &curr_time );
+    sgct::SharedData::instance()->readBool( &reloadShader );
+}
+
+/*!
+	De-allocate data from GPU
+	Textures are deleted automatically when using texture manager
+	Shaders are deleted automatically when using shader manager
+ */
+void myCleanUpFun()
+{
+    if( VertexArrayID )
+    {
+        glDeleteVertexArrays(1, &VertexArrayID);
+        VertexArrayID = GL_FALSE;
+    }
+    
+    if( vertexBuffers[0] ) //if first is created, all has been created.
+    {
+        glDeleteBuffers(3, &vertexBuffers[0]);
+        for(unsigned int i=0; i<3; i++)
+            vertexBuffers[i] = GL_FALSE;
+    }
 }
 
 void keyCallback(int key, int action)
@@ -282,10 +414,12 @@ void keyCallback(int key, int action)
 			arrowButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
 
+        //Jumping
 		case SGCT_KEY_SPACE:
 			jumpingButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 			break;
-
+        
+        //Running
 		case SGCT_KEY_LEFT_SHIFT:
 		case SGCT_KEY_RIGHT_SHIFT:
 			runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
@@ -393,83 +527,97 @@ void drawPyramid(float width)
 	glDisable(GL_BLEND);
 }
 
-//Used for loading .obj files
-bool loadOBJ(const char * path, std::vector < glm::vec3 > & out_vertices, std::vector < glm::vec2 > & out_uvs, std::vector < glm::vec3 > & out_normals)
+/*
+	Loads obj model and uploads to the GPU
+ */
+void loadModel( std::string filename )
 {
-    //Temporary vectors
-    std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
-    std::vector< glm::vec3 > temp_vertices;
-    std::vector< glm::vec2 > temp_uvs;
-    std::vector< glm::vec3 > temp_normals;
+    // Read our .obj file
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
     
-    //Test if file could be opened
-    FILE * file = fopen(path, "r");
-    if( file == NULL ){
-        printf("Impossible to open the file !\n");
-        return false;
+    //if successful
+    if( loadOBJ( filename.c_str(), positions, uvs, normals) )
+    {
+        //store the number of triangles
+        numberOfVertices = static_cast<GLsizei>( positions.size() );
+        
+        //create VAO
+        glGenVertexArrays(1, &VertexArrayID);
+        glBindVertexArray(VertexArrayID);
+        
+        //init VBOs
+        for(unsigned int i=0; i<3; i++)
+            vertexBuffers[i] = GL_FALSE;
+        glGenBuffers(3, &vertexBuffers[0]);
+        
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_POSITIONS ] );
+        glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_STATIC_DRAW);
+        // 1rst attribute buffer : vertices
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(
+                              0,                  // attribute
+                              3,                  // size
+                              GL_FLOAT,           // type
+                              GL_FALSE,           // normalized?
+                              0,                  // stride
+                              reinterpret_cast<void*>(0) // array buffer offset
+                              );
+        
+        if( uvs.size() > 0 )
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_UVS ] );
+            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+            // 2nd attribute buffer : UVs
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(
+                                  1,                                // attribute
+                                  2,                                // size
+                                  GL_FLOAT,                         // type
+                                  GL_FALSE,                         // normalized?
+                                  0,                                // stride
+                                  reinterpret_cast<void*>(0) // array buffer offset
+                                  );
+        }
+        else
+            sgct::MessageHandler::instance()->print("Warning: Model is missing UV data.\n");
+        
+        if( normals.size() > 0 )
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_NORMALS ] );
+            glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+            // 3nd attribute buffer : Normals
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(
+                                  2,                                // attribute
+                                  3,                                // size
+                                  GL_FLOAT,                         // type
+                                  GL_FALSE,                         // normalized?
+                                  0,                                // stride
+                                  reinterpret_cast<void*>(0) // array buffer offset
+                                  );
+        }
+        else
+            sgct::MessageHandler::instance()->print("Warning: Model is missing normal data.\n");
+        
+        glBindVertexArray(GL_FALSE); //unbind VAO
+        
+        //clear vertex data that is uploaded on GPU
+        positions.clear();
+        uvs.clear();
+        normals.clear();
+        
+        //print some usefull info
+        sgct::MessageHandler::instance()->print("Model '%s' loaded successfully (%u vertices, VAO: %u, VBOs: %u %u %u).\n",
+                                                filename.c_str(),
+                                                numberOfVertices,
+                                                VertexArrayID,
+                                                vertexBuffers[VBO_POSITIONS],
+                                                vertexBuffers[VBO_UVS],
+                                                vertexBuffers[VBO_NORMALS] );
     }
+    else
+        sgct::MessageHandler::instance()->print("Failed to load model '%s'!\n", filename.c_str() );
     
-    while( 1 ){
-        
-        char lineHeader[128];
-        // read the first word of the line
-        int res = fscanf(file, "%s", lineHeader);
-        if (res == EOF)
-            break; // EOF = End Of File. Quit the loop.
-        
-        //Vertex
-        if ( strcmp( lineHeader, "v" ) == 0 ){
-            glm::vec3 vertex;
-            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-            temp_vertices.push_back(vertex);
-        }
-        
-        //Texture Coords
-        else if ( strcmp( lineHeader, "vt" ) == 0 ){
-            glm::vec2 uv;
-            fscanf(file, "%f %f\n", &uv.x, &uv.y );
-            temp_uvs.push_back(uv);
-        }
-        
-        //Normals of vertex
-        else if ( strcmp( lineHeader, "vn" ) == 0 ){
-            glm::vec3 normal;
-            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
-            temp_normals.push_back(normal);
-        }
-        
-        //Face
-        else if ( strcmp( lineHeader, "f" ) == 0 ){
-            std::string vertex1, vertex2, vertex3;
-            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
-            if (matches != 9){
-                printf("File can't be read by our simple parser : ( Try exporting with other options\n");
-                return false;
-            }
-            vertexIndices.push_back(vertexIndex[0]);
-            vertexIndices.push_back(vertexIndex[1]);
-            vertexIndices.push_back(vertexIndex[2]);
-            uvIndices    .push_back(uvIndex[0]);
-            uvIndices    .push_back(uvIndex[1]);
-            uvIndices    .push_back(uvIndex[2]);
-            normalIndices.push_back(normalIndex[0]);
-            normalIndices.push_back(normalIndex[1]);
-            normalIndices.push_back(normalIndex[2]);
-        }
-    }
-    
-    // For each vertex of each triangle
-    for( unsigned int i=0; i<vertexIndices.size(); i++){
-        unsigned int vertexIndex = vertexIndices[i];
-        glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
-        out_vertices.push_back(vertex);
-    }
-    return true;
 }
-
-
-
-
-
-
