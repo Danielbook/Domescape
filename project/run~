@@ -1,0 +1,16 @@
+#!/bin/sh
+case "$1" in
+        -f )
+                optirun Domescape -config single_fisheye.xml
+        ;;
+        -m )
+                optirun Domescape -config dome_sim.xml
+        ;;
+        -test )
+                optirun Domescape -config test_cluster_dome.xml -local 0 &
+                optirun Domescape -config test_cluster_dome.xml -local 1 --slave
+        ;;
+        *)
+                optirun Domescape -config single.xml
+        ;;
+esac

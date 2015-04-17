@@ -103,7 +103,7 @@ int main( int argc, char* argv[] )
     gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
-    
+
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
@@ -167,7 +167,6 @@ void myPreSyncFun()
 
         if( mouseLeftButton )
         {
-            //double tmpYPos;
             //get the mouse pos from first window
             sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &mouseYPos[0] );
             mouseDx = mouseXPos[0] - mouseXPos[1];
@@ -200,7 +199,7 @@ void myPreSyncFun()
                                             glm::mat4(1.0f),
 											tiltRot,
 											-right); //rotation around the movavble x-axis
-        
+
 
         if( dirButtons[FORWARD] ){
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
@@ -484,7 +483,7 @@ void keyCallback(int key, int action)
         	case SGCT_KEY_E:
 	            dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
 	            printf("E is pressed\n");
-				break;               
+				break;
         }
     }
 }

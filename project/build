@@ -1,0 +1,11 @@
+#!/bin/sh
+case "$1" in
+
+        -b)
+                g++ -O3 -s main.cpp objloader.cpp -o Domescape -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
+	;;
+
+	-g)	g++ -g main.cpp objloader.cpp -o Domescape -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
+        ;;
+
+esac
