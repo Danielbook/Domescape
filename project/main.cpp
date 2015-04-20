@@ -160,7 +160,6 @@ void myDrawFun()
 
 void myPreSyncFun()
 {
-
     if( gEngine->isMaster() )
     {
         curr_time.setVal( sgct::Engine::getTime() );
@@ -172,6 +171,7 @@ void myPreSyncFun()
             mouseDx = mouseXPos[0] - mouseXPos[1];
             mouseDy = mouseYPos[0] - mouseYPos[1];
         }
+        
         else
         {
             mouseDy = 0.0;
@@ -180,6 +180,7 @@ void myPreSyncFun()
 
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
+        
         static float tiltRot = 0.0f;
         tiltRot += (static_cast<float>(mouseDy) * rotationSpeed * static_cast<float>(gEngine->getDt()));
 
@@ -202,25 +203,29 @@ void myPreSyncFun()
 
 
         if( dirButtons[FORWARD] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
         }
         if( dirButtons[BACKWARD] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
         }
         if( dirButtons[LEFT] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
         }
         if( dirButtons[RIGHT] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
         }
         if( dirButtons[UP] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
         }
         if( dirButtons[DOWN] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
         }
-
-
         /*
          To get a first person camera, the world needs
          to be transformed around the users head.
@@ -238,12 +243,14 @@ void myPreSyncFun()
         glm::mat4 result;
         //4. transform user back to original position
         result = glm::translate( glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos() );
+        
         //3. apply view rotation
         result *= ViewRotateX;
         result *= ViewRotateY;
 
         //2. apply navigation translation
         result *= glm::translate(glm::mat4(1.0f), pos);
+        
         //1. transform user to coordinate system origin
         result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
 

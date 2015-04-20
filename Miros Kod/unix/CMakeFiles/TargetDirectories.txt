@@ -1,1 +1,0 @@
-/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/Miros Kod/unix/CMakeFiles/model_loader_opengl3.dir
