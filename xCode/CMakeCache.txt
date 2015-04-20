@@ -206,13 +206,13 @@ OPENGL_glu_LIBRARY:FILEPATH=/Applications/Xcode.app/Contents/Developer/Platforms
 SGCT_CPP11:BOOL=ON
 
 //Path to a library.
-SGCT_DEBUG_LIBRARY:FILEPATH=/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/lib/libsgct_cpp11d.a
+SGCT_DEBUG_LIBRARY:FILEPATH=/usr/local/lib/libsgct_cpp11d.a
 
 //Path to a file.
-SGCT_INCLUDE_DIRECTORY:PATH=/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/include
+SGCT_INCLUDE_DIRECTORY:PATH=/usr/local/include
 
 //Path to a library.
-SGCT_RELEASE_LIBRARY:FILEPATH=/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/lib/libsgct_cpp11.a
+SGCT_RELEASE_LIBRARY:FILEPATH=/usr/local/lib/libsgct_cpp11.a
 
 
 ########################
@@ -220,7 +220,7 @@ SGCT_RELEASE_LIBRARY:FILEPATH=/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Graf
 ########################
 
 //Stored Xcode object GUID
-ALL_BUILD_GUID_CMAKE:INTERNAL=AD2D28091C1945549B04086C
+ALL_BUILD_GUID_CMAKE:INTERNAL=7817F825C91C487C96D4254B
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
@@ -342,7 +342,7 @@ CMAKE_USE_RELATIVE_PATHS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Stored Xcode object GUID
-Domescape_GUID_CMAKE:INTERNAL=AC9C17D5367C4E368FA5FABB
+Domescape_GUID_CMAKE:INTERNAL=4979F2BC02D94F6BAF767AA6
 //Details about finding OpenGL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/System/Library/Frameworks/OpenGL.framework][/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/System/Library/Frameworks/OpenGL.framework][v()]
 //ADVANCED property for variable: OPENGL_INCLUDE_DIR
@@ -352,7 +352,7 @@ OPENGL_gl_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_glu_LIBRARY
 OPENGL_glu_LIBRARY-ADVANCED:INTERNAL=1
 //Stored Xcode object GUID
-PROJECT_Domescape_GUID_CMAKE:INTERNAL=4CE132D762A248B48D0E1DA6
+PROJECT_Domescape_GUID_CMAKE:INTERNAL=B772AB2752C44550980FA29B
 //Stored Xcode object GUID
-ZERO_CHECK_GUID_CMAKE:INTERNAL=89BFE430341B4E81B7AF93F3
+ZERO_CHECK_GUID_CMAKE:INTERNAL=45B71208DFD94F0B88EC95A5
 

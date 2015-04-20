@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AC9C17D5367C4E368FA5FABB"
+               BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
                BuildableName = "Domescape"
                BlueprintName = "Domescape"
                ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AC9C17D5367C4E368FA5FABB"
+            BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -52,7 +52,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AC9C17D5367C4E368FA5FABB"
+            BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -64,7 +64,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-config single_fisheye.xml"
+            argument = "-config fisheye_single.xml"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -81,7 +81,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AC9C17D5367C4E368FA5FABB"
+            BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">

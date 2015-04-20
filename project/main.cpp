@@ -95,7 +95,7 @@ sgct::SharedObject<glm::mat4> xform;
 int main( int argc, char* argv[] )
 {
     gEngine = new sgct::Engine( argc, argv );
-
+    
     gEngine->setInitOGLFunction( myInitOGLFun );
     gEngine->setDrawFunction( myDrawFun );
     gEngine->setPreSyncFunction( myPreSyncFun );
@@ -107,8 +107,7 @@ int main( int argc, char* argv[] )
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-
-    if( !gEngine->init( ) )
+    if( !gEngine->init( sgct::Engine::OpenGL_4_1_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
@@ -116,7 +115,9 @@ int main( int argc, char* argv[] )
 
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
-
+    
+    glewInit();
+    
     // Main loop
     gEngine->render();
 
@@ -284,6 +285,11 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
+    
+    if (glGenVertexArrays == NULL)
+    {
+        printf("THIS IS THE PROBLEM");
+    }
 
     loadModel( "box.obj" );
 
@@ -340,6 +346,7 @@ void myCleanUpFun()
     }
 }
 
+
 /*
 	Loads obj model and uploads to the GPU
  */
@@ -349,22 +356,22 @@ void loadModel( std::string filename )
     std::vector<glm::vec3> positions;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-
+    
     //if successful
     if( loadOBJ( filename.c_str(), positions, uvs, normals) )
     {
         //store the number of triangles
         numberOfVertices = static_cast<GLsizei>( positions.size() );
-
+        
         //create VAO
         glGenVertexArrays(1, &VertexArrayID);
         glBindVertexArray(VertexArrayID);
-
+        
         //init VBOs
         for(unsigned int i=0; i<3; i++)
             vertexBuffers[i] = GL_FALSE;
         glGenBuffers(3, &vertexBuffers[0]);
-
+        
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_POSITIONS ] );
         glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_STATIC_DRAW);
         // 1rst attribute buffer : vertices
@@ -377,7 +384,7 @@ void loadModel( std::string filename )
                               0,                  // stride
                               reinterpret_cast<void*>(0) // array buffer offset
                               );
-
+        
         if( uvs.size() > 0 )
         {
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_UVS ] );
@@ -395,7 +402,7 @@ void loadModel( std::string filename )
         }
         else
             sgct::MessageHandler::instance()->print("Warning: Model is missing UV data.\n");
-
+        
         if( normals.size() > 0 )
         {
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_NORMALS ] );
@@ -413,14 +420,14 @@ void loadModel( std::string filename )
         }
         else
             sgct::MessageHandler::instance()->print("Warning: Model is missing normal data.\n");
-
+        
         glBindVertexArray(GL_FALSE); //unbind VAO
-
+        
         //clear vertex data that is uploaded on GPU
         positions.clear();
         uvs.clear();
         normals.clear();
-
+        
         //print some usefull info
         sgct::MessageHandler::instance()->print("Model '%s' loaded successfully (%u vertices, VAO: %u, VBOs: %u %u %u).\n",
                                                 filename.c_str(),
@@ -432,7 +439,7 @@ void loadModel( std::string filename )
     }
     else
         sgct::MessageHandler::instance()->print("Failed to load model '%s'!\n", filename.c_str() );
-
+    
 }
 
 void keyCallback(int key, int action)

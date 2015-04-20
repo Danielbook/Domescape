@@ -1,6 +1,6 @@
 dependencies: \
   /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/calcPos.cpp \
-  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/calcPos.h \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/calcPos.hpp \
   /usr/include/SpiceUsr.h /usr/include/SpiceZpl.h \
   /usr/include/SpiceZdf.h /usr/include/SpiceErr.h /usr/include/SpiceEK.h \
   /usr/include/SpiceFrm.h /usr/include/SpiceCel.h /usr/include/SpiceCK.h \
