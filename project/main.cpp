@@ -65,8 +65,10 @@ GLint NM_Loc = -1;
 sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 
-bool dirButtons[4];
+bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
+
+int numberOfTrees = 4;
 
 //Used for running
 bool runningButton = false;
@@ -105,12 +107,11 @@ int main( int argc, char* argv[] )
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
 
     
-    for(int i=0; i<4; i++)
+    for(int i=0; i<6; i++){
         dirButtons[i] = false;
-
+    }
     
-    if( !gEngine->init( sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+    if( !gEngine->init( sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
@@ -133,11 +134,8 @@ void myDrawFun()
     glEnable( GL_DEPTH_TEST );
     glEnable( GL_CULL_FACE );
     
-    double speed = 25.0;
-    
     //create scene transform (animation)
-    glm::mat4 scene_mat = glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, 0.0f, -3.0f) );
-    scene_mat = glm::rotate( scene_mat, static_cast<float>( curr_time.getVal() * speed ), glm::vec3(0.0f, -1.0f, 0.0f));
+    glm::mat4 scene_mat = xform.getVal();
     
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
@@ -157,14 +155,11 @@ void myDrawFun()
     // ----------------------------------//
     
     sgct::ShaderManager::instance()->unBindShaderProgram();
-    
-    glDisable( GL_CULL_FACE );
-    glDisable( GL_DEPTH_TEST );
+
 }
 
 void myPreSyncFun()
 {
-    
     if( gEngine->isMaster() )
     {
         curr_time.setVal( sgct::Engine::getTime() );
@@ -177,6 +172,7 @@ void myPreSyncFun()
             mouseDx = mouseXPos[0] - mouseXPos[1];
             mouseDy = mouseYPos[0] - mouseYPos[1];
         }
+        
         else
         {
             mouseDy = 0.0;
@@ -185,6 +181,7 @@ void myPreSyncFun()
         
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
+        
         static float tiltRot = 0.0f;
         tiltRot += (static_cast<float>(mouseDy) * rotationSpeed * static_cast<float>(gEngine->getDt()));
         
@@ -207,25 +204,29 @@ void myPreSyncFun()
         
         
         if( dirButtons[FORWARD] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
         }
         if( dirButtons[BACKWARD] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
         }
         if( dirButtons[LEFT] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
         }
         if( dirButtons[RIGHT] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * right);
         }
         if( dirButtons[UP] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos -= (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
         }
         if( dirButtons[DOWN] ){
+            runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
         }
-        
-        
         /*
          To get a first person camera, the world needs
          to be transformed around the users head.
@@ -243,12 +244,14 @@ void myPreSyncFun()
         glm::mat4 result;
         //4. transform user back to original position
         result = glm::translate( glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos() );
+        
         //3. apply view rotation
         result *= ViewRotateX;
         result *= ViewRotateY;
         
         //2. apply navigation translation
         result *= glm::translate(glm::mat4(1.0f), pos);
+        
         //1. transform user to coordinate system origin
         result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
         
@@ -258,8 +261,7 @@ void myPreSyncFun()
 
 void myPostSyncPreDrawFun()
 {
-    if( reloadShader.getVal() )
-    {
+    if( reloadShader.getVal() ){
         sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "xform" );
         sp.reload();
         
@@ -283,7 +285,7 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
     
-    loadModel( "box.obj" );
+    loadModel( "tree.obj" );
     
     //Set up backface culling
     glCullFace(GL_BACK);
@@ -334,7 +336,9 @@ void myCleanUpFun()
     {
         glDeleteBuffers(3, &vertexBuffers[0]);
         for(unsigned int i=0; i<3; i++)
+        {
             vertexBuffers[i] = GL_FALSE;
+        }
     }
 }
 
@@ -479,7 +483,6 @@ void keyCallback(int key, int action)
                 runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 printf("Shift is pressed\n");
                 break;
-
         }
     }
 }
