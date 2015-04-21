@@ -34,6 +34,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		65880B241AE6956B00A8E69B /* TriangleSoup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B221AE6956B00A8E69B /* TriangleSoup.cpp */; };
+		65880B271AE6968500A8E69B /* tnm061.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B251AE6968500A8E69B /* tnm061.cpp */; };
 		8797B4B4E536491195C608AA /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EDD8FC46B444DA1BDB7DA7E /* objloader.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 		AA865745000845E9AAAE144F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B2534B3EE2C84DC682698BE7 /* main.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 /* End PBXBuildFile section */
@@ -65,6 +67,10 @@
 /* Begin PBXFileReference section */
 		4EDD8FC46B444DA1BDB7DA7E /* objloader.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = objloader.cpp; sourceTree = SOURCE_ROOT; };
 		550DA22DF8B24724A4CC6121 /* calcPos.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = calcPos.cpp; sourceTree = SOURCE_ROOT; };
+		65880B221AE6956B00A8E69B /* TriangleSoup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TriangleSoup.cpp; sourceTree = "<group>"; };
+		65880B231AE6956B00A8E69B /* TriangleSoup.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TriangleSoup.hpp; sourceTree = "<group>"; };
+		65880B251AE6968500A8E69B /* tnm061.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tnm061.cpp; sourceTree = "<group>"; };
+		65880B261AE6968500A8E69B /* tnm061.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tnm061.hpp; sourceTree = "<group>"; };
 		9AE55005689841348C629E7B /* Domescape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = Domescape; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2534B3EE2C84DC682698BE7 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
 		BA82ACE520814398A5D150FE /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
@@ -78,6 +84,8 @@
 		3F65EF930CE647A88872CF4E /* Source Files */ = {
 			isa = PBXGroup;
 			children = (
+				65880B251AE6968500A8E69B /* tnm061.cpp */,
+				65880B221AE6956B00A8E69B /* TriangleSoup.cpp */,
 				550DA22DF8B24724A4CC6121 /* calcPos.cpp */,
 				B2534B3EE2C84DC682698BE7 /* main.cpp */,
 				4EDD8FC46B444DA1BDB7DA7E /* objloader.cpp */,
@@ -116,7 +124,9 @@
 		5F2F9EB2CEE04F8F93ED5A3A /* Header Files */ = {
 			isa = PBXGroup;
 			children = (
+				65880B261AE6968500A8E69B /* tnm061.hpp */,
 				F944B4009E4C4FD5ACE972A1 /* calcPos.hpp */,
+				65880B231AE6956B00A8E69B /* TriangleSoup.hpp */,
 				E048B75A9CB549A6B3A49DAF /* objloader.hpp */,
 			);
 			name = "Header Files";
@@ -247,7 +257,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA865745000845E9AAAE144F /* main.cpp in Sources */,
+				65880B271AE6968500A8E69B /* tnm061.cpp in Sources */,
 				8797B4B4E536491195C608AA /* objloader.cpp in Sources */,
+				65880B241AE6956B00A8E69B /* TriangleSoup.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

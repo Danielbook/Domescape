@@ -123,6 +123,9 @@ dependencies: \
   /usr/local/include/sgct/utils/../helpers/SGCTVertexData.h \
   /usr/local/include/sgct/utils/SGCTBox.h \
   /usr/local/include/sgct/utils/SGCTDome.h \
-  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/objloader.hpp \
   /usr/local/include/glm/gtc/matrix_inverse.hpp \
-  /usr/local/include/glm/gtc/matrix_inverse.inl
+  /usr/local/include/glm/gtc/matrix_inverse.inl \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/tnm061.hpp \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/TriangleSoup.hpp \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/GLFW/glfw3.h \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/objloader.hpp

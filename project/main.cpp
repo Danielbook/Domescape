@@ -10,8 +10,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "objloader.hpp"
 #include <glm/gtc/matrix_inverse.hpp>
+
+#include "tnm061.hpp"
+#include "TriangleSoup.hpp"
+#include "objloader.hpp"
 
 
 sgct::Engine * gEngine;
@@ -47,7 +50,6 @@ void mouseButtonCallback(int button, int action);//     |
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
-float jumpingHeight = 10.0f;
 
 //regular functions
 void loadModel( std::string filename );
@@ -80,6 +82,11 @@ public:
     float mX, mY, mZ;
 };
 ////
+
+
+////////////
+TriangleSoup box;
+////////////
 
 //shader locations
 GLint MVP_Loc = -1;
@@ -128,7 +135,7 @@ int main( int argc, char* argv[] )
     gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
-
+    
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
@@ -137,10 +144,11 @@ int main( int argc, char* argv[] )
         delete gEngine;
         return EXIT_FAILURE;
     }
-
+    
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     
+    box.readOBJ("box.obj");
 
     // Main loop
     gEngine->render();
@@ -163,21 +171,27 @@ void myDrawFun()
     drawXZGrid();
 
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
-    glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
-
-    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    //glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &MVP[0][0]);
-
-    // ------ draw model --------------- //
-    glBindVertexArray(VertexArrayID);
-    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-    glBindVertexArray(GL_FALSE); //unbind
-    // ----------------------------------//
+    // Render the geometry to draw the sun
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+    box.render();
+//    
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+//
+//    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+//
+//    glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
+//    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &MVP[0][0]);
+//    
+//
+//    // ------ draw model --------------- //
+//    glBindVertexArray(VertexArrayID);
+//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
+//    glBindVertexArray(GL_FALSE); //unbind
+//    // ----------------------------------//
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -313,12 +327,13 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
     
+    
     if (glGenVertexArrays == NULL)
     {
         printf("THIS IS THE PROBLEM");
     }
 
-    loadModel( "box.obj" );
+//    loadModel( "box.obj" );
 
     //Set up backface culling
     glCullFace(GL_BACK);
@@ -500,48 +515,40 @@ void keyCallback(int key, int action)
             case SGCT_KEY_UP:
             case SGCT_KEY_W:
                 dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                printf("W is pressed\n");
                 break;
 
             case SGCT_KEY_DOWN:
             case SGCT_KEY_S:
                 dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                printf("S is pressed\n");
                 break;
 
             case SGCT_KEY_LEFT:
             case SGCT_KEY_A:
                 dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                printf("A is pressed\n");
                 break;
 
             case SGCT_KEY_RIGHT:
             case SGCT_KEY_D:
                 dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                printf("D is pressed\n");
                 break;
 
                 //Jumping
             case SGCT_KEY_SPACE:
                 jumpingButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                printf("Space is pressed\n");
                 break;
 
                 //Running
             case SGCT_KEY_LEFT_SHIFT:
             case SGCT_KEY_RIGHT_SHIFT:
                 runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                printf("Shift is pressed\n");
                 break;
 
         	case SGCT_KEY_Q:
             	dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-            	printf("Q is pressed\n");
 				break;
 
         	case SGCT_KEY_E:
 	            dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-	            printf("E is pressed\n");
 				break;
         }
     }
@@ -583,7 +590,7 @@ void drawXZGrid(void)
 
 void createXZGrid(int size, float yPos)
 {
-    numberOfVerts[PLANE] = size * 4;
+    numberOfVerts[PLANE] = 6;
     Vertex * vertData = new (std::nothrow) Vertex[numberOfVerts[PLANE]];
     
     int i = 0;
