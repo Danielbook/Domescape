@@ -57,6 +57,30 @@ GLuint vertexBuffers[3];
 GLuint VertexArrayID = GL_FALSE;
 GLsizei numberOfVertices = 0;
 
+////
+void createXZGrid(int size, float yPos);
+void drawXZGrid(void);
+
+const int landscapeSize = 50;
+
+enum geometryType { GRID = 0, BOX };
+GLuint VAOs[2] = { GL_FALSE, GL_FALSE };
+GLuint VBOs[2] = { GL_FALSE, GL_FALSE };
+//shader locations
+GLint Matrix_Locs[2] = { -1, -1 };
+GLint alpha_Loc = -1;
+
+int numberOfVerts[2] = { 0, 0 };
+
+class Vertex
+{
+public:
+    Vertex() { mX = mY = mZ = 0.0f; }
+    Vertex(float z, float y, float x) { mX = x; mY = y; mZ = z; }
+    float mX, mY, mZ;
+};
+////
+
 //shader locations
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
@@ -116,8 +140,7 @@ int main( int argc, char* argv[] )
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     
-    glewInit();
-    
+
     // Main loop
     gEngine->render();
 
@@ -135,6 +158,8 @@ void myDrawFun()
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
+    
+    drawXZGrid();
 
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
@@ -157,6 +182,7 @@ void myDrawFun()
 
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
+
 }
 
 void myPreSyncFun()
@@ -309,6 +335,20 @@ void myInitOGLFun()
     glUniform1i( Tex_Loc, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+    
+    //generate the VAOs
+    glGenVertexArrays(2, &VAOs[0]);
+    //generate VBOs for vertex positions
+    glGenBuffers(2, &VBOs[0]);
+    
+    createXZGrid(landscapeSize, -1.5f);
+    
+    sgct::ShaderManager::instance()->addShaderProgram("gridShader",
+                                                      "gridShader.vert",
+                                                      "gridShader.frag");
+    sgct::ShaderManager::instance()->bindShaderProgram("gridShader");
+    Matrix_Locs[GRID] = sgct::ShaderManager::instance()->getShaderProgram("gridShader").getUniformLocation("MVP");
+    sgct::ShaderManager::instance()->unBindShaderProgram();
 }
 
 void myEncodeFun()
@@ -337,6 +377,11 @@ void myCleanUpFun()
         glDeleteVertexArrays(1, &VertexArrayID);
         VertexArrayID = GL_FALSE;
     }
+    
+    if (VBOs[0])
+        glDeleteBuffers(2, &VBOs[0]);
+    if (VAOs[0])
+        glDeleteVertexArrays(2, &VAOs[0]);
 
     if( vertexBuffers[0] ) //if first is created, all has been created.
     {
@@ -515,4 +560,79 @@ void mouseButtonCallback(int button, int action)
                 break;
         }
     }
+}
+
+void drawXZGrid(void)
+{
+    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * xform.getVal();
+    
+    sgct::ShaderManager::instance()->bindShaderProgram("gridShader");
+    
+    glUniformMatrix4fv(Matrix_Locs[GRID], 1, GL_FALSE, &MVP[0][0]);
+    
+    glBindVertexArray(VAOs[GRID]);
+    
+    glLineWidth(3.0f);
+    glPolygonOffset(0.0f, 0.0f); //offset to avoid z-buffer fighting
+    glDrawArrays(GL_LINES, 0, numberOfVerts[GRID]);
+    
+    //unbind
+    glBindVertexArray(0);
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+}
+
+void createXZGrid(int size, float yPos)
+{
+    numberOfVerts[GRID] = size * 4;
+    Vertex * vertData = new (std::nothrow) Vertex[numberOfVerts[GRID]];
+    
+    int i = 0;
+    for (int x = -(size / 2); x < (size / 2); x++)
+    {
+        vertData[i].mX = static_cast<float>(x);
+        vertData[i].mY = yPos;
+        vertData[i].mZ = static_cast<float>(-(size / 2));
+        
+        vertData[i + 1].mX = static_cast<float>(x);
+        vertData[i + 1].mY = yPos;
+        vertData[i + 1].mZ = static_cast<float>(size / 2);
+        
+        i += 2;
+    }
+    
+    for (int z = -(size / 2); z < (size / 2); z++)
+    {
+        vertData[i].mX = static_cast<float>(-(size / 2));
+        vertData[i].mY = yPos;
+        vertData[i].mZ = static_cast<float>(z);
+        
+        vertData[i + 1].mX = static_cast<float>(size / 2);
+        vertData[i + 1].mY = yPos;
+        vertData[i + 1].mZ = static_cast<float>(z);
+        
+        i += 2;
+    }
+    
+    glBindVertexArray(VAOs[GRID]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[GRID]);
+    
+    //upload data to GPU
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*numberOfVerts[GRID], vertData, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(
+                          0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                          3,                  // size
+                          GL_FLOAT,           // type
+                          GL_FALSE,           // normalized?
+                          0,                  // stride
+                          reinterpret_cast<void*>(0) // array buffer offset
+                          );
+    
+    //unbind
+    glBindVertexArray(GL_FALSE);
+    glBindBuffer(GL_ARRAY_BUFFER, GL_FALSE);
+    
+    //clean up
+    delete[] vertData;
+    vertData = NULL;
 }
