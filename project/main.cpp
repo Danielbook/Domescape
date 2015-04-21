@@ -63,7 +63,7 @@ void drawXZGrid(void);
 
 const int landscapeSize = 50;
 
-enum geometryType { GRID = 0, BOX };
+enum geometryType { PLANE = 0, BOX };
 GLuint VAOs[2] = { GL_FALSE, GL_FALSE };
 GLuint VBOs[2] = { GL_FALSE, GL_FALSE };
 //shader locations
@@ -105,6 +105,7 @@ bool mouseLeftButton = false;
  is pressed and when the mouse button is held. */
 double mouseDx = 0.0;
 double mouseDy = 0.0;
+
 /* Stores the positions that will be compared to measure the difference. */
 double mouseXPos[] = { 0.0, 0.0 };
 double mouseYPos[] = { 0.0, 0.0 };
@@ -131,7 +132,7 @@ int main( int argc, char* argv[] )
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-    if( !gEngine->init( sgct::Engine::OpenGL_4_1_Core_Profile ) )
+    if( !gEngine->init( sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
@@ -321,7 +322,6 @@ void myInitOGLFun()
 
     //Set up backface culling
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW); //our polygon winding is counter clockwise
 
     sgct::ShaderManager::instance()->addShaderProgram( "xform",
                                                       "simple.vert",
@@ -347,7 +347,7 @@ void myInitOGLFun()
                                                       "gridShader.vert",
                                                       "gridShader.frag");
     sgct::ShaderManager::instance()->bindShaderProgram("gridShader");
-    Matrix_Locs[GRID] = sgct::ShaderManager::instance()->getShaderProgram("gridShader").getUniformLocation("MVP");
+    Matrix_Locs[PLANE] = sgct::ShaderManager::instance()->getShaderProgram("gridShader").getUniformLocation("MVP");
     sgct::ShaderManager::instance()->unBindShaderProgram();
 }
 
@@ -554,7 +554,7 @@ void mouseButtonCallback(int button, int action)
         switch( button ) {
             case SGCT_MOUSE_BUTTON_LEFT:
                 mouseLeftButton = (action == SGCT_PRESS ? true : false);
-                double tmpYPos;
+                //double tmpYPos;
                 //set refPos
                 sgct::Engine::getMousePos(gEngine->getFocusedWindowIndex(), &mouseXPos[1], &mouseYPos[1]);
                 break;
@@ -568,13 +568,13 @@ void drawXZGrid(void)
     
     sgct::ShaderManager::instance()->bindShaderProgram("gridShader");
     
-    glUniformMatrix4fv(Matrix_Locs[GRID], 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(Matrix_Locs[PLANE], 1, GL_FALSE, &MVP[0][0]);
     
-    glBindVertexArray(VAOs[GRID]);
+    glBindVertexArray(VAOs[PLANE]);
     
     glLineWidth(3.0f);
     glPolygonOffset(0.0f, 0.0f); //offset to avoid z-buffer fighting
-    glDrawArrays(GL_LINES, 0, numberOfVerts[GRID]);
+    glDrawArrays(GL_TRIANGLES, 0, numberOfVerts[PLANE]);
     
     //unbind
     glBindVertexArray(0);
@@ -583,41 +583,50 @@ void drawXZGrid(void)
 
 void createXZGrid(int size, float yPos)
 {
-    numberOfVerts[GRID] = size * 4;
-    Vertex * vertData = new (std::nothrow) Vertex[numberOfVerts[GRID]];
+    numberOfVerts[PLANE] = size * 4;
+    Vertex * vertData = new (std::nothrow) Vertex[numberOfVerts[PLANE]];
     
     int i = 0;
-    for (int x = -(size / 2); x < (size / 2); x++)
-    {
-        vertData[i].mX = static_cast<float>(x);
-        vertData[i].mY = yPos;
-        vertData[i].mZ = static_cast<float>(-(size / 2));
-        
-        vertData[i + 1].mX = static_cast<float>(x);
-        vertData[i + 1].mY = yPos;
-        vertData[i + 1].mZ = static_cast<float>(size / 2);
-        
-        i += 2;
-    }
     
-    for (int z = -(size / 2); z < (size / 2); z++)
-    {
-        vertData[i].mX = static_cast<float>(-(size / 2));
-        vertData[i].mY = yPos;
-        vertData[i].mZ = static_cast<float>(z);
-        
-        vertData[i + 1].mX = static_cast<float>(size / 2);
-        vertData[i + 1].mY = yPos;
-        vertData[i + 1].mZ = static_cast<float>(z);
-        
-        i += 2;
-    }
+    vertData[i].mX = static_cast<float>(-(size/2));
+    vertData[i].mY = yPos;
+    vertData[i].mZ = static_cast<float>(size/2);
     
-    glBindVertexArray(VAOs[GRID]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[GRID]);
+    i++;
+    
+    vertData[i].mX = static_cast<float>((size/2));
+    vertData[i].mY = yPos;
+    vertData[i].mZ = static_cast<float>((size/2));
+    
+    i++;
+    
+    vertData[i].mX = static_cast<float>(-(size/2));
+    vertData[i].mY = yPos;
+    vertData[i].mZ = static_cast<float>(-(size/2));
+    
+    i++;
+    
+    vertData[i].mX = static_cast<float>((size/2));
+    vertData[i].mY = yPos;
+    vertData[i].mZ = static_cast<float>((size/2));
+    
+    i++;
+    
+    vertData[i].mX = static_cast<float>((size/2));
+    vertData[i].mY = yPos;
+    vertData[i].mZ = static_cast<float>(-(size/2));
+    
+    i++;
+    
+    vertData[i].mX = static_cast<float>(-(size/2));
+    vertData[i].mY = yPos;
+    vertData[i].mZ = static_cast<float>(-(size/2));
+    
+    glBindVertexArray(VAOs[PLANE]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[PLANE]);
     
     //upload data to GPU
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*numberOfVerts[GRID], vertData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*numberOfVerts[PLANE], vertData, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
                           0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
