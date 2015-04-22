@@ -3,6 +3,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -13,6 +15,7 @@
 #include "objloader.hpp"
 #include <glm/gtc/matrix_inverse.hpp>
 
+using namespace std;
 
 sgct::Engine * gEngine;
 
@@ -60,6 +63,12 @@ GLsizei numberOfVertices = 0;
 //shader locations
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
+GLint Tex_Loc = -1;
+GLint sColor_Loc = -1;
+GLint lColor_Loc = -1;
+GLint lDir_Loc = -1;
+GLint Amb_Loc = -1;
+
 
 //variables to share across cluster
 sgct::SharedDouble curr_time(0.0);
@@ -129,6 +138,7 @@ int main( int argc, char* argv[] )
 
 void myDrawFun()
 {
+
     glEnable( GL_DEPTH_TEST );
     glEnable( GL_CULL_FACE );
 
@@ -138,13 +148,32 @@ void myDrawFun()
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
 
+
+    // Set light properties
+    float fSunAngle = 45.0f;
+    float fSine = sin(fSunAngle*3.1415/180.0);
+    glm::vec3 vSunPos(cos(fSunAngle*3.1415/180.0)*70, sin(fSunAngle*3.1415/180.0)*70, 0.0);
+    // We'll change color of skies depending on sun's position
+    glClearColor(0.0f, std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
+
+    glm::vec4 sColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glm::vec3 lColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 lDir = glm::normalize(vSunPos);
+    float fAmb = 0.3f;
+
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
 
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &NM[0][0]);
+    glUniform4fv(sColor_Loc, 1, &sColor[0]);
+    glUniform3fv(lColor_Loc, 1, &lColor[0]);
+    glUniform3fv(lDir_Loc, 1, &lDir[0]);
+    glUniform1fv(Amb_Loc, 1, &fAmb);
+
 
     // ------ draw model --------------- //
     glBindVertexArray(VertexArrayID);
@@ -171,7 +200,7 @@ void myPreSyncFun()
             mouseDx = mouseXPos[0] - mouseXPos[1];
             mouseDy = mouseYPos[0] - mouseYPos[1];
         }
-        
+
         else
         {
             mouseDy = 0.0;
@@ -180,7 +209,7 @@ void myPreSyncFun()
 
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
-        
+
         static float tiltRot = 0.0f;
         tiltRot += (static_cast<float>(mouseDy) * rotationSpeed * static_cast<float>(gEngine->getDt()));
 
@@ -226,31 +255,19 @@ void myPreSyncFun()
             runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
         }
-        /*
-         To get a first person camera, the world needs
-         to be transformed around the users head.
 
-         This is done by:
-         1, Transform the user to coordinate system origin
-         2, Apply navigation
-         3, Apply rotation
-         4, Transform the user back to original position
-
-         However, mathwise this process need to be reversed
-         due to the matrix multiplication order.
-         */
 
         glm::mat4 result;
         //4. transform user back to original position
         result = glm::translate( glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos() );
-        
+
         //3. apply view rotation
         result *= ViewRotateX;
         result *= ViewRotateY;
 
         //2. apply navigation translation
         result *= glm::translate(glm::mat4(1.0f), pos);
-        
+
         //1. transform user to coordinate system origin
         result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
 
@@ -270,7 +287,11 @@ void myPostSyncPreDrawFun()
 
         MVP_Loc = sp.getUniformLocation( "MVP" );
         NM_Loc = sp.getUniformLocation( "NM" );
-        GLint Tex_Loc = sp.getUniformLocation( "Tex" );
+        Tex_Loc = sp.getUniformLocation( "Tex" );
+        sColor_Loc = sp.getUniformLocation("sunColor");
+        lColor_Loc = sp.getUniformLocation("lightColor");
+        lDir_Loc = sp.getUniformLocation("lightDir");
+        Amb_Loc = sp.getUniformLocation("fAmbInt");
         glUniform1i( Tex_Loc, 0 );
 
         sp.unbind();
@@ -299,7 +320,11 @@ void myInitOGLFun()
 
     MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
     NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
-    GLint Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
+    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
+    lColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightColor" );
+    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
+    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
+    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
     glUniform1i( Tex_Loc, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
