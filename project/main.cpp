@@ -104,7 +104,6 @@ GLsizei mNumberOfVerts = 0;
 //////////////////////////////////////////////////////
 
 //shader locations
-
 GLint MVP_Loc_Box = -1;
 GLint NM_Loc_Box = -1;
 GLint Tex_Loc = -1;
@@ -322,6 +321,9 @@ void myPreSyncFun()
         //0. Translate to eye height of a person
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
 
+        //0. Translate to eye height of a person
+        result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
+
         xform.setVal( result );
     }
 }
@@ -358,13 +360,14 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
 
-
     if (glGenVertexArrays == NULL)
     {
         printf("THIS IS THE PROBLEM");
     }
 
     loadModel( "box.obj" );
+
+    initHeightMap();
 
     initHeightMap();
 
@@ -378,6 +381,7 @@ void myInitOGLFun()
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
 
+
     MVP_Loc_Box = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
     NM_Loc_Box = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
     sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
@@ -385,6 +389,7 @@ void myInitOGLFun()
     lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
     Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
     Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
+
     glUniform1i( Tex_Loc, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
@@ -612,6 +617,7 @@ void drawHeightMap(glm::mat4 scene_mat)
     glm::mat4 MV_light	= gEngine->getActiveModelViewMatrix();
     glm::mat3 NM		= glm::inverseTranspose( glm::mat3( MV ) );
 
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "heightmap" ));
 
@@ -620,10 +626,12 @@ void drawHeightMap(glm::mat4 scene_mat)
 
     mSp.bind();
 
+
     glUniformMatrix4fv(MVP_Loc_Ground,		1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix4fv(MV_Loc_Ground,		1, GL_FALSE, &MV[0][0]);
     glUniformMatrix4fv(MVLight_Loc_Ground, 1, GL_FALSE, &MV_light[0][0]);
     glUniformMatrix3fv(NM_Loc_Ground,		1, GL_FALSE, &NM[0][0]);
+
 
     glBindVertexArray(vertexArray);
 
@@ -634,6 +642,7 @@ void drawHeightMap(glm::mat4 scene_mat)
     glBindVertexArray(0);
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+
 
 }
 
@@ -673,6 +682,7 @@ void initHeightMap()
     glGenVertexArrays(1, &vertexArray);
     glBindVertexArray(vertexArray);
 
+
     //generate vertex position buffer
     glGenBuffers(1, &vertexPositionBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexPositionBuffer);
@@ -701,8 +711,10 @@ void initHeightMap()
                           reinterpret_cast<void*>(0) // array buffer offset
                           );
 
+
     glBindVertexArray(0); //unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
     //cleanup
     mVertPos.clear();
@@ -721,12 +733,14 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
     float wStart = -width * 0.5f;
     float dStart = -depth * 0.5f;
 
+
     float dW = width / static_cast<float>( wRes );
     float dD = depth / static_cast<float>( dRes );
 
     //cleanup
     mVertPos.clear();
     mTexCoord.clear();
+
 
     for( unsigned int depthIndex = 0; depthIndex < dRes; ++depthIndex )
     {
@@ -749,6 +763,7 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
             mVertPos.push_back( wPos ); //x
             mVertPos.push_back( 0.0f ); //y
             mVertPos.push_back( dPosHigh ); //z
+
 
             //tex0
             mTexCoord.push_back( wTexCoord ); //s
