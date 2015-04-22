@@ -14,7 +14,8 @@ out vec3 tNormals; //transformed normals
 void main()
 {
     // Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(inPositions * vec3(0.0f, 0.0f, 0.0f), 1.0);
+	gl_Position =  MVP * vec4(inPositions * vec3(0.0f, 0.0f, 0.0f) + vec3(0.0, 1.0, 0.0), 1.0);
 	UV = inCoords;
 	tNormals = normalize(NM * inNormals);
+
 }

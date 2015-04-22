@@ -7,6 +7,6 @@
 	<key>HasAskedToTakeAutomaticSnapshotBeforeSignificantChanges</key>
 	<true/>
 	<key>SnapshotAutomaticallyBeforeSignificantChanges</key>
-	<true/>
+	<false/>
 </dict>
 </plist>

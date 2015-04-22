@@ -5,16 +5,16 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>2489F47C-BF12-4F37-B3A2-6CF6328D0241</string>
+	<string>CAE425FC-41E5-488C-8E00-DEEC12D8FD9C</string>
 	<key>IDESourceControlProjectName</key>
-	<string>Domescape</string>
+	<string>project</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>9C78FE0C3F1569D994E7ABADA0CF825034A33452</key>
 		<string>https://github.com/Danielbook/3D_Projekt.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>xCode/Domescape.xcodeproj</string>
+	<string>xCode/Domescape.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>9C78FE0C3F1569D994E7ABADA0CF825034A33452</key>

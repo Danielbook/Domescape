@@ -1,5 +1,5 @@
 
-#include "calcPos.h"
+#include "calcPos.hpp"
 #include </usr/include/SpiceUsr.h>
 #include </usr/include/SpiceZfc.h>
 
