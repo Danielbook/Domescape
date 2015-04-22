@@ -20,7 +20,7 @@ out vec3 tnormals; //transformed normals
 void main()
 {
     // Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(vertPositions, 1.0);
+    gl_Position =  MVP * vec4(vertPositions + vec3(0.0, 1.0, 0.0), 1.0); //Change heigth of box
 	UV = texCoords;
 	tnormals = normalize( NM * normals );
 }

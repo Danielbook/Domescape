@@ -68,6 +68,8 @@
 		245C04CEC3BF437E84D9B16A /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
 		2B2281396913469586A3AFF5 /* objloader.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = objloader.cpp; sourceTree = SOURCE_ROOT; };
 		482EB7261F1340E7A14E39F0 /* calcPos.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = calcPos.hpp; sourceTree = SOURCE_ROOT; };
+		65588A351AE76F4E00B18995 /* heightmap.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = heightmap.frag; sourceTree = "<group>"; };
+		65588A361AE76F4E00B18995 /* heightmap.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = heightmap.vert; sourceTree = "<group>"; };
 		65880B2B1AE6ADD500A8E69B /* tnm061.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tnm061.cpp; sourceTree = "<group>"; };
 		65880B2C1AE6ADD500A8E69B /* tnm061.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = tnm061.hpp; sourceTree = "<group>"; };
 		65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TriangleSoup.cpp; sourceTree = "<group>"; };
@@ -168,6 +170,8 @@
 		94C50742C71D4D339D57C3FD /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				65588A351AE76F4E00B18995 /* heightmap.frag */,
+				65588A361AE76F4E00B18995 /* heightmap.vert */,
 				65880B351AE6C53900A8E69B /* gridShader.frag */,
 				65880B361AE6C53900A8E69B /* gridShader.vert */,
 				65880B331AE6B6A400A8E69B /* simple.frag */,
