@@ -34,8 +34,6 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		65880B2F1AE6ADD500A8E69B /* tnm061.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B2B1AE6ADD500A8E69B /* tnm061.cpp */; };
-		65880B311AE6ADD500A8E69B /* TriangleSoup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */; };
 		DBC92252D2FB4AEFA2E0DD7E /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B2281396913469586A3AFF5 /* objloader.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 		EEBD978466E6435CAC164BCB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 245C04CEC3BF437E84D9B16A /* main.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 /* End PBXBuildFile section */
@@ -70,10 +68,6 @@
 		482EB7261F1340E7A14E39F0 /* calcPos.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = calcPos.hpp; sourceTree = SOURCE_ROOT; };
 		65588A351AE76F4E00B18995 /* heightmap.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = heightmap.frag; sourceTree = "<group>"; };
 		65588A361AE76F4E00B18995 /* heightmap.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = heightmap.vert; sourceTree = "<group>"; };
-		65880B2B1AE6ADD500A8E69B /* tnm061.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tnm061.cpp; sourceTree = "<group>"; };
-		65880B2C1AE6ADD500A8E69B /* tnm061.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = tnm061.hpp; sourceTree = "<group>"; };
-		65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TriangleSoup.cpp; sourceTree = "<group>"; };
-		65880B2E1AE6ADD500A8E69B /* TriangleSoup.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TriangleSoup.hpp; sourceTree = "<group>"; };
 		65880B331AE6B6A400A8E69B /* simple.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.frag; sourceTree = "<group>"; };
 		65880B341AE6B6A400A8E69B /* simple.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.vert; sourceTree = "<group>"; };
 		65880B351AE6C53900A8E69B /* gridShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = gridShader.frag; sourceTree = "<group>"; };
@@ -123,8 +117,6 @@
 		58E20AD025BC45769E9BAB1B /* Header Files */ = {
 			isa = PBXGroup;
 			children = (
-				65880B2C1AE6ADD500A8E69B /* tnm061.hpp */,
-				65880B2E1AE6ADD500A8E69B /* TriangleSoup.hpp */,
 				482EB7261F1340E7A14E39F0 /* calcPos.hpp */,
 				9BE893D6C03E49E8BB9509EB /* objloader.hpp */,
 			);
@@ -183,8 +175,6 @@
 		9A9BC12D6C9C4076A38B69AF /* Source Files */ = {
 			isa = PBXGroup;
 			children = (
-				65880B2B1AE6ADD500A8E69B /* tnm061.cpp */,
-				65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */,
 				F544B65E7FA14556BE3986B4 /* calcPos.cpp */,
 				245C04CEC3BF437E84D9B16A /* main.cpp */,
 				2B2281396913469586A3AFF5 /* objloader.cpp */,
@@ -268,8 +258,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65880B2F1AE6ADD500A8E69B /* tnm061.cpp in Sources */,
-				65880B311AE6ADD500A8E69B /* TriangleSoup.cpp in Sources */,
 				EEBD978466E6435CAC164BCB /* main.cpp in Sources */,
 				DBC92252D2FB4AEFA2E0DD7E /* objloader.cpp in Sources */,
 			);
