@@ -70,8 +70,6 @@
 		65588A361AE76F4E00B18995 /* heightmap.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = heightmap.vert; sourceTree = "<group>"; };
 		65880B331AE6B6A400A8E69B /* simple.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.frag; sourceTree = "<group>"; };
 		65880B341AE6B6A400A8E69B /* simple.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.vert; sourceTree = "<group>"; };
-		65880B351AE6C53900A8E69B /* gridShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = gridShader.frag; sourceTree = "<group>"; };
-		65880B361AE6C53900A8E69B /* gridShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = gridShader.vert; sourceTree = "<group>"; };
 		682D1617100545B39349EF8C /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 		9BE893D6C03E49E8BB9509EB /* objloader.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = objloader.hpp; sourceTree = SOURCE_ROOT; };
 		BF4B27F70958482BB140F9C7 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
@@ -164,8 +162,6 @@
 			children = (
 				65588A351AE76F4E00B18995 /* heightmap.frag */,
 				65588A361AE76F4E00B18995 /* heightmap.vert */,
-				65880B351AE6C53900A8E69B /* gridShader.frag */,
-				65880B361AE6C53900A8E69B /* gridShader.vert */,
 				65880B331AE6B6A400A8E69B /* simple.frag */,
 				65880B341AE6B6A400A8E69B /* simple.vert */,
 			);

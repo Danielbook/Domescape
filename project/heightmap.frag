@@ -50,7 +50,7 @@ void main()
 	// This will result in a non-linear color temperature scale based on height value
 	float hVal = texture( hTex, UV).x;
 	float Pi = 3.14159265358979323846264;
-	color.rgb = vec3(0.23,sin(Pi*hVal),0.3);
+	color.rgb = vec3(0.3,sin(Pi*hVal),0.0);
 
 	// multiply color with shading
 	color.rgb *= calcShading( normalize(normalMatrix * normal), light_dir ).rgb;

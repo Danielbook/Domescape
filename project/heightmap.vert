@@ -20,8 +20,9 @@ void main()
 {
     UV = texCoords;
 	
-	vScale = 0.9+0.10*sin(curr_time);
-	float hVal = texture( hTex, UV ).r;
+//    vScale = 0.2+0.10*sin(curr_time);
+    vScale = 60;
+    float hVal = texture( hTex, UV ).r;
 	vec4 transformedVertex = vec4(vertPositions + vec3(0.0, hVal * vScale, 0.0), 1.0);
 	
 	//Transform a vertex to model space

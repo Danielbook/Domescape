@@ -67,14 +67,14 @@ void drawHeightMap(glm::mat4 scene_mat);
 sgct::ShaderProgram mSp;
 GLint myTextureLocations[]	= { -1, -1 };
 GLint curr_timeLoc			= -1;
-GLint MVP_Loc				= -1;
-GLint MV_Loc				= -1;
-GLint MVLight_Loc			= -1;
-GLint NM_Loc				= -1;
-GLint lightPos_Loc			= -1;
-GLint lightAmb_Loc			= -1;
-GLint lightDif_Loc			= -1;
-GLint lightSpe_Loc			= -1;
+GLint MVP_Loc_Ground		= -1;
+GLint MV_Loc_Ground			= -1;
+GLint MVLight_Loc_Ground	= -1;
+GLint NM_Loc_Ground         = -1;
+GLint lightPos_Loc_Ground	= -1;
+GLint lightAmb_Loc_Ground	= -1;
+GLint lightDif_Loc_Ground	= -1;
+GLint lightSpe_Loc_Ground	= -1;
 
 //opengl objects
 GLuint vertexArray = GL_FALSE;
@@ -339,7 +339,7 @@ void myInitOGLFun()
     {
         printf("THIS IS THE PROBLEM");
     }
-
+    
     loadModel( "box.obj" );
     
     initHeightMap();
@@ -576,6 +576,8 @@ void mouseButtonCallback(int button, int action)
 
 void drawHeightMap(glm::mat4 scene_mat)
 {
+    glEnable(GL_CULL_FACE);
+    
     glm::mat4 MVP		= gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat4 MV		= gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MV_light	= gEngine->getActiveModelViewMatrix();
@@ -589,10 +591,10 @@ void drawHeightMap(glm::mat4 scene_mat)
     
     mSp.bind();
     
-    glUniformMatrix4fv(MVP_Loc,		1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix4fv(MV_Loc,		1, GL_FALSE, &MV[0][0]);
-    glUniformMatrix4fv(MVLight_Loc, 1, GL_FALSE, &MV_light[0][0]);
-    glUniformMatrix3fv(NM_Loc,		1, GL_FALSE, &NM[0][0]);
+    glUniformMatrix4fv(MVP_Loc_Ground,		1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(MV_Loc_Ground,		1, GL_FALSE, &MV[0][0]);
+    glUniformMatrix4fv(MVLight_Loc_Ground, 1, GL_FALSE, &MV_light[0][0]);
+    glUniformMatrix3fv(NM_Loc_Ground,		1, GL_FALSE, &NM[0][0]);
     
     glBindVertexArray(vertexArray);
     
@@ -603,13 +605,14 @@ void drawHeightMap(glm::mat4 scene_mat)
     glBindVertexArray(0);
     
     sgct::ShaderManager::instance()->unBindShaderProgram();
+    
 }
 
 void initHeightMap()
 {
     //setup textures
-    sgct::TextureManager::instance()->loadTexure("heightmap", "heightmap.png", true, 0);
-    sgct::TextureManager::instance()->loadTexure("normalmap", "normalmap.png", true, 0);
+    sgct::TextureManager::instance()->loadTexure("heightmap", "map.png", true, 0);
+    sgct::TextureManager::instance()->loadTexure("normalmap", "normal.png", true, 0);
 
     //setup shader
     sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "heightmap.vert", "heightmap.frag" );
@@ -618,24 +621,24 @@ void initHeightMap()
     myTextureLocations[0]	= mSp.getUniformLocation( "hTex" );
     myTextureLocations[1]	= mSp.getUniformLocation( "nTex" );
     curr_timeLoc			= mSp.getUniformLocation( "curr_time" );
-    MVP_Loc					= mSp.getUniformLocation( "MVP" );
-    MV_Loc					= mSp.getUniformLocation( "MV" );
-    MVLight_Loc				= mSp.getUniformLocation( "MV_light" );
-    NM_Loc					= mSp.getUniformLocation( "normalMatrix" );
-    lightPos_Loc			= mSp.getUniformLocation( "lightPos" );
-    lightAmb_Loc			= mSp.getUniformLocation( "light_ambient" );
-    lightDif_Loc			= mSp.getUniformLocation( "light_diffuse" );
-    lightSpe_Loc			= mSp.getUniformLocation( "light_specular" );
+    MVP_Loc_Ground					= mSp.getUniformLocation( "MVP" );
+    MV_Loc_Ground					= mSp.getUniformLocation( "MV" );
+    MVLight_Loc_Ground				= mSp.getUniformLocation( "MV_light" );
+    NM_Loc_Ground					= mSp.getUniformLocation( "normalMatrix" );
+    lightPos_Loc_Ground			= mSp.getUniformLocation( "lightPos" );
+    lightAmb_Loc_Ground			= mSp.getUniformLocation( "light_ambient" );
+    lightDif_Loc_Ground			= mSp.getUniformLocation( "light_diffuse" );
+    lightSpe_Loc_Ground			= mSp.getUniformLocation( "light_specular" );
     glUniform1i( myTextureLocations[0], 0 );
     glUniform1i( myTextureLocations[1], 1 );
-    glUniform4f( lightPos_Loc, lightPosition.x, lightPosition.y, lightPosition.z, 1.0f );
-    glUniform4f( lightAmb_Loc, lightAmbient.r, lightAmbient.g, lightAmbient.b, lightAmbient.a );
-    glUniform4f( lightDif_Loc, lightDiffuse.r, lightDiffuse.g, lightDiffuse.b, lightDiffuse.a );
-    glUniform4f( lightSpe_Loc, lightSpecular.r, lightSpecular.g, lightSpecular.b, lightSpecular.a );
+    glUniform4f( lightPos_Loc_Ground, lightPosition.x, lightPosition.y, lightPosition.z, 1.0f );
+    glUniform4f( lightAmb_Loc_Ground, lightAmbient.r, lightAmbient.g, lightAmbient.b, lightAmbient.a );
+    glUniform4f( lightDif_Loc_Ground, lightDiffuse.r, lightDiffuse.g, lightDiffuse.b, lightDiffuse.a );
+    glUniform4f( lightSpe_Loc_Ground, lightSpecular.r, lightSpecular.g, lightSpecular.b, lightSpecular.a );
     sgct::ShaderManager::instance()->unBindShaderProgram();
     
     //generate mesh
-    generateTerrainGrid( 20.0f, 20.0f, 256, 256 );
+    generateTerrainGrid( 250.0f, 250.0f, 1024, 1024  );
     
     //generate vertex array
     glGenVertexArrays(1, &vertexArray);
