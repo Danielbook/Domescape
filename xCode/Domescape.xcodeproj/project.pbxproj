@@ -9,9 +9,9 @@
 /* Begin PBXAggregateTarget section */
 		45B71208DFD94F0B88EC95A5 /* ZERO_CHECK */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 308944D231924B19B1693BF3 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildConfigurationList = C73620A90C0E4822A7789101 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
 			buildPhases = (
-				F9760F1709994C3C926811C4 /* CMake Rules */,
+				5728244A39CD4E759BC9A80B /* CMake Rules */,
 			);
 			dependencies = (
 			);
@@ -20,13 +20,13 @@
 		};
 		7817F825C91C487C96D4254B /* ALL_BUILD */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 7211FF6AE4B942279168C22D /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildConfigurationList = 8F91C71022C24753BF9527DA /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
 			buildPhases = (
-				A3311D2AF42B4A4E983611A5 /* CMake Rules */,
+				09CD2311EBFA48A4B7F64CDC /* CMake Rules */,
 			);
 			dependencies = (
-				E3D507B7DD8E4B818855DEE3 /* PBXTargetDependency */,
-				71799782E6E74548A9A42E20 /* PBXTargetDependency */,
+				C19A9A9713DD4EDFAF77207D /* PBXTargetDependency */,
+				92922E5D96FB427C8B87E221 /* PBXTargetDependency */,
 			);
 			name = ALL_BUILD;
 			productName = ALL_BUILD;
@@ -34,28 +34,28 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		65880B241AE6956B00A8E69B /* TriangleSoup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B221AE6956B00A8E69B /* TriangleSoup.cpp */; };
-		65880B271AE6968500A8E69B /* tnm061.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B251AE6968500A8E69B /* tnm061.cpp */; };
-		8797B4B4E536491195C608AA /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EDD8FC46B444DA1BDB7DA7E /* objloader.cpp */; settings = {COMPILER_FLAGS = ""; }; };
-		AA865745000845E9AAAE144F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B2534B3EE2C84DC682698BE7 /* main.cpp */; settings = {COMPILER_FLAGS = ""; }; };
+		65880B2F1AE6ADD500A8E69B /* tnm061.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B2B1AE6ADD500A8E69B /* tnm061.cpp */; };
+		65880B311AE6ADD500A8E69B /* TriangleSoup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */; };
+		DBC92252D2FB4AEFA2E0DD7E /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B2281396913469586A3AFF5 /* objloader.cpp */; settings = {COMPILER_FLAGS = ""; }; };
+		EEBD978466E6435CAC164BCB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 245C04CEC3BF437E84D9B16A /* main.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		02571E266F4343F594D96DFC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B772AB2752C44550980FA29B /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 45B71208DFD94F0B88EC95A5;
-			remoteInfo = ZERO_CHECK;
-		};
-		4048F9B0CC1B491EB99EA48A /* PBXContainerItemProxy */ = {
+		08777AFA0DE243D1A453231A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B772AB2752C44550980FA29B /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 4979F2BC02D94F6BAF767AA6;
 			remoteInfo = Domescape;
 		};
-		D4C01CD581E34448AEA259CC /* PBXContainerItemProxy */ = {
+		173CEC25A33D424C9C0EFCC3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B772AB2752C44550980FA29B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 45B71208DFD94F0B88EC95A5;
+			remoteInfo = ZERO_CHECK;
+		};
+		1847BA5733AC4E15A7940F72 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B772AB2752C44550980FA29B /* Project object */;
 			proxyType = 1;
@@ -65,119 +65,127 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		4EDD8FC46B444DA1BDB7DA7E /* objloader.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = objloader.cpp; sourceTree = SOURCE_ROOT; };
-		550DA22DF8B24724A4CC6121 /* calcPos.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = calcPos.cpp; sourceTree = SOURCE_ROOT; };
-		65880B221AE6956B00A8E69B /* TriangleSoup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TriangleSoup.cpp; sourceTree = "<group>"; };
-		65880B231AE6956B00A8E69B /* TriangleSoup.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TriangleSoup.hpp; sourceTree = "<group>"; };
-		65880B251AE6968500A8E69B /* tnm061.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tnm061.cpp; sourceTree = "<group>"; };
-		65880B261AE6968500A8E69B /* tnm061.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tnm061.hpp; sourceTree = "<group>"; };
-		9AE55005689841348C629E7B /* Domescape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = Domescape; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2534B3EE2C84DC682698BE7 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
-		BA82ACE520814398A5D150FE /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		C99039F628ED4961ADF079F2 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		E048B75A9CB549A6B3A49DAF /* objloader.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = objloader.hpp; sourceTree = SOURCE_ROOT; };
-		E7B381789052464DB50D827C /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		F944B4009E4C4FD5ACE972A1 /* calcPos.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = calcPos.hpp; sourceTree = SOURCE_ROOT; };
+		245C04CEC3BF437E84D9B16A /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = main.cpp; sourceTree = SOURCE_ROOT; };
+		2B2281396913469586A3AFF5 /* objloader.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = objloader.cpp; sourceTree = SOURCE_ROOT; };
+		482EB7261F1340E7A14E39F0 /* calcPos.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = calcPos.hpp; sourceTree = SOURCE_ROOT; };
+		65880B2B1AE6ADD500A8E69B /* tnm061.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tnm061.cpp; sourceTree = "<group>"; };
+		65880B2C1AE6ADD500A8E69B /* tnm061.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = tnm061.hpp; sourceTree = "<group>"; };
+		65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TriangleSoup.cpp; sourceTree = "<group>"; };
+		65880B2E1AE6ADD500A8E69B /* TriangleSoup.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TriangleSoup.hpp; sourceTree = "<group>"; };
+		65880B331AE6B6A400A8E69B /* simple.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.frag; sourceTree = "<group>"; };
+		65880B341AE6B6A400A8E69B /* simple.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.vert; sourceTree = "<group>"; };
+		65880B351AE6C53900A8E69B /* gridShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = gridShader.frag; sourceTree = "<group>"; };
+		65880B361AE6C53900A8E69B /* gridShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = gridShader.vert; sourceTree = "<group>"; };
+		682D1617100545B39349EF8C /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		9BE893D6C03E49E8BB9509EB /* objloader.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = objloader.hpp; sourceTree = SOURCE_ROOT; };
+		BF4B27F70958482BB140F9C7 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		C857FA6E43124A139279F7EB /* Domescape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = Domescape; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB39BE4129B6425CA0400B9F /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		F544B65E7FA14556BE3986B4 /* calcPos.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = calcPos.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		3F65EF930CE647A88872CF4E /* Source Files */ = {
+		1AE6BC64AE874E848F5185F5 /* CMake Rules */ = {
 			isa = PBXGroup;
 			children = (
-				65880B251AE6968500A8E69B /* tnm061.cpp */,
-				65880B221AE6956B00A8E69B /* TriangleSoup.cpp */,
-				550DA22DF8B24724A4CC6121 /* calcPos.cpp */,
-				B2534B3EE2C84DC682698BE7 /* main.cpp */,
-				4EDD8FC46B444DA1BDB7DA7E /* objloader.cpp */,
 			);
-			name = "Source Files";
+			name = "CMake Rules";
 			sourceTree = "<group>";
 		};
-		507DC4732D6B43E59CCD70AC /* Sources */ = {
+		280870A99B6C4BF5BB49D13C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				53BF93DDCAAB4DF6BFB53519 /* ALL_BUILD */,
-				EB16464BD4D64663A92ADFAF /* ZERO_CHECK */,
-				B5532562559D4F1FA3F16033 /* Domescape */,
+				34E0289EE8E24CE7817D773D /* ALL_BUILD */,
+				612593FDEE2344DDB311EC84 /* ZERO_CHECK */,
+				607194390F1F46A199744F83 /* Domescape */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
 		};
-		53BF93DDCAAB4DF6BFB53519 /* ALL_BUILD */ = {
+		2DEB789BB6A1437C978D6F6C /* CMake Rules */ = {
 			isa = PBXGroup;
 			children = (
-				B15EFF18D81C414BBD93551A /* CMake Rules */,
-				BA82ACE520814398A5D150FE /* CMakeLists.txt */,
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		34E0289EE8E24CE7817D773D /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				1AE6BC64AE874E848F5185F5 /* CMake Rules */,
+				BF4B27F70958482BB140F9C7 /* CMakeLists.txt */,
 			);
 			name = ALL_BUILD;
 			sourceTree = "<group>";
 		};
-		54364B67C7394B2CB465997D = {
+		58E20AD025BC45769E9BAB1B /* Header Files */ = {
 			isa = PBXGroup;
 			children = (
-				507DC4732D6B43E59CCD70AC /* Sources */,
-				DFFE5A659AB24BF196618A9A /* Resources */,
-				A90F997C7B3F4BA9A992D756 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		5F2F9EB2CEE04F8F93ED5A3A /* Header Files */ = {
-			isa = PBXGroup;
-			children = (
-				65880B261AE6968500A8E69B /* tnm061.hpp */,
-				F944B4009E4C4FD5ACE972A1 /* calcPos.hpp */,
-				65880B231AE6956B00A8E69B /* TriangleSoup.hpp */,
-				E048B75A9CB549A6B3A49DAF /* objloader.hpp */,
+				65880B2C1AE6ADD500A8E69B /* tnm061.hpp */,
+				65880B2E1AE6ADD500A8E69B /* TriangleSoup.hpp */,
+				482EB7261F1340E7A14E39F0 /* calcPos.hpp */,
+				9BE893D6C03E49E8BB9509EB /* objloader.hpp */,
 			);
 			name = "Header Files";
 			sourceTree = "<group>";
 		};
-		925874E4A53D44A38DF0A367 /* CMake Rules */ = {
+		607194390F1F46A199744F83 /* Domescape */ = {
 			isa = PBXGroup;
 			children = (
-			);
-			name = "CMake Rules";
-			sourceTree = "<group>";
-		};
-		A90F997C7B3F4BA9A992D756 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				9AE55005689841348C629E7B /* Domescape */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		B15EFF18D81C414BBD93551A /* CMake Rules */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "CMake Rules";
-			sourceTree = "<group>";
-		};
-		B5532562559D4F1FA3F16033 /* Domescape */ = {
-			isa = PBXGroup;
-			children = (
-				3F65EF930CE647A88872CF4E /* Source Files */,
-				5F2F9EB2CEE04F8F93ED5A3A /* Header Files */,
-				C99039F628ED4961ADF079F2 /* CMakeLists.txt */,
+				9A9BC12D6C9C4076A38B69AF /* Source Files */,
+				58E20AD025BC45769E9BAB1B /* Header Files */,
+				682D1617100545B39349EF8C /* CMakeLists.txt */,
 			);
 			name = Domescape;
 			sourceTree = "<group>";
 		};
-		DFFE5A659AB24BF196618A9A /* Resources */ = {
+		612593FDEE2344DDB311EC84 /* ZERO_CHECK */ = {
 			isa = PBXGroup;
 			children = (
+				2DEB789BB6A1437C978D6F6C /* CMake Rules */,
+				EB39BE4129B6425CA0400B9F /* CMakeLists.txt */,
+			);
+			name = ZERO_CHECK;
+			sourceTree = "<group>";
+		};
+		821BDEAC465A46829F0F001A = {
+			isa = PBXGroup;
+			children = (
+				280870A99B6C4BF5BB49D13C /* Sources */,
+				94C50742C71D4D339D57C3FD /* Resources */,
+				88655E6BCB37494FA090C16B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		88655E6BCB37494FA090C16B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C857FA6E43124A139279F7EB /* Domescape */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		94C50742C71D4D339D57C3FD /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				65880B351AE6C53900A8E69B /* gridShader.frag */,
+				65880B361AE6C53900A8E69B /* gridShader.vert */,
+				65880B331AE6B6A400A8E69B /* simple.frag */,
+				65880B341AE6B6A400A8E69B /* simple.vert */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		EB16464BD4D64663A92ADFAF /* ZERO_CHECK */ = {
+		9A9BC12D6C9C4076A38B69AF /* Source Files */ = {
 			isa = PBXGroup;
 			children = (
-				925874E4A53D44A38DF0A367 /* CMake Rules */,
-				E7B381789052464DB50D827C /* CMakeLists.txt */,
+				65880B2B1AE6ADD500A8E69B /* tnm061.cpp */,
+				65880B2D1AE6ADD500A8E69B /* TriangleSoup.cpp */,
+				F544B65E7FA14556BE3986B4 /* calcPos.cpp */,
+				245C04CEC3BF437E84D9B16A /* main.cpp */,
+				2B2281396913469586A3AFF5 /* objloader.cpp */,
 			);
-			name = ZERO_CHECK;
+			name = "Source Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -185,18 +193,18 @@
 /* Begin PBXNativeTarget section */
 		4979F2BC02D94F6BAF767AA6 /* Domescape */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8B48ED830C8E44239D5D305B /* Build configuration list for PBXNativeTarget "Domescape" */;
+			buildConfigurationList = 49566315767945E1BF8C0C68 /* Build configuration list for PBXNativeTarget "Domescape" */;
 			buildPhases = (
-				2CCE8439AA50400F8248A3CD /* Sources */,
+				ECDFD1A1A6364743A5395E2B /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				71811844ABD74FA3AA82CF97 /* PBXTargetDependency */,
+				AFDBEFA773D74EE48939F745 /* PBXTargetDependency */,
 			);
 			name = Domescape;
 			productName = Domescape;
-			productReference = 9AE55005689841348C629E7B /* Domescape */;
+			productReference = C857FA6E43124A139279F7EB /* Domescape */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -208,14 +216,14 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 0630;
 			};
-			buildConfigurationList = 9A8BC950ED474B8DA41825E7 /* Build configuration list for PBXProject "Domescape" */;
+			buildConfigurationList = 18B6AF954C794BF3B24D8EF5 /* Build configuration list for PBXProject "Domescape" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = 54364B67C7394B2CB465997D;
+			mainGroup = 821BDEAC465A46829F0F001A;
 			projectDirPath = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project";
 			projectRoot = "";
 			targets = (
@@ -227,7 +235,7 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		A3311D2AF42B4A4E983611A5 /* CMake Rules */ = {
+		09CD2311EBFA48A4B7F64CDC /* CMake Rules */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -238,7 +246,7 @@
 			shellScript = "make -C /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode -f /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
 			showEnvVarsInLog = 0;
 		};
-		F9760F1709994C3C926811C4 /* CMake Rules */ = {
+		5728244A39CD4E759BC9A80B /* CMake Rules */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -252,235 +260,39 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		2CCE8439AA50400F8248A3CD /* Sources */ = {
+		ECDFD1A1A6364743A5395E2B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA865745000845E9AAAE144F /* main.cpp in Sources */,
-				65880B271AE6968500A8E69B /* tnm061.cpp in Sources */,
-				8797B4B4E536491195C608AA /* objloader.cpp in Sources */,
-				65880B241AE6956B00A8E69B /* TriangleSoup.cpp in Sources */,
+				65880B2F1AE6ADD500A8E69B /* tnm061.cpp in Sources */,
+				65880B311AE6ADD500A8E69B /* TriangleSoup.cpp in Sources */,
+				EEBD978466E6435CAC164BCB /* main.cpp in Sources */,
+				DBC92252D2FB4AEFA2E0DD7E /* objloader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		71799782E6E74548A9A42E20 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 45B71208DFD94F0B88EC95A5 /* ZERO_CHECK */;
-			targetProxy = 02571E266F4343F594D96DFC /* PBXContainerItemProxy */;
-		};
-		71811844ABD74FA3AA82CF97 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 45B71208DFD94F0B88EC95A5 /* ZERO_CHECK */;
-			targetProxy = D4C01CD581E34448AEA259CC /* PBXContainerItemProxy */;
-		};
-		E3D507B7DD8E4B818855DEE3 /* PBXTargetDependency */ = {
+		92922E5D96FB427C8B87E221 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4979F2BC02D94F6BAF767AA6 /* Domescape */;
-			targetProxy = 4048F9B0CC1B491EB99EA48A /* PBXContainerItemProxy */;
+			targetProxy = 08777AFA0DE243D1A453231A /* PBXContainerItemProxy */;
+		};
+		AFDBEFA773D74EE48939F745 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 45B71208DFD94F0B88EC95A5 /* ZERO_CHECK */;
+			targetProxy = 173CEC25A33D424C9C0EFCC3 /* PBXContainerItemProxy */;
+		};
+		C19A9A9713DD4EDFAF77207D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 45B71208DFD94F0B88EC95A5 /* ZERO_CHECK */;
+			targetProxy = 1847BA5733AC4E15A7940F72 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		012CFCE469984CA8B665F981 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = RelWithDebInfo;
-		};
-		084F952B11C44237BF0E1334 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_VERSION = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
-			};
-			name = Debug;
-		};
-		155D618CD36745208624581C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = Release;
-		};
-		192EEBCB89594C0DAA684653 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = Release;
-		};
-		28BFD782A9C149A08BD57BA4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
-				CLANG_CXX_LIBRARY = "libc++";
-				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project";
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = "    -DNDEBUG  ";
-				OTHER_CPLUSPLUSFLAGS = (
-					"-std=c++11",
-					"-stdlib=libc++",
-					"-DNDEBUG",
-				);
-				OTHER_LDFLAGS = (
-					"-Wl,-search_paths_first",
-					"-Wl,-headerpad_max_install_names",
-					/usr/local/lib/libsgct_cpp11.a,
-					"-framework",
-					AGL,
-					"-framework",
-					OpenGL,
-					"-framework",
-					Cocoa,
-					"-framework",
-					IOKit,
-					"-framework",
-					CoreVideo,
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = Domescape;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = Release;
-		};
-		2D5003B251E24FAEB9A7F000 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_VERSION = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
-			};
-			name = Release;
-		};
-		406824739624473EA808CF4A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = Debug;
-		};
-		6F217C11F84C49D9A112B237 /* Debug */ = {
+		03E2AEB2F67C4D9EAE3154B0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
@@ -534,17 +346,17 @@
 			};
 			name = Debug;
 		};
-		74AE93C957C247FFB6981F77 /* RelWithDebInfo */ = {
+		0F7A360958B34AE4A0E3C5D2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_VERSION = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
 				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
 			};
-			name = RelWithDebInfo;
+			name = Debug;
 		};
-		7BD3449FF13E4D09A9B40E3A /* MinSizeRel */ = {
+		16703857CEAE41229549B636 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -561,37 +373,7 @@
 				OTHER_CFLAGS = "  ";
 				OTHER_LDFLAGS = " ";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = MinSizeRel;
-		};
-		7EB9AAA27F5D41578E51D8C7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
+				PRODUCT_NAME = ALL_BUILD;
 				SECTORDER_FLAGS = "";
 				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
 				USE_HEADERMAP = NO;
@@ -604,132 +386,7 @@
 			};
 			name = Debug;
 		};
-		8192902750294A7AA6394A66 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = RelWithDebInfo;
-		};
-		974252C08B514FA98AF81FA6 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
-				CLANG_CXX_LIBRARY = "libc++";
-				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/RelWithDebInfo";
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 2;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = "       -DNDEBUG  ";
-				OTHER_CPLUSPLUSFLAGS = (
-					"-std=c++11",
-					"-stdlib=libc++",
-					"-DNDEBUG",
-				);
-				OTHER_LDFLAGS = (
-					"-Wl,-search_paths_first",
-					"-Wl,-headerpad_max_install_names",
-					/usr/local/lib/libsgct_cpp11.a,
-					"-framework",
-					AGL,
-					"-framework",
-					OpenGL,
-					"-framework",
-					Cocoa,
-					"-framework",
-					IOKit,
-					"-framework",
-					CoreVideo,
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = Domescape;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = RelWithDebInfo;
-		};
-		9FEA672BAC6D4E4E8E7009A4 /* MinSizeRel */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_VERSION = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
-			};
-			name = MinSizeRel;
-		};
-		DA830DC8766945F8A717A24D /* MinSizeRel */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					__APPLE__,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				INSTALL_PATH = "";
-				OTHER_CFLAGS = "  ";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"$(inherited)",
-				);
-			};
-			name = MinSizeRel;
-		};
-		FA4ACBC29FE64D8CBCCFBCA6 /* MinSizeRel */ = {
+		17B229C28D3A4A6DB271A498 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
@@ -784,49 +441,396 @@
 			};
 			name = MinSizeRel;
 		};
+		1AF1CE27237E430D8D862759 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = MinSizeRel;
+		};
+		362D5AC38B5B42DAA1484D95 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
+			};
+			name = Release;
+		};
+		3C27A7B775B949168C32A0D8 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
+			};
+			name = RelWithDebInfo;
+		};
+		4415FAD4D1B54785B9A555F8 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = RelWithDebInfo;
+		};
+		6D5C159B387A4FD9944212BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Release;
+		};
+		8B35570CFBC646D49F7E5BE1 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = RelWithDebInfo;
+		};
+		B9C5E234E7A6477CBEBC01C8 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LIBRARY = "libc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/RelWithDebInfo";
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "       -DNDEBUG  ";
+				OTHER_CPLUSPLUSFLAGS = (
+					"-std=c++11",
+					"-stdlib=libc++",
+					"-DNDEBUG",
+				);
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					/usr/local/lib/libsgct_cpp11.a,
+					"-framework",
+					AGL,
+					"-framework",
+					OpenGL,
+					"-framework",
+					Cocoa,
+					"-framework",
+					IOKit,
+					"-framework",
+					CoreVideo,
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = Domescape;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = RelWithDebInfo;
+		};
+		BA4CBEB25A41436D8FC6AD3C /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk;
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/build";
+			};
+			name = MinSizeRel;
+		};
+		C9E61FC9AD8344CA9CA32166 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LIBRARY = "libc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project";
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "    -DNDEBUG  ";
+				OTHER_CPLUSPLUSFLAGS = (
+					"-std=c++11",
+					"-stdlib=libc++",
+					"-DNDEBUG",
+				);
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					/usr/local/lib/libsgct_cpp11.a,
+					"-framework",
+					AGL,
+					"-framework",
+					OpenGL,
+					"-framework",
+					Cocoa,
+					"-framework",
+					IOKit,
+					"-framework",
+					CoreVideo,
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = Domescape;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Release;
+		};
+		D1D779A0B6B74AC08C0CB990 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		E5994C6A862142579854AF7C /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = MinSizeRel;
+		};
+		E964475607C2462F92638C8A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					__APPLE__,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = "";
+				OTHER_CFLAGS = "  ";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		308944D231924B19B1693BF3 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+		18B6AF954C794BF3B24D8EF5 /* Build configuration list for PBXProject "Domescape" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7EB9AAA27F5D41578E51D8C7 /* Debug */,
-				155D618CD36745208624581C /* Release */,
-				7BD3449FF13E4D09A9B40E3A /* MinSizeRel */,
-				012CFCE469984CA8B665F981 /* RelWithDebInfo */,
+				0F7A360958B34AE4A0E3C5D2 /* Debug */,
+				362D5AC38B5B42DAA1484D95 /* Release */,
+				BA4CBEB25A41436D8FC6AD3C /* MinSizeRel */,
+				3C27A7B775B949168C32A0D8 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		7211FF6AE4B942279168C22D /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+		49566315767945E1BF8C0C68 /* Build configuration list for PBXNativeTarget "Domescape" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				406824739624473EA808CF4A /* Debug */,
-				192EEBCB89594C0DAA684653 /* Release */,
-				DA830DC8766945F8A717A24D /* MinSizeRel */,
-				8192902750294A7AA6394A66 /* RelWithDebInfo */,
+				03E2AEB2F67C4D9EAE3154B0 /* Debug */,
+				C9E61FC9AD8344CA9CA32166 /* Release */,
+				17B229C28D3A4A6DB271A498 /* MinSizeRel */,
+				B9C5E234E7A6477CBEBC01C8 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		8B48ED830C8E44239D5D305B /* Build configuration list for PBXNativeTarget "Domescape" */ = {
+		8F91C71022C24753BF9527DA /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6F217C11F84C49D9A112B237 /* Debug */,
-				28BFD782A9C149A08BD57BA4 /* Release */,
-				FA4ACBC29FE64D8CBCCFBCA6 /* MinSizeRel */,
-				974252C08B514FA98AF81FA6 /* RelWithDebInfo */,
+				16703857CEAE41229549B636 /* Debug */,
+				E964475607C2462F92638C8A /* Release */,
+				E5994C6A862142579854AF7C /* MinSizeRel */,
+				4415FAD4D1B54785B9A555F8 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		9A8BC950ED474B8DA41825E7 /* Build configuration list for PBXProject "Domescape" */ = {
+		C73620A90C0E4822A7789101 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				084F952B11C44237BF0E1334 /* Debug */,
-				2D5003B251E24FAEB9A7F000 /* Release */,
-				9FEA672BAC6D4E4E8E7009A4 /* MinSizeRel */,
-				74AE93C957C247FFB6981F77 /* RelWithDebInfo */,
+				D1D779A0B6B74AC08C0CB990 /* Debug */,
+				6D5C159B387A4FD9944212BC /* Release */,
+				1AF1CE27237E430D8D862759 /* MinSizeRel */,
+				8B35570CFBC646D49F7E5BE1 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

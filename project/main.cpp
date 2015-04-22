@@ -12,8 +12,6 @@
 #include <stdio.h>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#include "tnm061.hpp"
-#include "TriangleSoup.hpp"
 #include "objloader.hpp"
 
 
@@ -84,10 +82,6 @@ public:
 ////
 
 
-////////////
-TriangleSoup box;
-////////////
-
 //shader locations
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
@@ -101,9 +95,6 @@ enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 //Used for running
 bool runningButton = false;
-
-//Used for jumping
-bool jumpingButton = false;
 
 //to check if left mouse button is pressed
 bool mouseLeftButton = false;
@@ -148,8 +139,6 @@ int main( int argc, char* argv[] )
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     
-    box.readOBJ("box.obj");
-
     // Main loop
     gEngine->render();
 
@@ -171,27 +160,22 @@ void myDrawFun()
     drawXZGrid();
 
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
-    //glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
+    glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+
+    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
-    // Render the geometry to draw the sun
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
-    box.render();
-//    
-//    glActiveTexture(GL_TEXTURE0);
-//    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
-//
-//    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
-//
-//    glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
-//    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &MVP[0][0]);
-//    
-//
-//    // ------ draw model --------------- //
-//    glBindVertexArray(VertexArrayID);
-//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-//    glBindVertexArray(GL_FALSE); //unbind
-//    // ----------------------------------//
+    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &MVP[0][0]);
+    
+
+    // ------ draw model --------------- //
+    glBindVertexArray(VertexArrayID);
+    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
+    glBindVertexArray(GL_FALSE); //unbind
+    // ----------------------------------//
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -333,7 +317,7 @@ void myInitOGLFun()
         printf("THIS IS THE PROBLEM");
     }
 
-//    loadModel( "box.obj" );
+    loadModel( "box.obj" );
 
     //Set up backface culling
     glCullFace(GL_BACK);
@@ -530,11 +514,6 @@ void keyCallback(int key, int action)
             case SGCT_KEY_RIGHT:
             case SGCT_KEY_D:
                 dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-                //Jumping
-            case SGCT_KEY_SPACE:
-                jumpingButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
                 //Running
