@@ -157,7 +157,7 @@ int main( int argc, char* argv[] )
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-    if( !gEngine->init( sgct::Engine::OpenGL_3_3_Core_Profile ) )
+    if( !gEngine->init() )
     {
         delete gEngine;
         return EXIT_FAILURE;
@@ -204,7 +204,6 @@ void myDrawFun()
     float fAmb = 0.3f;
 
 
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
 
@@ -217,7 +216,6 @@ void myDrawFun()
     glUniform3fv(lColor_Loc, 1, &lColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
-
 
 
     // ------ draw model --------------- //
@@ -369,8 +367,6 @@ void myInitOGLFun()
 
     initHeightMap();
 
-    initHeightMap();
-
     //Set up backface culling
     glCullFace(GL_BACK);
 
@@ -381,7 +377,6 @@ void myInitOGLFun()
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
 
-
     MVP_Loc_Box = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
     NM_Loc_Box = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
     sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
@@ -389,7 +384,6 @@ void myInitOGLFun()
     lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
     Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
     Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
-
     glUniform1i( Tex_Loc, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();

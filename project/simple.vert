@@ -9,13 +9,13 @@ uniform mat4 MVP; //Model View Projection Matrix
 uniform mat3 NM; //Normal Matrix
 
 out vec2 UV;
-out vec3 tNormals; //transformed normals
+out vec3 tnormals; //transformed normals
 
 void main()
 {
     // Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(inPositions * vec3(0.0f, 0.0f, 0.0f) + vec3(0.0, 1.0, 0.0), 1.0);
+	gl_Position =  MVP * vec4(inPositions + vec3(0.0, 2.0, 0.0), 1.0);
 	UV = inCoords;
-	tNormals = normalize(NM * inNormals);
+	tnormals = normalize(NM * inNormals);
 
 }

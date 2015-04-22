@@ -17,7 +17,9 @@ endmacro (set_xcode_property)
 add_executable(${APP_NAME}
 	main.cpp 
 	objloader.hpp
-	objloader.cpp)
+	objloader.cpp
+	calcPos.cpp
+	calcPos.hpp)
 	
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${EXAMPE_TARGET_PATH})
@@ -108,6 +110,11 @@ else() #linux
 		${XI_LIBRARY}
 		${XXF86VM_LIBRARY}
 		${PTHREAD}
+		${X11_Xinerama_LIB}
+		${X11_Xinput_LIB}
+		${X11_Xcursor_LIB}
+		${CMAKE_THREAD_LIBS_INIT}
+
 	)
 endif()
 
