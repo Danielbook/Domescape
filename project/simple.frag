@@ -16,7 +16,7 @@ void main()
 
 	//color = texture(Tex, UV.st);
 
-	vec4 vTexColor = texture2D(Tex, UV.st);
+	vec4 vTexColor = texture(Tex, UV.st);
 /*    float fDiffuseIntensity = max(0.0, dot(tnormals, lightDir));
     fDiffuseIntensity;
     color = vTexColor*sunColor*vec4(lightColor*(fAmbInt+fDiffuseIntensity), 1.0);

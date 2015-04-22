@@ -157,7 +157,7 @@ int main( int argc, char* argv[] )
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-    if( !gEngine->init() )
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
