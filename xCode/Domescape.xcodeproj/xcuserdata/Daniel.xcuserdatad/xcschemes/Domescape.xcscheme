@@ -64,7 +64,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-config fisheye_single.xml"
+            argument = "-config single_fisheye.xml"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

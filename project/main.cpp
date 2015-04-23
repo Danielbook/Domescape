@@ -14,8 +14,10 @@
 #include <stdio.h>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#include "objloader.hpp"
+#include <SpiceUsr.h>
+#include <SpiceZfc.h>
 
+#include "objloader.hpp"
 
 sgct::Engine * gEngine;
 
@@ -53,6 +55,8 @@ float runningSpeed = 5.0f;
 
 //regular functions
 void loadModel( std::string filename );
+
+void calcSunPosition();
 
 enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
 GLuint vertexBuffers[3];
@@ -112,11 +116,6 @@ GLint lColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
 
-
-//variables to share across cluster
-sgct::SharedDouble curr_time(0.0);
-sgct::SharedBool reloadShader(false);
-
 bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
@@ -140,6 +139,9 @@ glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 glm::vec3 cView(0.0f, 0.0f, 0.0f);
 
+//variables to share across cluster
+sgct::SharedDouble curr_time(0.0);
+sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
 int main( int argc, char* argv[] )
@@ -157,12 +159,29 @@ int main( int argc, char* argv[] )
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
+#ifdef __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-
+#endif
+    
+#ifdef __MINGW32__
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
+    {
+        delete gEngine;
+        return EXIT_FAILURE;
+    }
+#endif
+    
+#ifdef __linux__
+    if( !gEngine->init( ) )
+    {
+        delete gEngine;
+        return EXIT_FAILURE;
+    }
+#endif
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
 
@@ -178,18 +197,16 @@ int main( int argc, char* argv[] )
 
 void myDrawFun()
 {
-
     glEnable( GL_DEPTH_TEST );
     glEnable( GL_CULL_FACE );
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
 
-    drawHeightMap(scene_mat);
-
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
-
+    
+    drawHeightMap(scene_mat);
 
     // Set light properties
     float fSunAngle = 45.0f;
@@ -203,7 +220,6 @@ void myDrawFun()
     glm::vec3 lDir = glm::normalize(vSunPos);
     float fAmb = 0.3f;
 
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
 
@@ -216,7 +232,6 @@ void myDrawFun()
     glUniform3fv(lColor_Loc, 1, &lColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
-
 
     // ------ draw model --------------- //
     glBindVertexArray(VertexArrayID);
@@ -274,7 +289,6 @@ void myPreSyncFun()
 											tiltRot,
 											-right); //rotation around the movavble x-axis
 
-
         if( dirButtons[FORWARD] ){
             runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
@@ -299,8 +313,6 @@ void myPreSyncFun()
             runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * up);
         }
-
-
 
         glm::mat4 result;
         //4. transform user back to original position
@@ -335,7 +347,6 @@ void myPostSyncPreDrawFun()
 
         //reset locations
         sp.bind();
-
 
         MVP_Loc_Box = sp.getUniformLocation( "MVP" );
         NM_Loc_Box = sp.getUniformLocation( "NM" );
@@ -611,7 +622,6 @@ void drawHeightMap(glm::mat4 scene_mat)
     glm::mat4 MV_light	= gEngine->getActiveModelViewMatrix();
     glm::mat3 NM		= glm::inverseTranspose( glm::mat3( MV ) );
 
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "heightmap" ));
 
@@ -620,12 +630,10 @@ void drawHeightMap(glm::mat4 scene_mat)
 
     mSp.bind();
 
-
     glUniformMatrix4fv(MVP_Loc_Ground,		1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix4fv(MV_Loc_Ground,		1, GL_FALSE, &MV[0][0]);
     glUniformMatrix4fv(MVLight_Loc_Ground, 1, GL_FALSE, &MV_light[0][0]);
     glUniformMatrix3fv(NM_Loc_Ground,		1, GL_FALSE, &NM[0][0]);
-
 
     glBindVertexArray(vertexArray);
 
@@ -636,8 +644,6 @@ void drawHeightMap(glm::mat4 scene_mat)
     glBindVertexArray(0);
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
-
 }
 
 void initHeightMap()
@@ -676,7 +682,6 @@ void initHeightMap()
     glGenVertexArrays(1, &vertexArray);
     glBindVertexArray(vertexArray);
 
-
     //generate vertex position buffer
     glGenBuffers(1, &vertexPositionBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexPositionBuffer);
@@ -705,10 +710,8 @@ void initHeightMap()
                           reinterpret_cast<void*>(0) // array buffer offset
                           );
 
-
     glBindVertexArray(0); //unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
     //cleanup
     mVertPos.clear();
@@ -770,4 +773,46 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
     }
 
     mNumberOfVerts = static_cast<GLsizei>(mVertPos.size() / 3); //each vertex has three componets (x, y & z)
+}
+
+/*
+ ilumin_c - finds the illumination angles at a specified surface point of a target body.
+ phaseq_c - computes the apparent phase angle between the centers of target, observer, and illuminator ephemeris objects.
+ Brief Example:
+ The following example computes the illumination angles for a point
+ specified using planetocentric coordinates, observed by MGS:
+ */
+void calcSunPosition()
+{
+    SpiceDouble r = 3390.42;
+    SpiceDouble lon = 175.30;
+    SpiceDouble lat = -14.59;
+    SpiceDouble point[3];
+    SpiceDouble et;
+    SpiceDouble srfvec[3];
+    SpiceDouble trgepc;
+    SpiceDouble phase, solar, emissn;
+    
+    /*
+     load kernels: LSK, PCK, planet/satellite SPK
+     and MGS spacecraft SPK
+     */
+    furnsh_c( "naif0008.tls" );
+    furnsh_c( "mars_iau2000_v0.tpc" );
+    furnsh_c( "mar063.bsp" );
+    furnsh_c( "mgs_ext22.bsp" );
+    /*
+     convert planetocentric r/lon/lat to Cartesian vector
+     */
+    latrec_c( r, lon * rpd_c(), lat * rpd_c(), point );
+    /*
+     convert UTC to ET
+     */
+    str2et_c ( "2006 JAN 31 01:00", &et );
+    /*
+     compute illumination angles
+     */
+    ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
+              "LT+S", "MGS", point,
+              &trgepc, srfvec, &phase, &solar, &emissn );
 }

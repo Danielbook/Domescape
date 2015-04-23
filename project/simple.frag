@@ -13,11 +13,11 @@ out vec4 color;
 
 void main()
 {
-
 	//color = texture(Tex, UV.st);
 
 	vec4 vTexColor = texture(Tex, UV.st);
-/*    float fDiffuseIntensity = max(0.0, dot(tnormals, lightDir));
+/*    
+    float fDiffuseIntensity = max(0.0, dot(tnormals, lightDir));
     fDiffuseIntensity;
     color = vTexColor*sunColor*vec4(lightColor*(fAmbInt+fDiffuseIntensity), 1.0);
 */
@@ -54,7 +54,4 @@ if ( dotNL == 0.0) dotRV = 0.0; // Do not show highlight on the dark side
 vec3 shadedcolor = Ia * ka + Id * kd * dotNL + Is * ks * pow ( dotRV , n);
 color = vTexColor * vec4( shadedcolor , 1.0) ;
 
-
 }
-
-
