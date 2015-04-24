@@ -36,6 +36,7 @@
 /* Begin PBXBuildFile section */
 		09210AEA0EA24E7EBD13AE10 /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 20081B9AD5E64C78954FFED2 /* objloader.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 		6549AB281AE8F388004FBCC1 /* lcspice.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6549AB271AE8F388004FBCC1 /* lcspice.a */; };
+		65AD09381AEA092700E6F87F /* model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65AD09361AEA092700E6F87F /* model.cpp */; };
 		FAE2BC542B3C4C64B9568DC9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E803260D4CB74F1091A02C8A /* main.cpp */; settings = {COMPILER_FLAGS = ""; }; };
 /* End PBXBuildFile section */
 
@@ -71,6 +72,8 @@
 		651D39391AE8BC2700AD7B7E /* simple.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = simple.frag; sourceTree = "<group>"; };
 		651D393A1AE8BC2700AD7B7E /* simple.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = simple.vert; sourceTree = "<group>"; };
 		6549AB271AE8F388004FBCC1 /* lcspice.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lcspice.a; path = ../../../../../../../usr/local/lib/lcspice.a; sourceTree = "<group>"; };
+		65AD09361AEA092700E6F87F /* model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = model.cpp; sourceTree = "<group>"; };
+		65AD09371AEA092700E6F87F /* model.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = model.hpp; sourceTree = "<group>"; };
 		66C01E45929048B09CAC5399 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 		6AB0FA01763F4447902A3CFA /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 		854DFEEE0EED4E0687515FF4 /* objloader.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = objloader.hpp; sourceTree = SOURCE_ROOT; };
@@ -93,6 +96,7 @@
 		2C7EAD3402154AD88406CADF /* Header Files */ = {
 			isa = PBXGroup;
 			children = (
+				65AD09371AEA092700E6F87F /* model.hpp */,
 				854DFEEE0EED4E0687515FF4 /* objloader.hpp */,
 			);
 			name = "Header Files";
@@ -102,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				E803260D4CB74F1091A02C8A /* main.cpp */,
+				65AD09361AEA092700E6F87F /* model.cpp */,
 				20081B9AD5E64C78954FFED2 /* objloader.cpp */,
 			);
 			name = "Source Files";
@@ -275,6 +280,7 @@
 			files = (
 				FAE2BC542B3C4C64B9568DC9 /* main.cpp in Sources */,
 				09210AEA0EA24E7EBD13AE10 /* objloader.cpp in Sources */,
+				65AD09381AEA092700E6F87F /* model.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
