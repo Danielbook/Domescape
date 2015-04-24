@@ -18,6 +18,7 @@
 #include <SpiceZfc.h>
 
 #include "objloader.hpp"
+#include "model.hpp"
 
 sgct::Engine * gEngine;
 
@@ -144,6 +145,8 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
+model box;
+
 int main( int argc, char* argv[] )
 {
     gEngine = new sgct::Engine( argc, argv );
@@ -227,7 +230,6 @@ void myDrawFun()
 
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
-
     glUniformMatrix4fv(MVP_Loc_Box, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc_Box, 1, GL_FALSE, &NM[0][0]);
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
@@ -235,11 +237,13 @@ void myDrawFun()
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
 
-    // ------ draw model --------------- //
-    glBindVertexArray(VertexArrayID);
-    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-    glBindVertexArray(GL_FALSE); //unbind
-    // ----------------------------------//
+//    // ------ draw model --------------- //
+//    glBindVertexArray(VertexArrayID);
+//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
+//    glBindVertexArray(GL_FALSE); //unbind
+//    // ----------------------------------//
+    
+    box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -376,8 +380,9 @@ void myInitOGLFun()
     }
 
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
-    loadModel( "box.obj" );
-
+    //loadModel( "box.obj" );
+    box.readOBJ("box.obj");
+    
     initHeightMap();
 
     //Set up backface culling

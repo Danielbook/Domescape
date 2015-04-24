@@ -3,7 +3,7 @@
 //  Domescape
 //
 //  Created by Daniel Böök on 2015-04-24.
-//
+//  Heavily inspired by Stefan Gustavsons TNM061 TriangleSoup
 //
 
 #include "model.hpp"
@@ -231,7 +231,7 @@ void model::readOBJ(const char* filename) {
     delete[] verts;
     delete[] normals;
     delete[] texcoords;
-    delete[] objfile;
+//  delete[] objfile;
     
     if(readerror) { // Delete corrupt data and bail out if a read error occured
         printError("Mesh read error","No mesh data generated");
@@ -288,13 +288,13 @@ void model::readOBJ(const char* filename) {
 };
 
 /* Render the geometry in a TriangleSoup object */
-void model::render() {
-    
+void model::render()
+{
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 3 * ntris, GL_UNSIGNED_INT, (void*)0);
+    //glDrawElements(GL_TRIANGLES, 3 * ntris, GL_UNSIGNED_INT, (void*)0);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * ntris );
     // (mode, vertex count, type, element array buffer offset)
     glBindVertexArray(0);
-    
 };
 
 /*
