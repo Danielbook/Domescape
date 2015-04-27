@@ -27,17 +27,17 @@ model::~model() {
         glDeleteVertexArrays(1, &vao);
     }
     vao = 0;
-    
+
     if(glIsBuffer(vertexbuffer)) {
         glDeleteBuffers(1, &vertexbuffer);
     }
     vertexbuffer = 0;
-    
+
     if(glIsBuffer(indexbuffer)) {
         glDeleteBuffers(1, &indexbuffer);
     }
     indexbuffer = 0;
-    
+
     if(vertexarray) {
         delete[] vertexarray;
     }
@@ -49,22 +49,22 @@ model::~model() {
 };
 
 void model::clean() {
-    
+
     if(glIsVertexArray(vao)) {
         glDeleteVertexArrays(1, &vao);
     }
     vao = 0;
-    
+
     if(glIsBuffer(vertexbuffer)) {
         glDeleteBuffers(1, &vertexbuffer);
     }
     vertexbuffer = 0;
-    
+
     if(glIsBuffer(indexbuffer)) {
         glDeleteBuffers(1, &indexbuffer);
     }
     indexbuffer = 0;
-    
+
     if(vertexarray) {
         delete[] vertexarray;
     }
@@ -90,9 +90,9 @@ void model::clean() {
  * This code is in the public domain.
  */
 void model::readOBJ(const char* filename) {
-    
+
     FILE *objfile;
-    
+
     int numverts = 0;
     int numnormals = 0;
     int numtexcoords = 0;
@@ -102,21 +102,21 @@ void model::readOBJ(const char* filename) {
     int i_t = 0;
     int i_f = 0;
     float *verts, *normals, *texcoords;
-    
+
     char line[256];
     char tag[3];
     int v1, v2, v3, n1, n2, n3, t1, t2, t3;
     int numargs, readerror, currentv;
-    
+
     readerror = 0;
-    
+
     objfile = fopen(filename, "r");
-    
+
     if(!objfile) {
         printError("File not found", filename);
         readerror = 1;
     }
-    
+
     // Scan through the file to count the number of data elements
     while(fgets(line, 256, objfile)) {
         sscanf(line, "%2s ", tag);
@@ -126,21 +126,21 @@ void model::readOBJ(const char* filename) {
         else if(!strcmp(tag, "f")) numfaces++;
         //else printf("Ignoring line starting with \"%s\"\n", tag);
     }
-    
+
     printf("loadObj(\"%s\"): found %d vertices, %d normals, %d texcoords, %d faces.\n",
            filename, numverts, numnormals, numtexcoords, numfaces);
-    
+
     verts = new float[3*numverts];
     normals = new float[3*numnormals];
     texcoords = new float[2*numtexcoords];
-    
+
     vertexarray = new float[8*3*numfaces];
     indexarray = new unsigned int[3*numfaces];
     nverts = 3*numfaces;
     ntris = numfaces;
-    
+
     rewind(objfile); // Start from the top again to read data
-    
+
     while(fgets(line, 256, objfile)) {
         tag[0] = '\0';
         sscanf(line, "%2s ", tag);
@@ -226,33 +226,33 @@ void model::readOBJ(const char* filename) {
             i_f++;
         };
     }
-    
+
     // Free the temporary arrays we created
     delete[] verts;
     delete[] normals;
     delete[] texcoords;
 //  delete[] objfile;
-    
+
     if(readerror) { // Delete corrupt data and bail out if a read error occured
         printError("Mesh read error","No mesh data generated");
         clean();
         return;
     }
-    
+
     // Generate one vertex array object (VAO) and bind it
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    
+
     // Generate two buffer IDs
     glGenBuffers(1, &vertexbuffer);
     glGenBuffers(1, &indexbuffer);
-    
+
     // Activate the vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Present our vertex coordinates to OpenGL
     glBufferData(GL_ARRAY_BUFFER,
                  8*nverts * sizeof(GLfloat), vertexarray, GL_STATIC_DRAW);
-    
+
     // Specify how many attribute arrays we have in our VAO
     glEnableVertexAttribArray(0); // Vertex coordinates
     glEnableVertexAttribArray(1); // Normals
@@ -270,20 +270,20 @@ void model::readOBJ(const char* filename) {
                           8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat))); // normals
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
                           8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat))); // texcoords
-    
+
     // Activate the index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
     // Present our vertex indices to OpenGL
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                  3*ntris*sizeof(GLuint), indexarray, GL_STATIC_DRAW);
-    
+
     // Deactivate (unbind) the VAO and the buffers again.
     // Do NOT unbind the buffers while the VAO is still bound.
     // The index buffer is an essential part of the VAO state.
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
+
     return;
 };
 

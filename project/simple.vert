@@ -2,8 +2,9 @@
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 inPositions;
-layout(location = 1) in vec2 inCoords;
-layout(location = 2) in vec3 inNormals;
+layout(location = 1) in vec3 inNormals;
+layout(location = 2) in vec2 inCoords;
+
 
 uniform mat4 MVP; //Model View Projection Matrix
 uniform mat3 NM; //Normal Matrix
