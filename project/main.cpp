@@ -19,7 +19,6 @@
 #include <SpiceZfc.h>
 //#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
-#include "objloader.hpp"
 #include "model.hpp"
 
 sgct::Engine * gEngine;
@@ -60,11 +59,6 @@ float runningSpeed = 5.0f;
 void loadModel( std::string filename );
 
 float calcSunPosition();
-
-enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
-GLuint vertexBuffers[3];
-GLuint VertexArrayID = GL_FALSE;
-GLsizei numberOfVertices = 0;
 
 //////////////////////HEIGTHMAP//////////////////////
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
@@ -239,12 +233,6 @@ void myDrawFun()
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
 
-//    // ------ draw model --------------- //
-//    glBindVertexArray(VertexArrayID);
-//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-//    glBindVertexArray(GL_FALSE); //unbind
-//    // ----------------------------------//
-    
     box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
@@ -382,7 +370,6 @@ void myInitOGLFun()
     }
 
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
-    //loadModel( "box.obj" );
     box.readOBJ("box.obj");
     
     initHeightMap();
@@ -443,121 +430,12 @@ void myDecodeFun()
  */
 void myCleanUpFun()
 {
-    if( VertexArrayID )
-    {
-        glDeleteVertexArrays(1, &VertexArrayID);
-        VertexArrayID = GL_FALSE;
-    }
-
-    if( vertexBuffers[0] ) //if first is created, all has been created.
-    {
-        glDeleteBuffers(3, &vertexBuffers[0]);
-        for(unsigned int i=0; i<3; i++)
-            vertexBuffers[i] = GL_FALSE;
-    }
-
     if(vertexPositionBuffer)
         glDeleteBuffers(1, &vertexPositionBuffer);
     if(texCoordBuffer)
         glDeleteBuffers(1, &texCoordBuffer);
     if(vertexArray)
         glDeleteVertexArrays(1, &vertexArray);
-}
-
-
-/*
-	Loads obj model and uploads to the GPU
- */
-void loadModel( std::string filename )
-{
-    // Read our .obj file
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-
-    //if successful
-    if( loadOBJ( filename.c_str(), positions, uvs, normals) )
-    {
-        //store the number of triangles
-        numberOfVertices = static_cast<GLsizei>( positions.size() );
-
-        //create VAO
-        glGenVertexArrays(1, &VertexArrayID);
-        glBindVertexArray(VertexArrayID);
-
-        //init VBOs
-        for(unsigned int i=0; i<3; i++)
-            vertexBuffers[i] = GL_FALSE;
-        glGenBuffers(3, &vertexBuffers[0]);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_POSITIONS ] );
-        glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_STATIC_DRAW);
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(
-                              0,                  // attribute
-                              3,                  // size
-                              GL_FLOAT,           // type
-                              GL_FALSE,           // normalized?
-                              0,                  // stride
-                              reinterpret_cast<void*>(0) // array buffer offset
-                              );
-
-        if( uvs.size() > 0 )
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_UVS ] );
-            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
-            // 2nd attribute buffer : UVs
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(
-                                  1,                                // attribute
-                                  2,                                // size
-                                  GL_FLOAT,                         // type
-                                  GL_FALSE,                         // normalized?
-                                  0,                                // stride
-                                  reinterpret_cast<void*>(0) // array buffer offset
-                                  );
-        }
-        else
-            sgct::MessageHandler::instance()->print("Warning: Model is missing UV data.\n");
-
-        if( normals.size() > 0 )
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_NORMALS ] );
-            glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-            // 3nd attribute buffer : Normals
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(
-                                  2,                                // attribute
-                                  3,                                // size
-                                  GL_FLOAT,                         // type
-                                  GL_FALSE,                         // normalized?
-                                  0,                                // stride
-                                  reinterpret_cast<void*>(0) // array buffer offset
-                                  );
-        }
-        else
-            sgct::MessageHandler::instance()->print("Warning: Model is missing normal data.\n");
-
-        glBindVertexArray(GL_FALSE); //unbind VAO
-
-        //clear vertex data that is uploaded on GPU
-        positions.clear();
-        uvs.clear();
-        normals.clear();
-
-        //print some usefull info
-        sgct::MessageHandler::instance()->print("Model '%s' loaded successfully (%u vertices, VAO: %u, VBOs: %u %u %u).\n",
-                                                filename.c_str(),
-                                                numberOfVertices,
-                                                VertexArrayID,
-                                                vertexBuffers[VBO_POSITIONS],
-                                                vertexBuffers[VBO_UVS],
-                                                vertexBuffers[VBO_NORMALS] );
-    }
-    else
-        sgct::MessageHandler::instance()->print("Failed to load model '%s'!\n", filename.c_str() );
-
 }
 
 void keyCallback(int key, int action)
