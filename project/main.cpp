@@ -56,7 +56,6 @@ float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
 
 //regular functions
-void loadModel( std::string filename );
 
 float calcSunPosition();
 
@@ -157,7 +156,7 @@ int main( int argc, char* argv[] )
 
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
-    
+
     //float sunPosition = calcSunPosition();
 
 #ifdef __APPLE__
@@ -363,7 +362,7 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
-    
+
     if (glGenVertexArrays == NULL)
     {
         printf("THIS IS THE PROBLEM");
@@ -371,7 +370,7 @@ void myInitOGLFun()
 
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
     box.readOBJ("box.obj");
-    
+
     initHeightMap();
 
     //Set up backface culling
@@ -437,6 +436,7 @@ void myCleanUpFun()
     if(vertexArray)
         glDeleteVertexArrays(1, &vertexArray);
 }
+
 
 void keyCallback(int key, int action)
 {
@@ -702,6 +702,6 @@ float calcSunPosition()
     ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
               "LT+S", "MGS", point,
               &trgepc, srfvec, &phase, &solar, &emissn );
-    
+
     return 0.0f;
 }
