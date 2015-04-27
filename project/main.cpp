@@ -20,6 +20,7 @@
 #include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "objloader.hpp"
+#include "model.hpp"
 
 sgct::Engine * gEngine;
 
@@ -58,7 +59,7 @@ float runningSpeed = 5.0f;
 //regular functions
 void loadModel( std::string filename );
 
-void calcSunPosition();
+float calcSunPosition();
 
 enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
 GLuint vertexBuffers[3];
@@ -146,6 +147,8 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
+model box;
+
 int main( int argc, char* argv[] )
 {
     gEngine = new sgct::Engine( argc, argv );
@@ -160,6 +163,8 @@ int main( int argc, char* argv[] )
 
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
+    
+    //float sunPosition = calcSunPosition();
 
 #ifdef __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
@@ -227,7 +232,6 @@ void myDrawFun()
 
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
-
     glUniformMatrix4fv(MVP_Loc_Box, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc_Box, 1, GL_FALSE, &NM[0][0]);
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
@@ -235,11 +239,13 @@ void myDrawFun()
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
 
-    // ------ draw model --------------- //
-    glBindVertexArray(VertexArrayID);
-    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-    glBindVertexArray(GL_FALSE); //unbind
-    // ----------------------------------//
+//    // ------ draw model --------------- //
+//    glBindVertexArray(VertexArrayID);
+//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
+//    glBindVertexArray(GL_FALSE); //unbind
+//    // ----------------------------------//
+    
+    box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -369,15 +375,16 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
-    sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
-
+    
     if (glGenVertexArrays == NULL)
     {
         printf("THIS IS THE PROBLEM");
     }
 
-    loadModel( "box.obj" );
-
+    sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
+    //loadModel( "box.obj" );
+    box.readOBJ("box.obj");
+    
     initHeightMap();
 
     //Set up backface culling
@@ -784,7 +791,7 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  The following example computes the illumination angles for a point
  specified using planetocentric coordinates, observed by MGS:
  */
-void calcSunPosition()
+float calcSunPosition()
 {
     SpiceDouble r = 3390.42;
     SpiceDouble lon = 175.30;
@@ -799,10 +806,10 @@ void calcSunPosition()
      load kernels: LSK, PCK, planet/satellite SPK
      and MGS spacecraft SPK
      */
-    furnsh_c( "naif0008.tls" );
-    furnsh_c( "mars_iau2000_v0.tpc" );
-    furnsh_c( "mar063.bsp" );
-    furnsh_c( "mgs_ext22.bsp" );
+    furnsh_c( "kernels/naif0011.tls" );
+    furnsh_c( "kernels/mars_iau2000_v0.tpc"         );
+    furnsh_c( "kernels/mar063.bsp" );
+    furnsh_c( "kernels/mgs_ext22.bsp" );
     /*
      convert planetocentric r/lon/lat to Cartesian vector
      */
@@ -817,4 +824,6 @@ void calcSunPosition()
     ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
               "LT+S", "MGS", point,
               &trgepc, srfvec, &phase, &solar, &emissn );
+    
+    return 0.0f;
 }

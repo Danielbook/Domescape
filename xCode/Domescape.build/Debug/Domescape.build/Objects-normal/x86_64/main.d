@@ -134,4 +134,6 @@ dependencies: \
   /usr/local/include/SpicePln.h /usr/local/include/SpiceEll.h \
   /usr/local/include/SpiceZim.h /usr/local/include/SpiceZrnm.h \
   /usr/local/include/SpiceZfc.h \
-  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/objloader.hpp
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/objloader.hpp \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp \
+  /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/GLFW/glfw3.h
