@@ -57,7 +57,6 @@ float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
 
 //regular functions
-void loadModel( std::string filename );
 
 float calcSunPosition();
 
@@ -163,7 +162,7 @@ int main( int argc, char* argv[] )
 
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
-    
+
     //float sunPosition = calcSunPosition();
 
 #ifdef __APPLE__
@@ -244,7 +243,7 @@ void myDrawFun()
 //    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
 //    glBindVertexArray(GL_FALSE); //unbind
 //    // ----------------------------------//
-    
+
     box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
@@ -375,16 +374,15 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
-    
+
     if (glGenVertexArrays == NULL)
     {
         printf("THIS IS THE PROBLEM");
     }
 
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
-    //loadModel( "box.obj" );
     box.readOBJ("box.obj");
-    
+
     initHeightMap();
 
     //Set up backface culling
@@ -464,101 +462,6 @@ void myCleanUpFun()
         glDeleteVertexArrays(1, &vertexArray);
 }
 
-
-/*
-	Loads obj model and uploads to the GPU
- */
-void loadModel( std::string filename )
-{
-    // Read our .obj file
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-
-    //if successful
-    if( loadOBJ( filename.c_str(), positions, uvs, normals) )
-    {
-        //store the number of triangles
-        numberOfVertices = static_cast<GLsizei>( positions.size() );
-
-        //create VAO
-        glGenVertexArrays(1, &VertexArrayID);
-        glBindVertexArray(VertexArrayID);
-
-        //init VBOs
-        for(unsigned int i=0; i<3; i++)
-            vertexBuffers[i] = GL_FALSE;
-        glGenBuffers(3, &vertexBuffers[0]);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_POSITIONS ] );
-        glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_STATIC_DRAW);
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(
-                              0,                  // attribute
-                              3,                  // size
-                              GL_FLOAT,           // type
-                              GL_FALSE,           // normalized?
-                              0,                  // stride
-                              reinterpret_cast<void*>(0) // array buffer offset
-                              );
-
-        if( uvs.size() > 0 )
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_UVS ] );
-            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
-            // 2nd attribute buffer : UVs
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(
-                                  1,                                // attribute
-                                  2,                                // size
-                                  GL_FLOAT,                         // type
-                                  GL_FALSE,                         // normalized?
-                                  0,                                // stride
-                                  reinterpret_cast<void*>(0) // array buffer offset
-                                  );
-        }
-        else
-            sgct::MessageHandler::instance()->print("Warning: Model is missing UV data.\n");
-
-        if( normals.size() > 0 )
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[ VBO_NORMALS ] );
-            glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-            // 3nd attribute buffer : Normals
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(
-                                  2,                                // attribute
-                                  3,                                // size
-                                  GL_FLOAT,                         // type
-                                  GL_FALSE,                         // normalized?
-                                  0,                                // stride
-                                  reinterpret_cast<void*>(0) // array buffer offset
-                                  );
-        }
-        else
-            sgct::MessageHandler::instance()->print("Warning: Model is missing normal data.\n");
-
-        glBindVertexArray(GL_FALSE); //unbind VAO
-
-        //clear vertex data that is uploaded on GPU
-        positions.clear();
-        uvs.clear();
-        normals.clear();
-
-        //print some usefull info
-        sgct::MessageHandler::instance()->print("Model '%s' loaded successfully (%u vertices, VAO: %u, VBOs: %u %u %u).\n",
-                                                filename.c_str(),
-                                                numberOfVertices,
-                                                VertexArrayID,
-                                                vertexBuffers[VBO_POSITIONS],
-                                                vertexBuffers[VBO_UVS],
-                                                vertexBuffers[VBO_NORMALS] );
-    }
-    else
-        sgct::MessageHandler::instance()->print("Failed to load model '%s'!\n", filename.c_str() );
-
-}
 
 void keyCallback(int key, int action)
 {
@@ -824,6 +727,6 @@ float calcSunPosition()
     ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
               "LT+S", "MGS", point,
               &trgepc, srfvec, &phase, &solar, &emissn );
-    
+
     return 0.0f;
 }
