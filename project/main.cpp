@@ -14,10 +14,10 @@
 #include <stdio.h>
 #include <glm/gtc/matrix_inverse.hpp>
 
-//#include <SpiceUsr.h>
-#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
-//#include <SpiceZfc.h>
-#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
+#include <SpiceUsr.h>
+//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
+#include <SpiceZfc.h>
+//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "objloader.hpp"
 #include "model.hpp"
