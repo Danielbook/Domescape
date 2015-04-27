@@ -14,8 +14,10 @@
 #include <stdio.h>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#include <SpiceUsr.h>
-#include <SpiceZfc.h>
+//#include <SpiceUsr.h>
+#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
+//#include <SpiceZfc.h>
+#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "objloader.hpp"
 
@@ -166,7 +168,7 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 #endif
-    
+
 #ifdef __MINGW32__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
@@ -174,7 +176,7 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 #endif
-    
+
 #ifdef __linux__
     if( !gEngine->init( ) )
     {
@@ -205,7 +207,7 @@ void myDrawFun()
 
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
-    
+
     drawHeightMap(scene_mat);
 
     // Set light properties
@@ -792,7 +794,7 @@ void calcSunPosition()
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
-    
+
     /*
      load kernels: LSK, PCK, planet/satellite SPK
      and MGS spacecraft SPK
