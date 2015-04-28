@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <string>
 #include <algorithm>
 #include <cmath>
@@ -9,15 +10,14 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
-
 #include <stdlib.h>
 #include <stdio.h>
-#include <glm/gtc/matrix_inverse.hpp>
 
-#include <SpiceUsr.h>
-//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
-#include <SpiceZfc.h>
-//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
+
+//#include <SpiceUsr.h>
+#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
+//#include <SpiceZfc.h>
+#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "objloader.hpp"
 #include "model.hpp"
@@ -56,44 +56,18 @@ float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
 
-//regular functions
+//REGULAR FUNCTIONS
 
 float calcSunPosition();
-
-enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
-GLuint vertexBuffers[3];
-GLuint VertexArrayID = GL_FALSE;
-GLsizei numberOfVertices = 0;
-
 //////////////////////HEIGTHMAP//////////////////////
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
 void initHeightMap();
-
-void drawHeightMap(glm::mat4 scene_mat);
-
-//shader data
-sgct::ShaderProgram mSp;
-GLint myTextureLocations[]	= { -1, -1 };
-GLint curr_timeLoc			= -1;
-GLint MVP_Loc_Ground		= -1;
-GLint MV_Loc_Ground			= -1;
-GLint MVLight_Loc_Ground	= -1;
-GLint NM_Loc_Ground         = -1;
-GLint lightPos_Loc_Ground	= -1;
-GLint lightAmb_Loc_Ground	= -1;
-GLint lightDif_Loc_Ground	= -1;
-GLint lightSpe_Loc_Ground	= -1;
+void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb);
 
 //opengl objects
 GLuint vertexArray = GL_FALSE;
 GLuint vertexPositionBuffer = GL_FALSE;
 GLuint texCoordBuffer = GL_FALSE;
-
-//light data
-glm::vec3 lightPosition( -2.0f, 5.0f, 5.0f );
-glm::vec4 lightAmbient( 0.1f, 0.1f, 0.1f, 1.0f );
-glm::vec4 lightDiffuse( 0.8f, 0.8f, 0.8f, 1.0f );
-glm::vec4 lightSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
 
 //variables to share across cluster
 sgct::SharedBool wireframe(false);
@@ -109,37 +83,46 @@ std::vector<float> mTexCoord;
 GLsizei mNumberOfVerts = 0;
 //////////////////////////////////////////////////////
 
-//shader locations
-GLint MVP_Loc_Box = -1;
-GLint NM_Loc_Box = -1;
+//OpenGL objects
+enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
+GLuint vertexBuffers[3];
+GLuint VertexArrayID = GL_FALSE;
+GLsizei numberOfVertices = 0;
+
+//shader data
+sgct::ShaderProgram mSp;
+GLint myTextureLocations[]	= { -1, -1 };
+GLint MVP_Loc_G = -1;
+GLint MV_Loc_G = -1;
+GLint MVL_Loc_G = -1;
+GLint NM_Loc_G = -1;
+GLint lDir_Loc_G = -1;
+GLint Amb_Loc_G = -1;
+
+GLint MVP_Loc = -1;
+GLint NM_Loc = -1;
 GLint Tex_Loc = -1;
 GLint sColor_Loc = -1;
-GLint lColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
 
+//Oriantation variables
 bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
-//Used for running
 bool runningButton = false;
-
-//to check if left mouse button is pressed
 bool mouseLeftButton = false;
 
-/* Holds the difference in position between when the left mouse button
- is pressed and when the mouse button is held. */
 double mouseDx = 0.0;
 double mouseDy = 0.0;
 
-/* Stores the positions that will be compared to measure the difference. */
 double mouseXPos[] = { 0.0, 0.0 };
 double mouseYPos[] = { 0.0, 0.0 };
 
 glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
-glm::vec3 cView(0.0f, 0.0f, 0.0f);
+
 
 //variables to share across cluster
 sgct::SharedDouble curr_time(0.0);
@@ -153,17 +136,16 @@ int main( int argc, char* argv[] )
     gEngine = new sgct::Engine( argc, argv );
 
     gEngine->setInitOGLFunction( myInitOGLFun );
-    gEngine->setDrawFunction( myDrawFun );
     gEngine->setPreSyncFunction( myPreSyncFun );
-    gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
+    gEngine->setDrawFunction( myDrawFun );
+    gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
 
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-    //float sunPosition = calcSunPosition();
 
 #ifdef __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
@@ -201,63 +183,46 @@ int main( int argc, char* argv[] )
     exit( EXIT_SUCCESS );
 }
 
-void myDrawFun()
+void myInitOGLFun()
 {
-    glEnable( GL_DEPTH_TEST );
-    glEnable( GL_CULL_FACE );
+    sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
+    sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
+    sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
 
-    //create scene transform (animation)
-    glm::mat4 scene_mat = xform.getVal();
+    if (glGenVertexArrays == NULL)
+    {
+        printf("THIS IS THE PROBLEM");
+    }
 
-    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
-    glm::mat3 NM = glm::inverseTranspose(glm::mat3( gEngine->getActiveModelViewMatrix() * scene_mat ));
+    sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
+    box.readOBJ("box.obj");
 
-    drawHeightMap(scene_mat);
+    initHeightMap();
 
-    // Set light properties
-    float fSunAngle = 45.0f;
-    float fSine = sin(fSunAngle*3.1415/180.0);
-    glm::vec3 vSunPos(cos(fSunAngle*3.1415/180.0)*70, sin(fSunAngle*3.1415/180.0)*70, 0.0);
-    // We'll change color of skies depending on sun's position
-    glClearColor(0.0f, std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
+    //Set up backface culling
+    glCullFace(GL_BACK);
 
-    glm::vec4 sColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glm::vec3 lColor(1.0f, 1.0f, 1.0f);
-    glm::vec3 lDir = glm::normalize(vSunPos);
-    float fAmb = 0.3f;
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
-
+    //Initialize Shader Xform (simple)
+    sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
-    glUniformMatrix4fv(MVP_Loc_Box, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix3fv(NM_Loc_Box, 1, GL_FALSE, &NM[0][0]);
-    glUniform4fv(sColor_Loc, 1, &sColor[0]);
-    glUniform3fv(lColor_Loc, 1, &lColor[0]);
-    glUniform3fv(lDir_Loc, 1, &lDir[0]);
-    glUniform1fv(Amb_Loc, 1, &fAmb);
 
-//    // ------ draw model --------------- //
-//    glBindVertexArray(VertexArrayID);
-//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-//    glBindVertexArray(GL_FALSE); //unbind
-//    // ----------------------------------//
-
-    box.render();
+    MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
+    NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
+    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
+    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
+    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
+    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
+    glUniform1i( Tex_Loc, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
-    glDisable( GL_CULL_FACE );
-    glDisable( GL_DEPTH_TEST );
-
 }
 
 void myPreSyncFun()
 {
     if( gEngine->isMaster() )
     {
-        curr_time.setVal( sgct::Engine::getTime() );
+        curr_time.setVal( sgct::Engine::getTime() ); //Används ej för tillfället?
 
         if( mouseLeftButton )
         {
@@ -287,7 +252,6 @@ void myPreSyncFun()
 
 
         bView = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
-        //cView = glm::inverse(glm::mat3(ViewRotateY)) * glm::vec3(0.0f, 0.0f, 1.0f);
 
         glm::vec3 right = glm::cross(bView, up);
 
@@ -355,11 +319,10 @@ void myPostSyncPreDrawFun()
         //reset locations
         sp.bind();
 
-        MVP_Loc_Box = sp.getUniformLocation( "MVP" );
-        NM_Loc_Box = sp.getUniformLocation( "NM" );
+        MVP_Loc = sp.getUniformLocation( "MVP" );
+        NM_Loc = sp.getUniformLocation( "NM" );
         Tex_Loc = sp.getUniformLocation( "Tex" );
         sColor_Loc = sp.getUniformLocation("sunColor");
-        lColor_Loc = sp.getUniformLocation("lightColor");
         lDir_Loc = sp.getUniformLocation("lightDir");
         Amb_Loc = sp.getUniformLocation("fAmbInt");
         glUniform1i( Tex_Loc, 0 );
@@ -369,42 +332,67 @@ void myPostSyncPreDrawFun()
     }
 }
 
-void myInitOGLFun()
+void myDrawFun()
 {
-    sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
-    sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
-    sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
+    glEnable( GL_DEPTH_TEST );
+    glEnable( GL_CULL_FACE );
 
-    if (glGenVertexArrays == NULL)
-    {
-        printf("THIS IS THE PROBLEM");
-    }
+    //create scene transform (animation)
+    glm::mat4 scene_mat = xform.getVal();
 
-    sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
-    box.readOBJ("box.obj");
+    //Projection matrix - för att ändra clipping
+    //glm::mat4 P = identity(); //Eller liknande
+    //mat4perspective(P, M_PI/4, 1.0, 0.1, 1000.0);
 
-    initHeightMap();
+    glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
+    glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
+    glm::mat3 NML = glm::inverseTranspose(glm::mat3( MV_light ));
 
-    //Set up backface culling
-    glCullFace(GL_BACK);
+    //glm::mat4 MVP = MV * P;
+    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
+    glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
-    sgct::ShaderManager::instance()->addShaderProgram( "xform",
-                                                      "simple.vert",
-                                                      "simple.frag" );
+    //Call calcSunPosition(); - vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
+
+    // Set light properties
+    float fSunDis = 70;
+    float fSunAngleTheta = -45.0f *3.1415/180.0; // Degrees Celsius to radians
+    float fSunAnglePhi = 20.0f *3.1415/180.0; //Degrees Celsius to radians
+    float fSine = sin(fSunAnglePhi);
+    glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
+    // We'll change color of skies depending on sun's position
+    glClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
+
+    glm::vec4 sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); //Calculate Sun Color depending on sunAngle!
+    glm::vec3 lDir = glm::normalize(vSunPos);
+    float fAmb = 0.3f; //Calculate Ambient Light depending on sunAngle!
+
+    drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
 
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
+    glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &NM[0][0]);
+    glUniform4fv(sColor_Loc, 1, &sColor[0]);
+    glUniform3fv(lDir_Loc, 1, &lDir[0]);
+    glUniform1fv(Amb_Loc, 1, &fAmb);
 
-    MVP_Loc_Box = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
-    NM_Loc_Box = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
-    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
-    lColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightColor" );
-    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
-    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
-    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
-    glUniform1i( Tex_Loc, 0 );
+//    // ------ draw model --------------- //
+//    glBindVertexArray(VertexArrayID);
+//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
+//    glBindVertexArray(GL_FALSE); //unbind
+//    // ----------------------------------//
+
+    box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    glDisable( GL_CULL_FACE );
+    glDisable( GL_DEPTH_TEST );
+
 }
 
 void myEncodeFun()
@@ -517,7 +505,6 @@ void mouseButtonCallback(int button, int action)
         switch( button ) {
             case SGCT_MOUSE_BUTTON_LEFT:
                 mouseLeftButton = (action == SGCT_PRESS ? true : false);
-                //double tmpYPos;
                 //set refPos
                 sgct::Engine::getMousePos(gEngine->getFocusedWindowIndex(), &mouseXPos[1], &mouseYPos[1]);
                 break;
@@ -525,38 +512,8 @@ void mouseButtonCallback(int button, int action)
     }
 }
 
-void drawHeightMap(glm::mat4 scene_mat)
-{
-    glEnable(GL_CULL_FACE);
 
-    glm::mat4 MVP		= gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
-    glm::mat4 MV		= gEngine->getActiveModelViewMatrix() * scene_mat;
-    glm::mat4 MV_light	= gEngine->getActiveModelViewMatrix();
-    glm::mat3 NM		= glm::inverseTranspose( glm::mat3( MV ) );
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "heightmap" ));
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "normalmap" ));
-
-    mSp.bind();
-
-    glUniformMatrix4fv(MVP_Loc_Ground,		1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix4fv(MV_Loc_Ground,		1, GL_FALSE, &MV[0][0]);
-    glUniformMatrix4fv(MVLight_Loc_Ground, 1, GL_FALSE, &MV_light[0][0]);
-    glUniformMatrix3fv(NM_Loc_Ground,		1, GL_FALSE, &NM[0][0]);
-
-    glBindVertexArray(vertexArray);
-
-    // Draw the triangle !
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, mNumberOfVerts);
-
-    //unbind
-    glBindVertexArray(0);
-
-    sgct::ShaderManager::instance()->unBindShaderProgram();
-}
+//REGULAR FUNCTIONS
 
 void initHeightMap()
 {
@@ -570,21 +527,16 @@ void initHeightMap()
     mSp.bind();
     myTextureLocations[0]	= mSp.getUniformLocation( "hTex" );
     myTextureLocations[1]	= mSp.getUniformLocation( "nTex" );
-    curr_timeLoc			= mSp.getUniformLocation( "curr_time" );
-    MVP_Loc_Ground					= mSp.getUniformLocation( "MVP" );
-    MV_Loc_Ground					= mSp.getUniformLocation( "MV" );
-    MVLight_Loc_Ground				= mSp.getUniformLocation( "MV_light" );
-    NM_Loc_Ground					= mSp.getUniformLocation( "normalMatrix" );
-    lightPos_Loc_Ground			= mSp.getUniformLocation( "lightPos" );
-    lightAmb_Loc_Ground			= mSp.getUniformLocation( "light_ambient" );
-    lightDif_Loc_Ground			= mSp.getUniformLocation( "light_diffuse" );
-    lightSpe_Loc_Ground			= mSp.getUniformLocation( "light_specular" );
+
+    MVP_Loc_G		= mSp.getUniformLocation( "MVP" );
+    MV_Loc_G		= mSp.getUniformLocation( "MV" );
+    MVL_Loc_G		= mSp.getUniformLocation( "MV_light" );
+    NM_Loc_G		= mSp.getUniformLocation( "normalMatrix" );
+    lDir_Loc_G		= mSp.getUniformLocation( "light_dir" );
+    Amb_Loc_G       = mSp.getUniformLocation( "lAmb");
     glUniform1i( myTextureLocations[0], 0 );
     glUniform1i( myTextureLocations[1], 1 );
-    glUniform4f( lightPos_Loc_Ground, lightPosition.x, lightPosition.y, lightPosition.z, 1.0f );
-    glUniform4f( lightAmb_Loc_Ground, lightAmbient.r, lightAmbient.g, lightAmbient.b, lightAmbient.a );
-    glUniform4f( lightDif_Loc_Ground, lightDiffuse.r, lightDiffuse.g, lightDiffuse.b, lightDiffuse.a );
-    glUniform4f( lightSpe_Loc_Ground, lightSpecular.r, lightSpecular.g, lightSpecular.b, lightSpecular.a );
+
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     //generate mesh
@@ -629,6 +581,38 @@ void initHeightMap()
     mVertPos.clear();
     mTexCoord.clear();
 }
+
+
+void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb)
+{
+    glEnable(GL_CULL_FACE);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "heightmap" ));
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "normalmap" ));
+
+    mSp.bind();
+
+    glUniformMatrix4fv(MVP_Loc_G, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(MV_Loc_G, 1, GL_FALSE, &MV[0][0]);
+    glUniformMatrix4fv(MVL_Loc_G, 1, GL_FALSE, &MV_light[0][0]);
+    glUniformMatrix3fv(NM_Loc_G, 1, GL_FALSE, &NM[0][0]);
+    glUniform3fv(lDir_Loc_G, 1, &lDir[0]);
+    glUniform1fv(Amb_Loc_G, 1, &fAmb);
+
+    glBindVertexArray(vertexArray);
+
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, mNumberOfVerts);
+
+    //unbind
+    glBindVertexArray(0);
+
+    mSp.unbind();
+}
+
 
 /*!
  Will draw a flat surface that can be used for the heightmapped terrain.
