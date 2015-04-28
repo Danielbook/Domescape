@@ -19,7 +19,6 @@
 //#include <SpiceZfc.h>
 #include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
-#include "objloader.hpp"
 #include "model.hpp"
 
 sgct::Engine * gEngine;
@@ -59,6 +58,7 @@ float runningSpeed = 5.0f;
 //REGULAR FUNCTIONS
 
 float calcSunPosition();
+
 //////////////////////HEIGTHMAP//////////////////////
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
 void initHeightMap();
@@ -214,6 +214,7 @@ void myInitOGLFun()
     Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
     Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
     glUniform1i( Tex_Loc, 0 );
+
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 }
@@ -429,19 +430,6 @@ void myDecodeFun()
  */
 void myCleanUpFun()
 {
-    if( VertexArrayID )
-    {
-        glDeleteVertexArrays(1, &VertexArrayID);
-        VertexArrayID = GL_FALSE;
-    }
-
-    if( vertexBuffers[0] ) //if first is created, all has been created.
-    {
-        glDeleteBuffers(3, &vertexBuffers[0]);
-        for(unsigned int i=0; i<3; i++)
-            vertexBuffers[i] = GL_FALSE;
-    }
-
     if(vertexPositionBuffer)
         glDeleteBuffers(1, &vertexPositionBuffer);
     if(texCoordBuffer)
