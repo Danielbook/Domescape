@@ -357,7 +357,7 @@ void myDrawFun()
 
     // Set light properties
     float fSunDis = 70;
-    float fSunAngleTheta = -45.0f *3.1415/180.0; // Degrees Celsius to radians
+    float fSunAngleTheta = 45.0f *3.1415/180.0; // Degrees Celsius to radians
     float fSunAnglePhi = 20.0f *3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));

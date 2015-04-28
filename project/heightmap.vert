@@ -28,7 +28,7 @@ void main()
 
 /*	vec3 v = vec3(MV * transformedVertex);
 	vec3 l = vec3(mat3(MV_light) * light_dir);
-	lDir = normalize(v - l);
+	lDir = normalize(l-v);
 */
 	lDir = normalize(normalMatrix * light_dir);
 

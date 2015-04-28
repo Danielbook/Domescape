@@ -20,16 +20,17 @@ vec4 calcShading( vec3 N, vec3 L )
 	Iamb = clamp(Iamb, 0.0, 1.0);
 
 	//Diffuse contribution
-	vec4 light_diffuse = vec4(0.7, 0.7, 0.7, 1.0);
+	vec4 light_diffuse = vec4(lAmb+0.3, lAmb+0.3, lAmb+0.3, 1.0);
 	vec4 Idiff = light_diffuse * max(dot(N,L), 0.0);
 	Idiff = clamp(Idiff, 0.0, 1.0);
 
 	//Specular contribution
-	vec3 V = vec3(0.0f, 0.0f, 1.0f);
+	vec3 V = vec3(0.0, 0.0, 1.0);
 	vec4 light_specular = vec4(1.0, 1.0, 1.0, 1.0);
 	const float specExp = 32.0f;
 
-	vec3 R = normalize(reflect(L,N));
+	//vec3 R = normalize(reflect(-L,N));
+	vec3 R = normalize(2.0* dot (N ,L) *L - L);
 	vec4 Ispec = light_specular	* pow(max(dot(R,V),0.0), specExp);
     Ispec = clamp(Ispec, 0.0, 1.0);
 

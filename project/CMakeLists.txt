@@ -169,8 +169,17 @@ if( CMAKE_COMPILER_IS_GNUCXX )
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
 endif()
 
+#CSPICE
 if( APPLE )
 	target_link_libraries(${APP_NAME} /usr/lib/cspice.a)
+elseif (MSVC)
+
+elseif (WIN32)
+
+else () #linux
+	target_link_libraries(${APP_NAME} /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a)
+
 endif()
+
 
 target_link_libraries(${APP_NAME} ${LIBS})
