@@ -2,15 +2,12 @@
 
 uniform sampler2D hTex;
 uniform sampler2D nTex;
-uniform vec4 light_ambient;
-uniform vec4 light_diffuse;
-uniform vec4 light_specular;
-uniform mat3 normalMatrix;
+uniform float lAmb;
 
 in vec2 UV;
 in float vScale;
-in vec3 light_dir;
-in vec3 v;
+in vec3 lDir;
+in mat3 NM;
 
 out vec4 color;
 
@@ -19,18 +16,22 @@ out vec4 color;
 vec4 calcShading( vec3 N, vec3 L )
 {
 	//Ambient contribution
-	vec4 Iamb = light_ambient;
+	vec4 Iamb = vec4(lAmb, lAmb, lAmb, 1.0);
+	Iamb = clamp(Iamb, 0.0, 1.0);
 
 	//Diffuse contribution
+	vec4 light_diffuse = vec4(lAmb+0.3, lAmb+0.3, lAmb+0.3, 1.0);
 	vec4 Idiff = light_diffuse * max(dot(N,L), 0.0);
 	Idiff = clamp(Idiff, 0.0, 1.0);
 
 	//Specular contribution
-	vec3 E = normalize(-v);
-	vec3 R = normalize(reflect(-L,N));
-	const float specExp = 32.0;
-	vec4 Ispec = light_specular
-		* pow(max(dot(R,E),0.0), specExp);
+	vec3 V = vec3(0.0, 0.0, 1.0);
+	vec4 light_specular = vec4(1.0, 1.0, 1.0, 1.0);
+	const float specExp = 32.0f;
+
+	//vec3 R = normalize(reflect(-L,N));
+	vec3 R = normalize(2.0* dot (N ,L) *L - L);
+	vec4 Ispec = light_specular	* pow(max(dot(R,V),0.0), specExp);
     Ispec = clamp(Ispec, 0.0, 1.0);
 
 	return Iamb + Idiff + Ispec;
@@ -38,6 +39,7 @@ vec4 calcShading( vec3 N, vec3 L )
 
 void main()
 {
+
 	vec3 pixelVals = texture( nTex, UV).rgb;
 	vec3 normal;
 	normal.x = (pixelVals.r * 2.0 - 1.0);
@@ -53,6 +55,6 @@ void main()
 	color.rgb = vec3(0.3,sin(Pi*hVal),0.0);
 
 	// multiply color with shading
-	color.rgb *= calcShading( normalize(normalMatrix * normal), light_dir ).rgb;
+	color.rgb *= calcShading( normalize(NM * normal), lDir ).rgb;
 	color.a = 1.0;
 }

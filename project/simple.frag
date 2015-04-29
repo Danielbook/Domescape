@@ -2,29 +2,18 @@
 
 uniform sampler2D Tex;
 uniform vec4 sunColor;
-uniform vec3 lightColor;
-//uniform vec3 lightDir;
 uniform float fAmbInt;
 
 in vec3 lDir;
 in vec2 UV;
 in vec3 tnormals;
+
 out vec4 color;
 
 
 void main()
 {
-	//color = texture(Tex, UV.st);
-
-	vec4 vTexColor = texture(Tex, UV.st);
-/*
-    float fDiffuseIntensity = max(0.0, dot(tnormals, lDir));
-    fDiffuseIntensity;
-    color = vTexColor*sunColor*vec4(lightColor*(fAmbInt+fDiffuseIntensity), 1.0);
-*/
-
-
- //PHONG TNM046
+ //PHONG from TNM046
 
 // vec3 L is the light direction
 // vec3 V is the view direction - (0 ,0 ,1) in view space
@@ -39,14 +28,15 @@ void main()
 // vec3 Is is the specular illumination color
 // This assumes that N, L and V are normalized .
 
+vec4 vTexColor = texture(Tex, UV.st);
 vec3 V = vec3(0.0,0.0,1.0);
 vec3 L = lDir;
 vec3 N = tnormals;
-float n = 10;
-vec3 ka = vec3(0.2,0.2,0.2);
-vec3 Ia = vec3(0.5,0.5,0.5);
+float n = 30;
+vec3 ka = vec3(fAmbInt-0.1,fAmbInt-0.1,fAmbInt-0.1);
+vec3 Ia = vec3(fAmbInt,fAmbInt,fAmbInt);
 vec3 kd = vec3(0.6,0.6,0.6);
-vec3 Id = vec3(1.0,1.0,1.0);
+vec3 Id = vec3(0.7,0.7,0.7);
 vec3 ks = vec3(0.8,0.8,0.8);
 vec3 Is = vec3(1.0,1.0,1.0);
 

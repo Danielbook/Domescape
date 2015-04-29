@@ -8,7 +8,7 @@ layout(location = 2) in vec2 inCoords;
 
 uniform mat4 MVP; //Model View Projection Matrix
 uniform mat3 NM; //Normal Matrix
-uniform vec3 lightDir;
+uniform vec3 lightDir; //Calculated light direction
 
 out vec3 lDir;
 out vec2 UV;
