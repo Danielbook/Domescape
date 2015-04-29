@@ -341,15 +341,17 @@ void myDrawFun()
     glm::mat4 scene_mat = xform.getVal();
 
     //Projection matrix - för att ändra clipping
-    //glm::mat4 P = identity(); //Eller liknande
-    //mat4perspective(P, M_PI/4, 1.0, 0.1, 1000.0);
+
+    glm::mat4 Model = glm::mat4(1.0f);
+    glm::mat4 P = glm::infinitePerspective(50.0f, 16.0f/9.0f, 0.1f);
+
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
     glm::mat3 NML = glm::inverseTranspose(glm::mat3( MV_light ));
 
-    //glm::mat4 MVP = MV * P;
-    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
+    glm::mat4 MVP = P * MV * Model;
+    //glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
     //Call calcSunPosition(); - vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
@@ -729,3 +731,4 @@ float calcSunPosition()
 
     return 0.0f;
 }
+
