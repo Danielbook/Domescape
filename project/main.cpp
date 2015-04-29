@@ -13,11 +13,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-//#include <SpiceUsr.h>
-#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
-//#include <SpiceZfc.h>
-#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
+#include <SpiceUsr.h>
+//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
+#include <SpiceZfc.h>
+//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
 
@@ -342,8 +341,10 @@ void myDrawFun()
     glm::mat4 scene_mat = xform.getVal();
 
     //Projection matrix - för att ändra clipping
+
     glm::mat4 Model = glm::mat4(1.0f);
     glm::mat4 P = glm::infinitePerspective(50.0f, 16.0f/9.0f, 0.1f);
+
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
