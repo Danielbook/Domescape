@@ -367,6 +367,8 @@ void myInitOGLFun()
     {
         printf("THIS IS THE PROBLEM");
     }
+    
+    
 
     sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
     box.readOBJ("box.obj");
