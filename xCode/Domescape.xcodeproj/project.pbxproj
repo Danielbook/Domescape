@@ -9,22 +9,22 @@
 /* Begin PBXAggregateTarget section */
               55CECED8FF6948BAAD2C5D6C /* ALL_BUILD */ = {
                      isa = PBXAggregateTarget;
-                     buildConfigurationList = B2108911AFF040338300E744 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+                     buildConfigurationList = FC86DD4AFE004A929432F9DA /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
                      buildPhases = (
-                            B64554A4838B46519517E982 /* CMake Rules */,
+                            A33CBA42B1024699B60E4F9D /* CMake Rules */,
                      );
                      dependencies = (
-                            C92CC8A698824D57933480AB /* PBXTargetDependency */,
-                            F5F46214E866472B8C21D744 /* PBXTargetDependency */,
+                            EDC6FF942E2440C1835119B7 /* PBXTargetDependency */,
+                            554EE73EEAA544D4AF307628 /* PBXTargetDependency */,
                      );
                      name = ALL_BUILD;
                      productName = ALL_BUILD;
               };
               13C3A2A59CD948199F3150E3 /* ZERO_CHECK */ = {
                      isa = PBXAggregateTarget;
-                     buildConfigurationList = 8A6C615E3281465E9AD376A1 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+                     buildConfigurationList = 07BB356AC7DD41F294E402F2 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
                      buildPhases = (
-                            1630024D1A5644E086EA4D4C /* CMake Rules */,
+                            6E0BF212A8944798B742B23F /* CMake Rules */,
                      );
                      dependencies = (
                      );
@@ -34,38 +34,38 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-DE8FA6C2F6F947509B5EC3DB /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = E4197344DAE04244AF40733C /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */; settings = { COMPILER_FLAGS = ""; }; };
-C76A7495530946B2ACEA1063 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */ = {isa = PBXBuildFile; fileRef = 23DA6ABF867945478999E075 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */; settings = { COMPILER_FLAGS = ""; }; };
-24823455928D4E209FA94A23 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */ = {isa = PBXBuildFile; fileRef = B5F88584E02C47C69B0185F7 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */; settings = { COMPILER_FLAGS = ""; }; };
-7F350B587E26413290BBEBBD /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */ = {isa = PBXBuildFile; fileRef = 7E25EF70DFB6405A8A580514 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */; settings = { COMPILER_FLAGS = ""; }; };
+02E4711AF8AF43E9AA5A5731 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = CE88F19256504B11B255D963 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */; settings = { COMPILER_FLAGS = ""; }; };
+DE2E8C811BE8482F8D83D4AA /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */ = {isa = PBXBuildFile; fileRef = E9FF04905B3F485B9BCAD3EB /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+F9A8C0E909B9442BAE806E33 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */ = {isa = PBXBuildFile; fileRef = 169A3300A33947BA88082F7D /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */; settings = { COMPILER_FLAGS = ""; }; };
+C10E37B790764E99AE7BAD29 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */ = {isa = PBXBuildFile; fileRef = 01CBFD80FE824A67A5842FAA /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */; settings = { COMPILER_FLAGS = ""; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildStyle section */
-              73C5A7A7F92F4526B7CD7A2D /*  */ = {
+              B1D159CE7DF947678E351449 /*  */ = {
                      isa = PBXBuildStyle;
               };
-              363BA3DD179A48CFA5D6E10E /* Debug */ = {
+              721024B6DE924CDC8F67F057 /* Debug */ = {
                      isa = PBXBuildStyle;
                      buildSettings = {
                             COPY_PHASE_STRIP = NO;
                      };
                      name = Debug;
               };
-              81A7D7963D0247A7B975D562 /* Release */ = {
+              F74075D476A943898F30010E /* Release */ = {
                      isa = PBXBuildStyle;
                      buildSettings = {
                             COPY_PHASE_STRIP = NO;
                      };
                      name = Release;
               };
-              B5163697CFE843FDAB33C025 /* MinSizeRel */ = {
+              DBFE8D4DF4C1487D98F88EC9 /* MinSizeRel */ = {
                      isa = PBXBuildStyle;
                      buildSettings = {
                             COPY_PHASE_STRIP = NO;
                      };
                      name = MinSizeRel;
               };
-              434CD5E00BF34668BE21C835 /* RelWithDebInfo */ = {
+              AA0AC7A8FEA4423890DFAF54 /* RelWithDebInfo */ = {
                      isa = PBXBuildStyle;
                      buildSettings = {
                             COPY_PHASE_STRIP = NO;
@@ -75,21 +75,21 @@ C76A7495530946B2ACEA1063 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik
 /* End PBXBuildStyle section */
 
 /* Begin PBXContainerItemProxy section */
-              4E12DD94B2BE4A13A47C4DEF /* PBXContainerItemProxy */ = {
-                     isa = PBXContainerItemProxy;
-                     containerPortal = 2D5A6D982B154FFE86390752 /* Project object */;
-                     proxyType = 1;
-                     remoteGlobalIDString = 13C3A2A59CD948199F3150E3;
-                     remoteInfo = ZERO_CHECK;
-              };
-              8CAD1CFA819A4266AA50B77F /* PBXContainerItemProxy */ = {
+              D5B741BBFD4C420187709526 /* PBXContainerItemProxy */ = {
                      isa = PBXContainerItemProxy;
                      containerPortal = 2D5A6D982B154FFE86390752 /* Project object */;
                      proxyType = 1;
                      remoteGlobalIDString = 7443292CDE7641E0ACA14884;
                      remoteInfo = Domescape;
               };
-              1A90D3560EFF4806A0595656 /* PBXContainerItemProxy */ = {
+              CFCBB7D9DC0E4BC58525255A /* PBXContainerItemProxy */ = {
+                     isa = PBXContainerItemProxy;
+                     containerPortal = 2D5A6D982B154FFE86390752 /* Project object */;
+                     proxyType = 1;
+                     remoteGlobalIDString = 13C3A2A59CD948199F3150E3;
+                     remoteInfo = ZERO_CHECK;
+              };
+              3C7CA6A793B04E58903EF3CF /* PBXContainerItemProxy */ = {
                      isa = PBXContainerItemProxy;
                      containerPortal = 2D5A6D982B154FFE86390752 /* Project object */;
                      proxyType = 1;
@@ -99,105 +99,105 @@ C76A7495530946B2ACEA1063 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-710AA510BC05478FAD1B1CE4 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
-E4197344DAE04244AF40733C /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
-23DA6ABF867945478999E075 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "main.cpp"; path = "main.cpp"; sourceTree = SOURCE_ROOT; };
-B5F88584E02C47C69B0185F7 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "model.cpp"; path = "model.cpp"; sourceTree = SOURCE_ROOT; };
-7E25EF70DFB6405A8A580514 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.h"; fileEncoding = 4; name = "model.hpp"; path = "model.hpp"; sourceTree = SOURCE_ROOT; };
-CF385679C4E943779B3038C5 /* Domescape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = Domescape; refType = 0; sourceTree = BUILT_PRODUCTS_DIR; };
-55A838C979A6464F9B6FD830 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+FCEF7BEA13724CD195861887 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+CE88F19256504B11B255D963 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
+E9FF04905B3F485B9BCAD3EB /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "main.cpp"; path = "main.cpp"; sourceTree = SOURCE_ROOT; };
+169A3300A33947BA88082F7D /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.cpp"; fileEncoding = 4; name = "model.cpp"; path = "model.cpp"; sourceTree = SOURCE_ROOT; };
+01CBFD80FE824A67A5842FAA /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */ = {isa = PBXFileReference; explicitFileType = "sourcecode.cpp.h"; fileEncoding = 4; name = "model.hpp"; path = "model.hpp"; sourceTree = SOURCE_ROOT; };
+F31A137B4B2841D5B6AB674C /* Domescape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = Domescape; refType = 0; sourceTree = BUILT_PRODUCTS_DIR; };
+F2EDA66D13714C979AA5642B /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = "sourcecode.text"; fileEncoding = 4; name = "CMakeLists.txt"; path = "CMakeLists.txt"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-              545440C3077F45FC8D2ABB0C  = {
+              6D608D6A11A44B349ABC1FAF  = {
                      isa = PBXGroup;
                      children = (
-                            053003B5781A439591AF39A1 /* Sources */,
-                            6F8D6E19AB034277A594F41B /* Resources */,
-                            487EE55949964E5EB67B3291 /* Products */,
+                            59440ABA24C74FAD9B0CC18D /* Sources */,
+                            D3C6A762C6A04497A868DD26 /* Resources */,
+                            DB97EABFEF18469990F21439 /* Products */,
                      );
                      sourceTree = "<group>";
               };
-              053003B5781A439591AF39A1 /* Sources */ = {
+              59440ABA24C74FAD9B0CC18D /* Sources */ = {
                      isa = PBXGroup;
                      children = (
-                            818BCC1349564B85ADDC4398 /* ALL_BUILD */,
-                            2EF6A7536C994EAABBBAE1E7 /* ZERO_CHECK */,
-                            C4ABDE23D24643AF904A8BF3 /* Domescape */,
+                            DBA7A58A86C84885B6D115C7 /* ALL_BUILD */,
+                            744D99338A0C4A4C96A863F3 /* ZERO_CHECK */,
+                            D6ED963BB93443038D42A90E /* Domescape */,
                      );
                      name = Sources;
                      sourceTree = "<group>";
               };
-              6F8D6E19AB034277A594F41B /* Resources */ = {
+              D3C6A762C6A04497A868DD26 /* Resources */ = {
                      isa = PBXGroup;
                      children = (
                      );
                      name = Resources;
                      sourceTree = "<group>";
               };
-              818BCC1349564B85ADDC4398 /* ALL_BUILD */ = {
+              DBA7A58A86C84885B6D115C7 /* ALL_BUILD */ = {
                      isa = PBXGroup;
                      children = (
-                            20340A3A364341F89EE0F552 /* CMake Rules */,
-                            710AA510BC05478FAD1B1CE4 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */,
+                            0474DA6C56BF459AA8C05D06 /* CMake Rules */,
+                            FCEF7BEA13724CD195861887 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */,
                      );
                      name = ALL_BUILD;
                      sourceTree = "<group>";
               };
-              20340A3A364341F89EE0F552 /* CMake Rules */ = {
+              0474DA6C56BF459AA8C05D06 /* CMake Rules */ = {
                      isa = PBXGroup;
                      children = (
                      );
                      name = "CMake Rules";
                      sourceTree = "<group>";
               };
-              2EF6A7536C994EAABBBAE1E7 /* ZERO_CHECK */ = {
+              744D99338A0C4A4C96A863F3 /* ZERO_CHECK */ = {
                      isa = PBXGroup;
                      children = (
-                            617A9519329F40ADB3835376 /* CMake Rules */,
-                            55A838C979A6464F9B6FD830 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */,
+                            CC952EA0C76F48BAA9F97DE9 /* CMake Rules */,
+                            F2EDA66D13714C979AA5642B /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */,
                      );
                      name = ZERO_CHECK;
                      sourceTree = "<group>";
               };
-              617A9519329F40ADB3835376 /* CMake Rules */ = {
+              CC952EA0C76F48BAA9F97DE9 /* CMake Rules */ = {
                      isa = PBXGroup;
                      children = (
                      );
                      name = "CMake Rules";
                      sourceTree = "<group>";
               };
-              C4ABDE23D24643AF904A8BF3 /* Domescape */ = {
+              D6ED963BB93443038D42A90E /* Domescape */ = {
                      isa = PBXGroup;
                      children = (
-                            2426327F1D8245E3BCD0E3D4 /* Source Files */,
-                            F410C90C5AAA4D26A9E322AD /* Header Files */,
-                            E4197344DAE04244AF40733C /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */,
+                            5D24779D3EEF466DA7A65349 /* Source Files */,
+                            FA5D9B82C02148FA89FFD3A1 /* Header Files */,
+                            CE88F19256504B11B255D963 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/CMakeLists.txt */,
                      );
                      name = Domescape;
                      sourceTree = "<group>";
               };
-              2426327F1D8245E3BCD0E3D4 /* Source Files */ = {
+              5D24779D3EEF466DA7A65349 /* Source Files */ = {
                      isa = PBXGroup;
                      children = (
-                            23DA6ABF867945478999E075 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */,
-                            B5F88584E02C47C69B0185F7 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */,
+                            E9FF04905B3F485B9BCAD3EB /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */,
+                            169A3300A33947BA88082F7D /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */,
                      );
                      name = "Source Files";
                      sourceTree = "<group>";
               };
-              F410C90C5AAA4D26A9E322AD /* Header Files */ = {
+              FA5D9B82C02148FA89FFD3A1 /* Header Files */ = {
                      isa = PBXGroup;
                      children = (
-                            7E25EF70DFB6405A8A580514 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */,
+                            01CBFD80FE824A67A5842FAA /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.hpp */,
                      );
                      name = "Header Files";
                      sourceTree = "<group>";
               };
-              487EE55949964E5EB67B3291 /* Products */ = {
+              DB97EABFEF18469990F21439 /* Products */ = {
                      isa = PBXGroup;
                      children = (
-                            CF385679C4E943779B3038C5 /* Domescape */,
+                            F31A137B4B2841D5B6AB674C /* Domescape */,
                      );
                      name = Products;
                      sourceTree = "<group>";
@@ -207,18 +207,18 @@ CF385679C4E943779B3038C5 /* Domescape */ = {isa = PBXFileReference; explicitFile
 /* Begin PBXNativeTarget section */
               7443292CDE7641E0ACA14884 /* Domescape */ = {
                      isa = PBXNativeTarget;
-                     buildConfigurationList = 8E1C5B6F08CB4974BFA6AA20 /* Build configuration list for PBXNativeTarget "Domescape" */;
+                     buildConfigurationList = D82641798A434969BCE26A02 /* Build configuration list for PBXNativeTarget "Domescape" */;
                      buildPhases = (
-                            10F504CC689C480AA91B90B4 /* Sources */,
+                            6065B093FA734B65A37620FE /* Sources */,
                      );
                      buildRules = (
                      );
                      dependencies = (
-                            509BADB434F9473693C3A302 /* PBXTargetDependency */,
+                            A63BE798B9484176A79EC323 /* PBXTargetDependency */,
                      );
                      name = Domescape;
                      productName = Domescape;
-                     productReference = CF385679C4E943779B3038C5 /* Domescape */;
+                     productReference = F31A137B4B2841D5B6AB674C /* Domescape */;
                      productType = "com.apple.product-type.tool";
               };
 /* End PBXNativeTarget section */
@@ -229,18 +229,18 @@ CF385679C4E943779B3038C5 /* Domescape */ = {isa = PBXFileReference; explicitFile
                      attributes = {
                             BuildIndependentTargetsInParallel = YES;
                      };
-                     buildConfigurationList = 88A0CD86BAF8493A8D675820 /* Build configuration list for PBXProject  "Domescape" */;
+                     buildConfigurationList = DD67422735F248379A86B730 /* Build configuration list for PBXProject  "Domescape" */;
                      buildSettings = {
                      };
                      buildStyles = (
-                            363BA3DD179A48CFA5D6E10E /* Debug */,
-                            81A7D7963D0247A7B975D562 /* Release */,
-                            B5163697CFE843FDAB33C025 /* MinSizeRel */,
-                            434CD5E00BF34668BE21C835 /* RelWithDebInfo */,
+                            721024B6DE924CDC8F67F057 /* Debug */,
+                            F74075D476A943898F30010E /* Release */,
+                            DBFE8D4DF4C1487D98F88EC9 /* MinSizeRel */,
+                            AA0AC7A8FEA4423890DFAF54 /* RelWithDebInfo */,
                      );
                      compatibilityVersion = "Xcode 3.2";
                      hasScannedForEncodings = 0;
-                     mainGroup = 545440C3077F45FC8D2ABB0C;
+                     mainGroup = 6D608D6A11A44B349ABC1FAF;
                      projectDirPath = "/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project";
                      projectRoot = "";
                      targets = (
@@ -252,7 +252,7 @@ CF385679C4E943779B3038C5 /* Domescape */ = {isa = PBXFileReference; explicitFile
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-              5F0B4224CE794C20B06C7FCF /*  */ = {
+              D1F03977582B4CA1A2EDC026 /*  */ = {
                      isa = PBXShellScriptBuildPhase;
                      buildActionMask = 2147483647;
                      files = (
@@ -267,7 +267,7 @@ CF385679C4E943779B3038C5 /* Domescape */ = {isa = PBXFileReference; explicitFile
 exit 0";
                      showEnvVarsInLog = 0;
               };
-              B64554A4838B46519517E982 /* CMake Rules */ = {
+              A33CBA42B1024699B60E4F9D /* CMake Rules */ = {
                      isa = PBXShellScriptBuildPhase;
                      buildActionMask = 2147483647;
                      files = (
@@ -278,7 +278,7 @@ exit 0";
                      shellScript = "make -C /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode -f /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/xCode/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
                      showEnvVarsInLog = 0;
               };
-              D6653562BF8A4021A5F43717 /*  */ = {
+              5CE2EB7560564D5AB652F9E1 /*  */ = {
                      isa = PBXShellScriptBuildPhase;
                      buildActionMask = 2147483647;
                      files = (
@@ -293,7 +293,7 @@ exit 0";
 exit 0";
                      showEnvVarsInLog = 0;
               };
-              1630024D1A5644E086EA4D4C /* CMake Rules */ = {
+              6E0BF212A8944798B742B23F /* CMake Rules */ = {
                      isa = PBXShellScriptBuildPhase;
                      buildActionMask = 2147483647;
                      files = (
@@ -307,37 +307,37 @@ exit 0";
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-              10F504CC689C480AA91B90B4 /* Sources */ = {
+              6065B093FA734B65A37620FE /* Sources */ = {
                      isa = PBXSourcesBuildPhase;
                      buildActionMask = 2147483647;
                      files = (
-                            C76A7495530946B2ACEA1063 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */,
-                            24823455928D4E209FA94A23 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */,
+                            DE2E8C811BE8482F8D83D4AA /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/main.cpp */,
+                            F9A8C0E909B9442BAE806E33 /* /Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/project/model.cpp */,
                      );
                      runOnlyForDeploymentPostprocessing = 0;
               };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-              C92CC8A698824D57933480AB /* PBXTargetDependency */ = {
-                     isa = PBXTargetDependency;
-                     target = 13C3A2A59CD948199F3150E3 /* ZERO_CHECK */;
-                     targetProxy = 4E12DD94B2BE4A13A47C4DEF /* PBXContainerItemProxy */;
-              };
-              F5F46214E866472B8C21D744 /* PBXTargetDependency */ = {
+              EDC6FF942E2440C1835119B7 /* PBXTargetDependency */ = {
                      isa = PBXTargetDependency;
                      target = 7443292CDE7641E0ACA14884 /* Domescape */;
-                     targetProxy = 8CAD1CFA819A4266AA50B77F /* PBXContainerItemProxy */;
+                     targetProxy = D5B741BBFD4C420187709526 /* PBXContainerItemProxy */;
               };
-              509BADB434F9473693C3A302 /* PBXTargetDependency */ = {
+              554EE73EEAA544D4AF307628 /* PBXTargetDependency */ = {
                      isa = PBXTargetDependency;
                      target = 13C3A2A59CD948199F3150E3 /* ZERO_CHECK */;
-                     targetProxy = 1A90D3560EFF4806A0595656 /* PBXContainerItemProxy */;
+                     targetProxy = CFCBB7D9DC0E4BC58525255A /* PBXContainerItemProxy */;
+              };
+              A63BE798B9484176A79EC323 /* PBXTargetDependency */ = {
+                     isa = PBXTargetDependency;
+                     target = 13C3A2A59CD948199F3150E3 /* ZERO_CHECK */;
+                     targetProxy = 3C7CA6A793B04E58903EF3CF /* PBXContainerItemProxy */;
               };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-              F61D39992C80458BA65D7DA8 /* Debug */ = {
+              F53BC90D92EE43609EB65B35 /* Debug */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             ARCHS = x86_64;
@@ -347,7 +347,7 @@ exit 0";
                      };
                      name = Debug;
               };
-              8F3FCBEBEFA546BA955984D6 /* Release */ = {
+              975E71FCF3FC40989F674C76 /* Release */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             ARCHS = x86_64;
@@ -357,7 +357,7 @@ exit 0";
                      };
                      name = Release;
               };
-              6C14FCE65C3541328B94F4E7 /* MinSizeRel */ = {
+              C0E8CC96CCCB4BEC921641F0 /* MinSizeRel */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             ARCHS = x86_64;
@@ -367,7 +367,7 @@ exit 0";
                      };
                      name = MinSizeRel;
               };
-              A9760D0736824736954D6EAA /* RelWithDebInfo */ = {
+              68205CFF49E44EAA8C0ED9F2 /* RelWithDebInfo */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             ARCHS = x86_64;
@@ -377,7 +377,7 @@ exit 0";
                      };
                      name = RelWithDebInfo;
               };
-              5CF9BB2CC9434045B7EF6C94 /* Debug */ = {
+              3866174516E74EAA9B1B42B3 /* Debug */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -399,7 +399,7 @@ exit 0";
                      };
                      name = Debug;
               };
-              BE136F2630AD43EF8CC6CB21 /* Release */ = {
+              C4DF3ABACE7048B78E10AFBC /* Release */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -421,7 +421,7 @@ exit 0";
                      };
                      name = Release;
               };
-              5C694506A9B04E8C9ED9661F /* MinSizeRel */ = {
+              B96A65527C41489099E3D6F7 /* MinSizeRel */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -443,7 +443,7 @@ exit 0";
                      };
                      name = MinSizeRel;
               };
-              15B5226DD41F47BEA774DE2F /* RelWithDebInfo */ = {
+              96F01D830B1F46949E38FD6E /* RelWithDebInfo */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -465,7 +465,7 @@ exit 0";
                      };
                      name = RelWithDebInfo;
               };
-              AF1E6C0660464C2C9B2DAE03 /* Debug */ = {
+              BCD16BFD91B049978D1A0306 /* Debug */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             CLANG_CXX_LANGUAGE_STANDARD = "c++11";
@@ -494,7 +494,7 @@ exit 0";
                      };
                      name = Debug;
               };
-              9AFB0F97784642BD9A5C2D59 /* Release */ = {
+              B0381599A140461BBD9C0A4E /* Release */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             CLANG_CXX_LANGUAGE_STANDARD = "c++11";
@@ -523,7 +523,7 @@ exit 0";
                      };
                      name = Release;
               };
-              357E32BF72BF4A9982951436 /* MinSizeRel */ = {
+              81ECBD4D432F47989C74A432 /* MinSizeRel */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             CLANG_CXX_LANGUAGE_STANDARD = "c++11";
@@ -552,7 +552,7 @@ exit 0";
                      };
                      name = MinSizeRel;
               };
-              ACF22A8B9ED34AF987F0DF7C /* RelWithDebInfo */ = {
+              452D7C4BD6A14C7495AF07BA /* RelWithDebInfo */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             CLANG_CXX_LANGUAGE_STANDARD = "c++11";
@@ -581,7 +581,7 @@ exit 0";
                      };
                      name = RelWithDebInfo;
               };
-              88201117137A43A5B06DF113 /* Debug */ = {
+              8A854FBD0D72401787E33077 /* Debug */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -603,7 +603,7 @@ exit 0";
                      };
                      name = Debug;
               };
-              F27306CDB2434E6FBC4845A7 /* Release */ = {
+              85C342A8EFBD415DBA2D503E /* Release */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -625,7 +625,7 @@ exit 0";
                      };
                      name = Release;
               };
-              4924BA47CD9D4FEDAF63C87D /* MinSizeRel */ = {
+              B1458026F5AC48DDB8784A5F /* MinSizeRel */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -647,7 +647,7 @@ exit 0";
                      };
                      name = MinSizeRel;
               };
-              7DF46019850E4B1391D1E1BB /* RelWithDebInfo */ = {
+              FB86218116B64296809C4C01 /* RelWithDebInfo */ = {
                      isa = XCBuildConfiguration;
                      buildSettings = {
                             COMBINE_HIDPI_IMAGES = YES;
@@ -672,46 +672,46 @@ exit 0";
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-              88A0CD86BAF8493A8D675820 /* Build configuration list for PBXProject  "Domescape" */ = {
+              DD67422735F248379A86B730 /* Build configuration list for PBXProject  "Domescape" */ = {
                      isa = XCConfigurationList;
                      buildConfigurations = (
-                            F61D39992C80458BA65D7DA8 /* Debug */,
-                            8F3FCBEBEFA546BA955984D6 /* Release */,
-                            6C14FCE65C3541328B94F4E7 /* MinSizeRel */,
-                            A9760D0736824736954D6EAA /* RelWithDebInfo */,
+                            F53BC90D92EE43609EB65B35 /* Debug */,
+                            975E71FCF3FC40989F674C76 /* Release */,
+                            C0E8CC96CCCB4BEC921641F0 /* MinSizeRel */,
+                            68205CFF49E44EAA8C0ED9F2 /* RelWithDebInfo */,
                      );
                      defaultConfigurationIsVisible = 0;
                      defaultConfigurationName = Debug;
               };
-              B2108911AFF040338300E744 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+              FC86DD4AFE004A929432F9DA /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
                      isa = XCConfigurationList;
                      buildConfigurations = (
-                            5CF9BB2CC9434045B7EF6C94 /* Debug */,
-                            BE136F2630AD43EF8CC6CB21 /* Release */,
-                            5C694506A9B04E8C9ED9661F /* MinSizeRel */,
-                            15B5226DD41F47BEA774DE2F /* RelWithDebInfo */,
+                            3866174516E74EAA9B1B42B3 /* Debug */,
+                            C4DF3ABACE7048B78E10AFBC /* Release */,
+                            B96A65527C41489099E3D6F7 /* MinSizeRel */,
+                            96F01D830B1F46949E38FD6E /* RelWithDebInfo */,
                      );
                      defaultConfigurationIsVisible = 0;
                      defaultConfigurationName = Debug;
               };
-              8E1C5B6F08CB4974BFA6AA20 /* Build configuration list for PBXNativeTarget "Domescape" */ = {
+              D82641798A434969BCE26A02 /* Build configuration list for PBXNativeTarget "Domescape" */ = {
                      isa = XCConfigurationList;
                      buildConfigurations = (
-                            AF1E6C0660464C2C9B2DAE03 /* Debug */,
-                            9AFB0F97784642BD9A5C2D59 /* Release */,
-                            357E32BF72BF4A9982951436 /* MinSizeRel */,
-                            ACF22A8B9ED34AF987F0DF7C /* RelWithDebInfo */,
+                            BCD16BFD91B049978D1A0306 /* Debug */,
+                            B0381599A140461BBD9C0A4E /* Release */,
+                            81ECBD4D432F47989C74A432 /* MinSizeRel */,
+                            452D7C4BD6A14C7495AF07BA /* RelWithDebInfo */,
                      );
                      defaultConfigurationIsVisible = 0;
                      defaultConfigurationName = Debug;
               };
-              8A6C615E3281465E9AD376A1 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+              07BB356AC7DD41F294E402F2 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
                      isa = XCConfigurationList;
                      buildConfigurations = (
-                            88201117137A43A5B06DF113 /* Debug */,
-                            F27306CDB2434E6FBC4845A7 /* Release */,
-                            4924BA47CD9D4FEDAF63C87D /* MinSizeRel */,
-                            7DF46019850E4B1391D1E1BB /* RelWithDebInfo */,
+                            8A854FBD0D72401787E33077 /* Debug */,
+                            85C342A8EFBD415DBA2D503E /* Release */,
+                            B1458026F5AC48DDB8784A5F /* MinSizeRel */,
+                            FB86218116B64296809C4C01 /* RelWithDebInfo */,
                      );
                      defaultConfigurationIsVisible = 0;
                      defaultConfigurationName = Debug;

@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
+               BlueprintIdentifier = "7443292CDE7641E0ACA14884"
                BuildableName = "Domescape"
                BlueprintName = "Domescape"
                ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
+            BlueprintIdentifier = "7443292CDE7641E0ACA14884"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -52,7 +52,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
+            BlueprintIdentifier = "7443292CDE7641E0ACA14884"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -81,7 +81,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4979F2BC02D94F6BAF767AA6"
+            BlueprintIdentifier = "7443292CDE7641E0ACA14884"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">

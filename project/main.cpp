@@ -659,15 +659,19 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
 }
 
 /*
- ilumin_c - finds the illumination angles at a specified surface point of a target body.
- phaseq_c - computes the apparent phase angle between the centers of target, observer, and illuminator ephemeris objects.
- Brief Example:
- The following example computes the illumination angles for a point
- specified using planetocentric coordinates, observed by MGS:
+ Hi,
+ there are a couple of functions that you can use:
+ subslr_c (http://naif.jpl.nasa.gov/…/toolkit_d…/C/cspice/subslr_c.html) provides you wiht the coordinates on the Earth where the Sun is directly above.
+ illumin_c (ftp://naif.jpl.nasa.gov/…/toolkit_do…/C/cspice/ilumin_c.html) to get all of the angles that are necessary for your computation.
+ The two necessary kernels:
+ http://naif.jpl.nasa.gov/…/generic_ke…/spk/planets/de430.bsp Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
+ http://naif.jpl.nasa.gov/…/naif/generic_ke…/lsk/naif0011.tls Is a leapsecond kernel so that you get the accurate times
+ After loading the kernels, you can use the str2et_c function to convert between time as a string into ET, which is in seconds. All functions take the time as ET to compute their values. Using the illumin_c function you can get the different angles to compute the lighting information.
+ Hope that helps,
+ Alex
  */
 float calcSunPosition()
 {
-    SpiceDouble r = 3390.42;
     SpiceDouble lon = 175.30;
     SpiceDouble lat = -14.59;
     SpiceDouble point[3];
@@ -676,28 +680,52 @@ float calcSunPosition()
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
 
-    /*
-     load kernels: LSK, PCK, planet/satellite SPK
-     and MGS spacecraft SPK
-     */
-    furnsh_c( "kernels/naif0011.tls" );
-    furnsh_c( "kernels/mars_iau2000_v0.tpc"         );
-    furnsh_c( "kernels/mar063.bsp" );
-    furnsh_c( "kernels/mgs_ext22.bsp" );
-    /*
-     convert planetocentric r/lon/lat to Cartesian vector
-     */
-    latrec_c( r, lon * rpd_c(), lat * rpd_c(), point );
-    /*
-     convert UTC to ET
-     */
+    
+    //load kernels
+    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times.
+    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times.
+    
+    //Used to convert between time as a string into ET, which is in seconds.
     str2et_c ( "2006 JAN 31 01:00", &et );
+    
     /*
-     compute illumination angles
-     */
-    ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
-              "LT+S", "MGS", point,
-              &trgepc, srfvec, &phase, &solar, &emissn );
+     Provides you with the coordinates on the Earth where the Sun is directly above
+              |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
+     subslr_c("method", "target", "et", "fixref", "abcorr", "obsrvr", "spoint", "trgepc", "srfvec");
+     method: Is the name of the computation method, use "Intercept: ellipsoid"
+     target: Is the name of the target body
+     et:     Is the epoch, time stuff...
+     fixref: Is the name of the body-fixed, body-centered reference frame associated with the target body
+     abcorr: Is the aberration correction to be used, use "LT+S"
+     obsrvr: Is the name of the observing body.  This is typically a spacecraft, the earth, or a surface point on the earth.
+     spoint: Is a surface point on the target body, expressed in Cartesian coordinates
+     trgepc: Is the "sub-solar point epoch."
+     srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
+    
+               |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    */
+    subslr_c ( "Intercept: ellipsoid", "EARTH", et, "iau_mars", "LT+S", "EARTH", point, &trgepc, srfvec );
+    
+    /*
+     Using the illumin_c function you can get the different angles to compute the lighting information
+              |-----------------------------INPUT----------------------------|  |------------------OUTPUT--------------------|
+     ilumin_c("method", "target", "et", "fixref", "abcorr", "obsrvr", "spoint", "trgepc", "srfvec", "phase", "solar", "emissn")
+     method: The only choice currently supported is "Ellipsoid"
+     target: Is the name of the target body
+     et:     Is the epoch, time stuff...
+     fixref: Is the name of the body-fixed, body-centered reference frame associated with the target body
+     abcorr: Is the aberration correction to be used, use "LT+S"
+     obsrvr: Is the name of the observing body.  This is typically a spacecraft, the earth, or a surface point on the earth.
+     spoint: Is a surface point on the target body, expressed in Cartesian coordinates
+     trgepc: Is the "surface point point epoch." `trgepc' is expressed as seconds
+     srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
+     phase:  Is the phase angle at `spoint', as seen from `obsrvr' at time `et'.
+     solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
+     emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
+               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
+    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_MARS", "LT+S", "MGS", point, &trgepc, srfvec, &phase, &solar, &emissn );
+    
+    printf ( "\n"
+             "  ");
 
     return 0.0f;
 }
