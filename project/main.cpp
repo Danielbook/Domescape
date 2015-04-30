@@ -180,7 +180,9 @@ int main( int argc, char* argv[] )
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     
     float test = calcSunPosition();
-
+    
+    std::cout << "Phase: " << test << std::endl;
+    
     // Main loop
     gEngine->render();
 
@@ -730,8 +732,7 @@ float calcSunPosition()
                |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
     ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
     
-    printf ( "\nHEJHEJHEJ: ", trgepc);
-
-    return 0.0f;
+    //Oklart vad vid ska skicka tillbaks... Fungerar iaf...
+    return (float)solar;
 }
 
