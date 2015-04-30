@@ -141,6 +141,13 @@ int main( int argc, char* argv[] )
     gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
+    
+    /*------------------SPICE------------------*/
+    //load kernels
+    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
+    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
+    furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
+    /*-----------------------------------------*/
 
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
@@ -171,6 +178,8 @@ int main( int argc, char* argv[] )
 #endif
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
+    
+    float test = calcSunPosition();
 
     // Main loop
     gEngine->render();
@@ -681,14 +690,9 @@ float calcSunPosition()
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
-
-    
-    //load kernels
-    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times.
-    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times.
     
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( "2006 JAN 31 01:00", &et );
+/**/str2et_c ( "2006 JAN 31 01:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
     
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
@@ -705,7 +709,7 @@ float calcSunPosition()
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
     
                |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    */
-    subslr_c ( "Intercept: ellipsoid", "EARTH", et, "iau_mars", "LT+S", "EARTH", point, &trgepc, srfvec );
+    subslr_c ( "Intercept: ellipsoid", "EARTH", et, "iau_earth", "LT+S", "SUN", point, &trgepc, srfvec );
     
     /*
      Using the illumin_c function you can get the different angles to compute the lighting information
@@ -724,10 +728,9 @@ float calcSunPosition()
      solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
      emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
                |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
-    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_MARS", "LT+S", "MGS", point, &trgepc, srfvec, &phase, &solar, &emissn );
+    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
     
-    printf ( "\n"
-             "  ");
+    printf ( "\nHEJHEJHEJ: ", trgepc);
 
     return 0.0f;
 }

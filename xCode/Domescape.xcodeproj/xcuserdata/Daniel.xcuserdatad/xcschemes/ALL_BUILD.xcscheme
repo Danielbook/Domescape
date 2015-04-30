@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7817F825C91C487C96D4254B"
+               BlueprintIdentifier = "55CECED8FF6948BAAD2C5D6C"
                BuildableName = "ALL_BUILD"
                BlueprintName = "ALL_BUILD"
                ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -42,7 +42,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7817F825C91C487C96D4254B"
+            BlueprintIdentifier = "55CECED8FF6948BAAD2C5D6C"
             BuildableName = "ALL_BUILD"
             BlueprintName = "ALL_BUILD"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -60,7 +60,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7817F825C91C487C96D4254B"
+            BlueprintIdentifier = "55CECED8FF6948BAAD2C5D6C"
             BuildableName = "ALL_BUILD"
             BlueprintName = "ALL_BUILD"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
