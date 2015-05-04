@@ -191,6 +191,8 @@ int main( int argc, char* argv[] )
 
     // Exit program
     exit( EXIT_SUCCESS );
+    
+    return( 0 );
 }
 
 void myInitOGLFun()
@@ -392,12 +394,6 @@ void myDrawFun()
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
-
-//    // ------ draw model --------------- //
-//    glBindVertexArray(VertexArrayID);
-//    glDrawArrays(GL_TRIANGLES, 0, numberOfVertices );
-//    glBindVertexArray(GL_FALSE); //unbind
-//    // ----------------------------------//
 
     box.render();
 
@@ -683,8 +679,11 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Hope that helps,
  Alex
  */
-float calcSunPosition()
-{
+float calcSunPosition(){
+    SpiceChar *abcorr;
+    SpiceChar *obsrvr;
+    SpiceChar *target;
+    
     SpiceDouble lon = 175.30;
     SpiceDouble lat = -14.59;
     SpiceDouble point[3];
@@ -693,8 +692,18 @@ float calcSunPosition()
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
     
+    #define   STRLEN    32
+    SpiceChar UTCDate[STRLEN];
+
+    //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
+    //prompt_c("Date: ", STRLEN, UTCDate);
+    
     //Used to convert between time as a string into ET, which is in seconds.
-/**/str2et_c ( "2006 JAN 31 01:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+    
+    target = "EARTH";
+    obsrvr = "SUN";
+    abcorr = "LT+S";
     
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
@@ -711,7 +720,7 @@ float calcSunPosition()
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
     
                |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    */
-    subslr_c ( "Intercept: ellipsoid", "EARTH", et, "iau_earth", "LT+S", "SUN", point, &trgepc, srfvec );
+    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, point, &trgepc, srfvec );
     
     /*
      Using the illumin_c function you can get the different angles to compute the lighting information
@@ -732,7 +741,10 @@ float calcSunPosition()
                |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
     ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
     
-    //Oklart vad vid ska skicka tillbaks... Fungerar iaf...
-    return (float)solar;
+    //Convert the angles to degrees
+    phase *= dpr_c();
+    
+    //Tror vi ska skicka tillbaka phase
+    return phase;
 }
 
