@@ -680,29 +680,36 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Alex
  */
 float calcSunPosition(){
+    SpiceDouble r = 3390.42;
+    SpiceDouble lon = 16.1833333;
+    SpiceDouble lat = 58.6;
+    
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
     SpiceChar *target;
     
-    SpiceDouble lon = 175.30;
-    SpiceDouble lat = -14.59;
-    SpiceDouble point[3];
+    SpiceDouble spoint[3];
     SpiceDouble et;
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
     
-    #define   STRLEN    32
-    SpiceChar UTCDate[STRLEN];
+    //#define   STRLEN    32
+    //SpiceChar UTCDate[STRLEN];
 
     //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
     
+    /*
+     convert planetocentric r/lon/lat to Cartesian vector
+     */
+    latrec_c( r, lon * rpd_c(), lat * rpd_c(), spoint );
+
     //Used to convert between time as a string into ET, which is in seconds.
     str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
     
     target = "EARTH";
-    obsrvr = "SUN";
+    obsrvr = "SUN"; // SKA ÄNDRAS
     abcorr = "LT+S";
     
     /*
@@ -719,9 +726,14 @@ float calcSunPosition(){
      trgepc: Is the "sub-solar point epoch."
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
     
-               |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    */
-    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, point, &trgepc, srfvec );
+               |----------------------------INPUT-----------------------------| |---------OUTPUT-------|    */
+    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, spoint, &trgepc, srfvec );
     
+    std::cout << spoint[0] << ", " << spoint[1] << ", " << spoint[2] << std::endl;
+    target = "EARTH";
+    obsrvr = "SUN";
+    abcorr = "LT+S";
+
     /*
      Using the illumin_c function you can get the different angles to compute the lighting information
               |-----------------------------INPUT----------------------------|  |------------------OUTPUT--------------------|
@@ -739,7 +751,7 @@ float calcSunPosition(){
      solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
      emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
                |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
-    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
+    ilumin_c ( "Ellipsoid", target, et, "IAU_EARTH", "LT+S", "SUN", spoint, &trgepc, srfvec, &phase, &solar, &emissn );
     
     //Convert the angles to degrees
     phase *= dpr_c();
@@ -747,4 +759,48 @@ float calcSunPosition(){
     //Tror vi ska skicka tillbaka phase
     return phase;
 }
+
+// /*
+// ilumin_c - finds the illumination angles at a specified surface point of a target body.
+// phaseq_c - computes the apparent phase angle between the centers of target, observer, and illuminator ephemeris objects.
+// Brief Example:
+// The following example computes the illumination angles for a point
+// specified using planetocentric coordinates, observed by MGS:
+// */
+//float calcSunPosition()
+//{
+//    SpiceDouble r = 3390.42;
+//    SpiceDouble lon = 175.30;
+//    SpiceDouble lat = -14.59;
+//    SpiceDouble point[3];
+//    SpiceDouble et;
+//    SpiceDouble srfvec[3];
+//    SpiceDouble trgepc;
+//    SpiceDouble phase, solar, emissn;
+//    
+//    /*
+//     load kernels: LSK, PCK, planet/satellite SPK
+//     and MGS spacecraft SPK
+//     */
+//    furnsh_c( "kernels/naif0011.tls" );
+//    furnsh_c( "kernels/mars_iau2000_v0.tpc"         );
+//    furnsh_c( "kernels/mar063.bsp" );
+//    furnsh_c( "kernels/mgs_ext22.bsp" );
+//    /*
+//     convert planetocentric r/lon/lat to Cartesian vector
+//     */
+//    latrec_c( r, lon * rpd_c(), lat * rpd_c(), point );
+//    /*
+//     convert UTC to ET
+//     */
+//    str2et_c ( "2006 JAN 31 01:00", &et );
+//    /*
+//     compute illumination angles
+//     */
+//    ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
+//              "LT+S", "MGS", point,
+//              &trgepc, srfvec, &phase, &solar, &emissn );
+//    
+//    return 0.0f;
+//}
 
