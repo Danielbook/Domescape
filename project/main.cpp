@@ -19,7 +19,6 @@
 #include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
-#include "MatrixStack.hpp"
 
 sgct::Engine * gEngine;
 
@@ -144,6 +143,13 @@ int main( int argc, char* argv[] )
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
 
+    /*------------------SPICE------------------*/
+    //load kernels
+    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
+    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
+    furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
+    /*-----------------------------------------*/
+
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
@@ -174,6 +180,10 @@ int main( int argc, char* argv[] )
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
 
+    float test = calcSunPosition();
+
+    std::cout << "Phase: " << test << std::endl;
+
     // Main loop
     gEngine->render();
 
@@ -182,6 +192,8 @@ int main( int argc, char* argv[] )
 
     // Exit program
     exit( EXIT_SUCCESS );
+
+    return( 0 );
 }
 
 void myInitOGLFun()
@@ -410,6 +422,7 @@ void myDrawFun()
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
                 sun.render();
+
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -693,8 +706,11 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Hope that helps,
  Alex
  */
-float calcSunPosition()
-{
+float calcSunPosition(){
+    SpiceChar *abcorr;
+    SpiceChar *obsrvr;
+    SpiceChar *target;
+
     SpiceDouble lon = 175.30;
     SpiceDouble lat = -14.59;
     SpiceDouble point[3];
@@ -703,13 +719,18 @@ float calcSunPosition()
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
 
+    #define   STRLEN    32
+    SpiceChar UTCDate[STRLEN];
 
-    //load kernels
-    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times.
-    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times.
+    //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
+    //prompt_c("Date: ", STRLEN, UTCDate);
 
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( "2006 JAN 31 01:00", &et );
+    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+
+    target = "EARTH";
+    obsrvr = "SUN";
+    abcorr = "LT+S";
 
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
@@ -727,7 +748,8 @@ float calcSunPosition()
             -srfvec is given in km
 
                |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    */
-    subslr_c ( "Intercept: ellipsoid", "EARTH", et, "iau_mars", "LT+S", "EARTH", point, &trgepc, srfvec );
+
+    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, point, &trgepc, srfvec );
 
     /*
      Using the illumin_c function you can get the different angles to compute the lighting information
@@ -746,14 +768,16 @@ float calcSunPosition()
      solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
      emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
                |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
-    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_MARS", "LT+S", "MGS", point, &trgepc, srfvec, &phase, &solar, &emissn );
 
+    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
+
+    //Calculate the distance to the sun
     float dist = vnorm_c ( srfvec );
 
+    //Convert the angles to degrees
+    phase *= dpr_c();
 
-    printf ( "\n"
-             "  ");
-
-    return 0.0f;
+    //Tror vi ska skicka tillbaka phase
+    return phase;
 }
 
