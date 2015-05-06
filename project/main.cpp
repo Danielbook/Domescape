@@ -100,10 +100,10 @@ GLint Amb_Loc_G = -1;
 
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
-GLint Tex_Loc = -1;
 GLint sColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
+GLint Tex_Loc = -1;
 
 //Oriantation variables
 bool dirButtons[6];
@@ -129,6 +129,7 @@ sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
 model box;
+model sun;
 
 int main( int argc, char* argv[] )
 {
@@ -141,7 +142,7 @@ int main( int argc, char* argv[] )
     gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
-    
+
     /*------------------SPICE------------------*/
     //load kernels
     furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
@@ -178,11 +179,11 @@ int main( int argc, char* argv[] )
 #endif
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
-    
+
     float test = calcSunPosition();
-    
+
     std::cout << "Phase: " << test << std::endl;
-    
+
     // Main loop
     gEngine->render();
 
@@ -191,7 +192,7 @@ int main( int argc, char* argv[] )
 
     // Exit program
     exit( EXIT_SUCCESS );
-    
+
     return( 0 );
 }
 
@@ -206,13 +207,18 @@ void myInitOGLFun()
         printf("THIS IS THE PROBLEM");
     }
 
-    sgct::TextureManager::instance()->loadTexure("box", "box.png", true);
-    box.readOBJ("box.obj");
-
     initHeightMap();
 
     //Set up backface culling
     glCullFace(GL_BACK);
+
+    //Textures
+    glEnable(GL_TEXTURE_2D);
+    sgct::TextureManager::instance()->loadTexure("box", "texture/box.png", true);
+    box.readOBJ("mesh/box.obj");
+
+    sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
+    sun.readOBJ("mesh/teapot.obj");
 
     //Initialize Shader Xform (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
@@ -315,9 +321,6 @@ void myPreSyncFun()
         //0. Translate to eye height of a person
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
 
-        //0. Translate to eye height of a person
-        result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
-
         xform.setVal( result );
     }
 }
@@ -354,10 +357,9 @@ void myDrawFun()
     glm::mat4 scene_mat = xform.getVal();
 
     //Projection matrix - för att ändra clipping
-
     glm::mat4 Model = glm::mat4(1.0f);
-    glm::mat4 P = glm::infinitePerspective(50.0f, 16.0f/9.0f, 0.1f);
-
+    //glm::mat4 P = glm::infinitePerspective(50.0f, 16.0f/9.0f, 0.1f);
+    glm::mat4 P = glm::perspectiveFov(50.0f, 1200.0f, 720.0f, 0.1f, 1000.0f);
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
@@ -367,7 +369,8 @@ void myDrawFun()
     //glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
-    //Call calcSunPosition(); - vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
+    //Call calcSunPosition();
+    //Ex: vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
 
     // Set light properties
     float fSunDis = 70;
@@ -375,8 +378,10 @@ void myDrawFun()
     float fSunAnglePhi = 20.0f *3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
+
     // We'll change color of skies depending on sun's position
     glClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::vec4 sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); //Calculate Sun Color depending on sunAngle!
     glm::vec3 lDir = glm::normalize(vSunPos);
@@ -384,9 +389,7 @@ void myDrawFun()
 
     drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
-
+    //Bind Shader
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
@@ -395,7 +398,31 @@ void myDrawFun()
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
 
-    box.render();
+
+    //BOX
+    glm::mat4 NyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+        NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, 0.0f, -5.0f));
+        NyMVP = glm::scale(NyMVP, glm::vec3(2.0f, 2.0f, 2.0f));
+
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+        box.render();
+
+            //SUN (Teapot)
+            NyMVP = MVP;
+                //Transformations from origo. ORDER MATTERS!
+                NyMVP = glm::translate(NyMVP, glm::vec3(5.0f, 0.0f, -15.0f));
+                NyMVP = glm::scale(NyMVP, glm::vec3(0.05f, 0.05f, 0.05f));
+
+                //Send the transformations, texture and render
+                glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
+                sun.render();
+
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -514,8 +541,8 @@ void mouseButtonCallback(int button, int action)
 void initHeightMap()
 {
     //setup textures
-    sgct::TextureManager::instance()->loadTexure("heightmap", "map.png", true, 0);
-    sgct::TextureManager::instance()->loadTexure("normalmap", "normal.png", true, 0);
+    sgct::TextureManager::instance()->loadTexure("heightmap", "texture/map.png", true, 0);
+    sgct::TextureManager::instance()->loadTexure("normalmap", "texture/normal.png", true, 0);
 
     //setup shader
     sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "heightmap.vert", "heightmap.frag" );
@@ -707,11 +734,11 @@ float calcSunPosition(){
 
     //Used to convert between time as a string into ET, which is in seconds.
     str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
-    
+
     target = "EARTH";
     obsrvr = "SUN"; // SKA ÄNDRAS
     abcorr = "LT+S";
-    
+
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
               |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
