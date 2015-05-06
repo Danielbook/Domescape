@@ -37,6 +37,9 @@ public:
     
     // Used for reading obj-files
     void readOBJ(const char* filename);
+    
+    // Create a sphere (approximated by polygon segments)
+    void createSphere(float radius, int segments);
 
     // Used to render the model
     void render();
