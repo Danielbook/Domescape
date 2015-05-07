@@ -18,6 +18,11 @@
 #include <SpiceZfc.h>
 //#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
+
+//#include <C:\Users\Matthias\Documents\Medieteknik\cspice\include\SpiceZfc.h>
+//#include <C:\Users\Matthias\Documents\Medieteknik\cspice\include\SpiceUsr.h>
+
+
 #include "model.hpp"
 
 sgct::Engine * gEngine;
@@ -56,7 +61,7 @@ float runningSpeed = 5.0f;
 
 //REGULAR FUNCTIONS
 
-float calcSunPosition();
+//float calcSunPosition();
 
 //////////////////////HEIGTHMAP//////////////////////
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
@@ -154,13 +159,13 @@ int main( int argc, char* argv[] )
     }
 #endif
 
-#ifdef __MINGW32__
+//#ifdef __MSC_VER__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-#endif
+//#endif
 
 #ifdef __linux__
     if( !gEngine->init( ) )
@@ -667,40 +672,41 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  The following example computes the illumination angles for a point
  specified using planetocentric coordinates, observed by MGS:
  */
-float calcSunPosition()
-{
-    SpiceDouble r = 3390.42;
-    SpiceDouble lon = 175.30;
-    SpiceDouble lat = -14.59;
-    SpiceDouble point[3];
-    SpiceDouble et;
-    SpiceDouble srfvec[3];
-    SpiceDouble trgepc;
-    SpiceDouble phase, solar, emissn;
+ 
+// float calcSunPosition()
+// {
+//     SpiceDouble r = 3390.42;
+//     SpiceDouble lon = 175.30;
+//     SpiceDouble lat = -14.59;
+//     SpiceDouble point[3];
+//     SpiceDouble et;
+//     SpiceDouble srfvec[3];
+//     SpiceDouble trgepc;
+//     SpiceDouble phase, solar, emissn;
 
-    /*
-     load kernels: LSK, PCK, planet/satellite SPK
-     and MGS spacecraft SPK
-     */
-    furnsh_c( "kernels/naif0011.tls" );
-    furnsh_c( "kernels/mars_iau2000_v0.tpc"         );
-    furnsh_c( "kernels/mar063.bsp" );
-    furnsh_c( "kernels/mgs_ext22.bsp" );
-    /*
-     convert planetocentric r/lon/lat to Cartesian vector
-     */
-    latrec_c( r, lon * rpd_c(), lat * rpd_c(), point );
-    /*
-     convert UTC to ET
-     */
-    str2et_c ( "2006 JAN 31 01:00", &et );
-    /*
-     compute illumination angles
-     */
-    ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
-              "LT+S", "MGS", point,
-              &trgepc, srfvec, &phase, &solar, &emissn );
+//     /*
+//      load kernels: LSK, PCK, planet/satellite SPK
+//      and MGS spacecraft SPK
+//      */
+//     furnsh_c( "kernels/naif0011.tls" );
+//     furnsh_c( "kernels/mars_iau2000_v0.tpc"         );
+//     furnsh_c( "kernels/mar063.bsp" );
+//     furnsh_c( "kernels/mgs_ext22.bsp" );
+//     /*
+//      convert planetocentric r/lon/lat to Cartesian vector
+//      */
+//     latrec_c( r, lon * rpd_c(), lat * rpd_c(), point );
+//     /*
+//      convert UTC to ET
+//      */
+//     str2et_c ( "2006 JAN 31 01:00", &et );
+//     /*
+//      compute illumination angles
+//      */
+//     ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
+//               "LT+S", "MGS", point,
+//               &trgepc, srfvec, &phase, &solar, &emissn );
 
-    return 0.0f;
-}
+//     return 0.0f;
+// }
 
