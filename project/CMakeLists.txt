@@ -17,9 +17,7 @@ endmacro (set_xcode_property)
 add_executable(${APP_NAME}
 	main.cpp
 	model.cpp
-	model.hpp
-	objloader.cpp
-	objloader.hpp)
+	model.hpp)
 
 
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})

@@ -58,7 +58,8 @@ float runningSpeed = 5.0f;
 
 float calcSunPosition();
 
-//////////////////////HEIGTHMAP//////////////////////
+/*------------------HEIGHTMAP------------------*/
+
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
 void initHeightMap();
 void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb);
@@ -80,7 +81,7 @@ sgct::SharedInt stereoMode(0);
 std::vector<float> mVertPos;
 std::vector<float> mTexCoord;
 GLsizei mNumberOfVerts = 0;
-//////////////////////////////////////////////////////
+/*---------------------------------------------*/
 
 //OpenGL objects
 enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
@@ -132,6 +133,15 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
+/*------------------GUI------------------*/
+void externalControlMessageCallback(const char * receivedChars, int size);
+void externalControlStatusCallback(bool connected);
+
+sgct::SharedBool showStats(false);
+sgct::SharedBool showGraph(false);
+/*---------------------------------------*/
+
+
 
 //Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
 
@@ -139,7 +149,7 @@ sgct::SharedObject<glm::mat4> xform;
 model land;
 model box;
 model sun;
-model realSun;
+
 
 int main( int argc, char* argv[] )
 {
@@ -152,6 +162,12 @@ int main( int argc, char* argv[] )
     gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
+    
+    /*------------------GUI------------------*/
+    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
+    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
+    /*-----------------------------------------*/
+    
 
     /*------------------SPICE------------------*/
     //load kernels
@@ -228,7 +244,7 @@ void myInitOGLFun()
     box.readOBJ("mesh/box.obj");
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
-    sun.createSphere(50.0f, 200);
+    sun.createSphere(50.0f, 80);
 
 
     //ObjReader  objReader("mesh/cornell_box.obj");
@@ -353,6 +369,10 @@ void myPreSyncFun(){
 
 void myPostSyncPreDrawFun()
 {
+    //GUI
+    gEngine->setDisplayInfoVisibility( showStats.getVal() );
+    //
+    
     if( reloadShader.getVal() )
     {
         sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "xform" );
@@ -470,6 +490,9 @@ void myEncodeFun()
     sgct::SharedData::instance()->writeBool( &takeScreenshot );
     sgct::SharedData::instance()->writeBool( &useTracking );
     sgct::SharedData::instance()->writeInt( &stereoMode );
+    
+    //GUI
+    sgct::SharedData::instance()->writeBool( &showStats );
 }
 
 void myDecodeFun()
@@ -483,6 +506,9 @@ void myDecodeFun()
     sgct::SharedData::instance()->readBool( &takeScreenshot );
     sgct::SharedData::instance()->readBool( &useTracking );
     sgct::SharedData::instance()->readInt( &stereoMode );
+    
+    //GUI
+    sgct::SharedData::instance()->readBool( &showStats );
 
 }
 
@@ -574,6 +600,32 @@ void mouseButtonCallback(int button, int action)
                 break;
         }
     }
+}
+
+
+void externalControlMessageCallback(const char * receivedChars, int size)
+{
+    if( gEngine->isMaster() )
+    {
+        if(size == 7 && strncmp(receivedChars, "stats", 5) == 0)
+        {
+            showStats.setVal(strncmp(receivedChars + 6, "1", 1) == 0);
+        }
+        else if(size == 7 && strncmp(receivedChars, "graph", 5) == 0)
+        {
+            showGraph.setVal(strncmp(receivedChars + 6, "1", 1) == 0);
+        }
+        
+        sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
+    }
+}
+
+void externalControlStatusCallback(bool connected)
+{
+    if(connected)
+        sgct::MessageHandler::instance()->print("External control connected.\n");
+    else
+        sgct::MessageHandler::instance()->print("External control disconnected.\n");
 }
 
 

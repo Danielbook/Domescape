@@ -1,0 +1,14 @@
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/obj/x86/Debug/.NETFramework,Version=v4.0,Profile=Client.AssemblyAttribute.cs
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.Form1.resources
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.Properties.Resources.resources
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/bin/Debug/SGCTRemote.exe.mdb
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/bin/Debug/SGCTRemote.exe
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.exe
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.exe.mdb
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/obj/x86/Debug/.NETFramework,Version=v4.0,Profile=Client.AssemblyAttribute.cs
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.Form1.resources
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.Properties.Resources.resources
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/bin/Debug/SGCTRemote.exe.mdb
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/bin/Debug/SGCTRemote.exe
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.exe
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCTRemote_GUI/obj/x86/Debug/SGCTRemote.exe.mdb
