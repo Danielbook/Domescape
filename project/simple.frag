@@ -11,6 +11,7 @@ in vec3 tnormals;
 out vec4 color;
 
 
+
 void main()
 {
  //PHONG from TNM046

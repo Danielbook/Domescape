@@ -19,6 +19,7 @@
 #include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
+//#include "objloader.hpp"
 
 sgct::Engine * gEngine;
 
@@ -128,6 +129,11 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
+
+//Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
+
+
+model land;
 model box;
 model sun;
 
@@ -145,9 +151,9 @@ int main( int argc, char* argv[] )
 
     /*------------------SPICE------------------*/
     //load kernels
-    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
-    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
-    furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
+    //furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
+    //furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
+    //furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
     /*-----------------------------------------*/
 
     for(int i=0; i<6; i++)
@@ -219,6 +225,8 @@ void myInitOGLFun()
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.readOBJ("mesh/teapot.obj");
+
+    //ObjReader  objReader("mesh/cornell_box.obj");
 
     //Initialize Shader Xform (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
@@ -707,7 +715,7 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Alex
  */
 float calcSunPosition(){
-    SpiceChar *abcorr;
+ /*   SpiceChar *abcorr;
     SpiceChar *obsrvr;
     SpiceChar *target;
 
@@ -726,7 +734,7 @@ float calcSunPosition(){
     //prompt_c("Date: ", STRLEN, UTCDate);
 
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! *
 
     target = "EARTH";
     obsrvr = "SUN";
@@ -747,7 +755,7 @@ float calcSunPosition(){
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
             -srfvec is given in km
 
-               |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    */
+               |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    *
 
     subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, point, &trgepc, srfvec );
 
@@ -767,7 +775,7 @@ float calcSunPosition(){
      phase:  Is the phase angle at `spoint', as seen from `obsrvr' at time `et'.
      solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
      emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
-               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
+               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     *
 
     ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
 
@@ -778,6 +786,6 @@ float calcSunPosition(){
     phase *= dpr_c();
 
     //Tror vi ska skicka tillbaka phase
-    return phase;
+    return phase;       */
 }
 

@@ -24,28 +24,29 @@ private:
     GLuint indexbuffer;  // Buffer ID to bind to GL_ELEMENT_ARRAY_BUFFER
     GLfloat *vertexarray; // Vertex array on interleaved format: x y z nx ny nz s t
     GLuint *indexarray;   // Element index array
-    
+
 public:
     // Constructor: Create an object, init all to zero
     model();
-    
+
     // Destructor: Clean up after you
     ~model();
-    
+
     // Used in destructor
     void clean();
-    
+
     // Used for reading obj-files
     void readOBJ(const char* filename);
 
     // Used to render the model
     void render();
 
-    
+
 private:
     // Printing errors in console
     void printError(const char *errtype, const char *errmsg);
-    
+
 };
 
 #endif /* defined(__Domescape__model__) */
+
