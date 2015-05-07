@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <time.h>
+
 #include <SpiceUsr.h>
 //#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
 #include <SpiceZfc.h>
@@ -57,9 +59,11 @@ float runningSpeed = 5.0f;
 //REGULAR FUNCTIONS
 
 float calcSunPosition();
+const std::string currentDateTime();
+
+enum MONTHS { JAN = 0, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC };
 
 /*------------------HEIGHTMAP------------------*/
-
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
 void initHeightMap();
 void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb);
@@ -141,20 +145,17 @@ sgct::SharedBool showStats(false);
 sgct::SharedBool showGraph(false);
 /*---------------------------------------*/
 
-
+float sunAngle;
 
 //Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
-
-
 model land;
 model box;
 model sun;
 
-
 int main( int argc, char* argv[] )
 {
     gEngine = new sgct::Engine( argc, argv );
-
+    
     gEngine->setInitOGLFunction( myInitOGLFun );
     gEngine->setPreSyncFunction( myPreSyncFun );
     gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
@@ -206,9 +207,7 @@ int main( int argc, char* argv[] )
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
 
-    float test = calcSunPosition();
-
-    std::cout << "Phase: " << test << std::endl;
+    sunAngle = calcSunPosition();
 
     // Main loop
     gEngine->render();
@@ -398,7 +397,7 @@ void myDrawFun()
 {
     glEnable( GL_DEPTH_TEST );
     glEnable( GL_CULL_FACE );
-
+    
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
 
@@ -418,6 +417,7 @@ void myDrawFun()
     //Call calcSunPosition();
     //Ex: vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
 
+    
     // Set light properties
     float fSunDis = 70;
     float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
@@ -443,7 +443,6 @@ void myDrawFun()
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
-
 
     //BOX
     glm::mat4 NyMVP = MVP;
@@ -787,52 +786,70 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
     mNumberOfVerts = static_cast<GLsizei>(mVertPos.size() / 3); //each vertex has three componets (x, y & z)
 }
 
-/*
- Hi,
- there are a couple of functions that you can use:
- subslr_c (http://naif.jpl.nasa.gov/…/toolkit_d…/C/cspice/subslr_c.html) provides you wiht the coordinates on the Earth where the Sun is directly above.
- illumin_c (ftp://naif.jpl.nasa.gov/…/toolkit_do…/C/cspice/ilumin_c.html) to get all of the angles that are necessary for your computation.
- The two necessary kernels:
- http://naif.jpl.nasa.gov/…/generic_ke…/spk/planets/de430.bsp Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
- http://naif.jpl.nasa.gov/…/naif/generic_ke…/lsk/naif0011.tls Is a leapsecond kernel so that you get the accurate times
- After loading the kernels, you can use the str2et_c function to convert between time as a string into ET, which is in seconds. All functions take the time as ET to compute their values. Using the illumin_c function you can get the different angles to compute the lighting information.
- Hope that helps,
- Alex
- */
+const std::string currentDateTime() {
+    time_t now = time(0);
+    struct tm tstruct;
+    char buffer[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buffer, sizeof(buffer), "%Y %b %d %X", &tstruct);
+    
+    std::cout << buffer << std:: endl;
+    
+    return buffer;
+}
+
+
+/*Function to calculate the suns illumination angle relative to the earth*/
 float calcSunPosition(){
 
-    SpiceDouble r = 3390.42;
+    SpiceDouble r = 6371.0;
     SpiceDouble lon = 16.1833333;
     SpiceDouble lat = 58.6;
 
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
     SpiceChar *target;
+    SpiceChar *ref;
 
-    SpiceDouble spoint[3];
-    SpiceDouble et;
+    SpiceDouble ourPosition[3];
+    
+    SpiceDouble sunPointOnEarth[3];
+    
+    SpiceDouble sunPosition[3];
+    
+    SpiceDouble et, lt;
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
-    SpiceDouble phase, solar, emissn;
+    SpiceDouble angle;
 
     //#define   STRLEN    32
     //SpiceChar UTCDate[STRLEN];
 
-    //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
+    //Prompts the user to input date in format YEAR MONTH DAY HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
-
-    /*
-     convert planetocentric r/lon/lat to Cartesian vector
-     */
-    latrec_c( r, lon * rpd_c(), lat * rpd_c(), spoint );
-
+    
+    //convert planetocentric r/lon/lat to Cartesian vector
+    latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
+    
+    
+    std::string str = currentDateTime();
+    char *cstr = new char[str.length() + 1];
+    strcpy(cstr, str.c_str());
+    
+    SpiceChar * date = cstr;
+    
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+    str2et_c ( date, &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
 
+    delete [] cstr;
+    
     target = "EARTH";
-    obsrvr = "SUN"; // SKA ÄNDRAS
+    obsrvr = "SUN";
     abcorr = "LT+S";
-
+    ref = "iau_earth";
+    
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
               |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
@@ -847,43 +864,45 @@ float calcSunPosition(){
      trgepc: Is the "sub-solar point epoch."
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
             -srfvec is given in km
+     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/subslr.html
 
-
-               |----------------------------INPUT-----------------------------| |---------OUTPUT-------|    */
-    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, spoint, &trgepc, srfvec );
-
-    std::cout << spoint[0] << ", " << spoint[1] << ", " << spoint[2] << std::endl;
-    target = "EARTH";
-    obsrvr = "SUN";
-    abcorr = "LT+S";
-
+               |----------------------------INPUT---------------------| |-----------OUTPUT------------|    */
+    subslr_c ( "Intercept: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
+    
     /*
-     Using the illumin_c function you can get the different angles to compute the lighting information
-              |-----------------------------INPUT----------------------------|  |------------------OUTPUT--------------------|
-     ilumin_c("method", "target", "et", "fixref", "abcorr", "obsrvr", "spoint", "trgepc", "srfvec", "phase", "solar", "emissn")
-     method: The only choice currently supported is "Ellipsoid"
-     target: Is the name of the target body
-     et:     Is the epoch, time stuff...
-     fixref: Is the name of the body-fixed, body-centered reference frame associated with the target body
-     abcorr: Is the aberration correction to be used, use "LT+S"
-     obsrvr: Is the name of the observing body.  This is typically a spacecraft, the earth, or a surface point on the earth.
-     spoint: Is a surface point on the target body, expressed in Cartesian coordinates
-     trgepc: Is the "surface point point epoch." `trgepc' is expressed as seconds
-     srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
-     phase:  Is the phase angle at `spoint', as seen from `obsrvr' at time `et'.
-     solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
-     emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
+     Return the position of a target body relative to an observing
+     body, optionally corrected for light time (planetary aberration)
+     and stellar aberration.
+     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkpos_c.html
+     
+             |------------INPUT-------------| |----OUTPUT-----|    */
+    spkpos_c(target, et, ref, abcorr, obsrvr, sunPosition, &lt);
+    
+    std::cout << "Our position on earth: " << ourPosition[0] << ", " << ourPosition[1] << ", " << ourPosition[2] << std::endl;
+    std::cout << "Suns position relative to earth: " << sunPosition[0] << ", " << sunPosition[1] << ", " << sunPosition[2] << std::endl;
+    std::cout << "Suns point on earth (Zenit): " << sunPointOnEarth[0] << ", " << sunPointOnEarth[1] << ", " << sunPointOnEarth[2] << std::endl;
+    
+    float a, b, xd, yd, zd;
+    
+    //CALCULATE DISTANCE BETWEEN ZENIT POINT AND SUN = a
+    xd = sunPosition[0]-sunPointOnEarth[0];
+    yd = sunPosition[1]-sunPointOnEarth[1];
+    zd = sunPosition[2]-sunPointOnEarth[2];
+    a = sqrtf(xd*xd + yd*yd + zd*zd);
+    
+    //CALCULATE DISTANCE BETWEEN US AND THE ZENIT POINT = b
+    xd = ourPosition[0]-sunPointOnEarth[0];
+    yd = ourPosition[1]-sunPointOnEarth[1];
+    zd = ourPosition[2]-sunPointOnEarth[2];
+    b = sqrtf(xd*xd + yd*yd + zd*zd);
 
-
-               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|   */
-    ilumin_c ( "Ellipsoid", target, et, "IAU_EARTH", "LT+S", "SUN", spoint, &trgepc, srfvec, &phase, &solar, &emissn );
-
-    //Calculate the distance to the sun
-    float dist = vnorm_c ( srfvec );
-
+    //CALCULATE ANGLE ( arctan (a/b) = angle
+    angle = atan(a/b);
+    
+    std::cout << "Sun angle in radians: " << angle << std::endl;
+    
     //Convert the angles to degrees
-    phase *= dpr_c();
-
-    //Tror vi ska skicka tillbaka phase
-    return phase;
+    //angle *= dpr_c();
+    
+    return angle;
 }
