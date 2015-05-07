@@ -107,7 +107,6 @@ GLint Tex_Loc = -1;
 
 //Oriantation variables
 bool dirButtons[6];
-bool sunButtons[4];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 bool runningButton = false;
@@ -133,9 +132,7 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
-model box;
-model sun;
-model realSun;
+model box, sun;
 
 int main( int argc, char* argv[] )
 {
@@ -212,11 +209,6 @@ void myInitOGLFun()
     {
         printf("THIS IS THE PROBLEM");
     }
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    realSun.createSphere(50.0f, 200);
     
     initHeightMap();
 
@@ -229,13 +221,11 @@ void myInitOGLFun()
     box.readOBJ("mesh/box.obj");
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
-    sun.readOBJ("mesh/teapot.obj");
-    
+    sun.createSphere(50.0f, 200);
 
     //Initialize Shader Xform (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
-
 
     MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
     NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
@@ -450,7 +440,7 @@ void myDrawFun()
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
-        realSun.render();
+        sun.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -530,21 +520,20 @@ void keyCallback(int key, int action)
                 break;
                 
             case SGCT_KEY_UP:
-                sunPosition[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
                 
             case SGCT_KEY_DOWN:
-                sunPosition[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
                 
             case SGCT_KEY_LEFT:
-                sunPosition[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
                 
             case SGCT_KEY_RIGHT:
-                sunPosition[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-
 
                 //Running
             case SGCT_KEY_LEFT_SHIFT:
