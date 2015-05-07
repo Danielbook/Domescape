@@ -21,6 +21,7 @@
 #include "model.hpp"
 //#include "objloader.hpp"
 
+
 sgct::Engine * gEngine;
 
 void myInitOGLFun();
@@ -89,7 +90,7 @@ GLuint vertexBuffers[3];
 GLuint VertexArrayID = GL_FALSE;
 GLsizei numberOfVertices = 0;
 
-//shader data
+//shader data - Heuightmap
 sgct::ShaderProgram mSp;
 GLint myTextureLocations[]	= { -1, -1 };
 GLint MVP_Loc_G = -1;
@@ -99,12 +100,21 @@ GLint NM_Loc_G = -1;
 GLint lDir_Loc_G = -1;
 GLint Amb_Loc_G = -1;
 
+//Shader Scene
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
 GLint sColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
 GLint Tex_Loc = -1;
+
+//Shader Sky
+GLint MVP_Loc_S = -1;
+GLint NM_Loc_S = -1;
+GLint lDir_Loc_S = -1;
+GLint Tex_Loc_S = -1;
+GLint Glow_Loc_S = -1;
+GLint SunColor_Loc_S = -1;
 
 //Oriantation variables
 bool dirButtons[6];
@@ -124,8 +134,9 @@ glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
+
 float sunX = 500.0f;
-float sunY = 100.f;
+float sunY = 300.f;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
 
 
@@ -157,9 +168,9 @@ int main( int argc, char* argv[] )
 
     /*------------------SPICE------------------*/
     //load kernels
-    //furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
-    //furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
-    //furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
+    furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
+    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
+    furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
     /*-----------------------------------------*/
 
     for(int i=0; i<6; i++)
@@ -222,7 +233,7 @@ void myInitOGLFun()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    realSun.createSphere(50.0f, 200);
+
 
     initHeightMap();
 
@@ -237,22 +248,40 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.readOBJ("mesh/teapot.obj");
 
+    realSun.createSphere(10.0f, 200);
 
     //ObjReader  objReader("mesh/cornell_box.obj");
 
-    //Initialize Shader Xform (simple)
-    sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
-    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    //Initialize Shader scene (simple)
+    sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
 
-    MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
-    NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
-    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
-    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
-    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
-    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
+    MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "MVP" );
+    NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "NM" );
+    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "sunColor" );
+    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "lightDir" );
+    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "fAmbInt" );
+    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "Tex" );
     glUniform1i( Tex_Loc, 0 );
 
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+
+    //Initialize Shader sky (sky)
+    sgct::ShaderManager::instance()->addShaderProgram( "sky", "shaders/sky.vert", "shaders/sky.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
+
+
+    MVP_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "MVP" );
+    NM_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "NM" );
+    lDir_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "lightDir" );
+    Tex_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "Tex" );
+    Glow_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "glow" );
+    SunColor_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "colorSky" );
+    glUniform1i( Glow_Loc_S, 0 );
+    glUniform1i( SunColor_Loc_S, 0 );
+    glUniform1i( Tex_Loc_S, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 }
@@ -288,6 +317,7 @@ void myPreSyncFun(){
             sunY -= 1.0f;
         }
         sunPosition = glm::vec3(sunX,sunY,0.0f);
+
 
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
@@ -363,7 +393,7 @@ void myPostSyncPreDrawFun()
 {
     if( reloadShader.getVal() )
     {
-        sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "xform" );
+        sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "scene" );
         sp.reload();
 
         //reset locations
@@ -379,13 +409,30 @@ void myPostSyncPreDrawFun()
 
         sp.unbind();
         reloadShader.setVal(false);
+
+
+        sgct::ShaderProgram skySp = sgct::ShaderManager::instance()->getShaderProgram( "sky" );
+        skySp.reload();
+
+        //reset locations
+        skySp.bind();
+
+        MVP_Loc_S = sp.getUniformLocation( "MVP" );
+        NM_Loc_S = sp.getUniformLocation( "NM" );
+        Tex_Loc_S = sp.getUniformLocation( "Tex" );
+        lDir_Loc_S = sp.getUniformLocation("lightDir");
+        glUniform1i( Tex_Loc_S, 0 );
+
+        skySp.unbind();
+        reloadShader.setVal(false);
     }
 }
 
 void myDrawFun()
 {
-    glEnable( GL_DEPTH_TEST );
-    glEnable( GL_CULL_FACE );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
@@ -403,15 +450,19 @@ void myDrawFun()
     //glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
-    //Call calcSunPosition();
-    //Ex: vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
+
+    //Calculate the angle to the sun!
+    //float phase = calcSunPosition();
 
     // Set light properties
-    float fSunDis = 70;
+    float fSunDis = 1000;
     float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
     float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
-    glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
+
+    //ÄNDRA TILLBAKA HÄR SEN!!!
+    //glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
+    glm::vec3 vSunPos = sunPosition;
 
     // We'll change color of skies depending on sun's position
     glClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
@@ -423,8 +474,8 @@ void myDrawFun()
 
     drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
 
-    //Bind Shader
-    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    //Bind Shader scene
+    sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &NM[0][0]);
@@ -445,9 +496,16 @@ void myDrawFun()
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
         box.render();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+
+    //Bind Shader sky
+    sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
+
+    glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix3fv(NM_Loc_S, 1, GL_FALSE, &NM[0][0]);
+    glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
+
 
     //SUN
     NyMVP = MVP;
@@ -455,7 +513,7 @@ void myDrawFun()
         NyMVP = glm::translate(NyMVP, sunPosition);
 
         //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
         realSun.render();
@@ -521,38 +579,25 @@ void keyCallback(int key, int action)
                     reloadShader.setVal(true);
                 break;
 
+            case SGCT_KEY_UP:
             case SGCT_KEY_W:
                 dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
+            case SGCT_KEY_DOWN:
             case SGCT_KEY_S:
                 dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
+            case SGCT_KEY_LEFT:
             case SGCT_KEY_A:
                 dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
+            case SGCT_KEY_RIGHT:
             case SGCT_KEY_D:
                 dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-
-            case SGCT_KEY_UP:
-                sunPosition[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_DOWN:
-                sunPosition[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_LEFT:
-                sunPosition[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_RIGHT:
-                sunPosition[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
 
                 //Running
             case SGCT_KEY_LEFT_SHIFT:
@@ -595,7 +640,7 @@ void initHeightMap()
     sgct::TextureManager::instance()->loadTexure("normalmap", "texture/normal.png", true, 0);
 
     //setup shader
-    sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "heightmap.vert", "heightmap.frag" );
+    sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "shaders/heightmap.vert", "shaders/heightmap.frag" );
 
     mSp.bind();
     myTextureLocations[0]	= mSp.getUniformLocation( "hTex" );
@@ -844,3 +889,6 @@ float calcSunPosition(){
     //Tror vi ska skicka tillbaka phase
     return phase;
 }
+
+
+

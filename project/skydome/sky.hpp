@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "entity.hpp"
+//#include "entity.hpp"
 #include "image.hpp"
 #include "data.hpp"
 
@@ -17,7 +17,7 @@ class sprite
     float s;
 
 public:
-    
+
     sprite(float a, float b, float c, float d) : x(a), y(b), z(c), s(d) { }
 
     void draw();

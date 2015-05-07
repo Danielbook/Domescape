@@ -1,4 +1,4 @@
-#include "opengl.hpp"
+//#include "opengl.hpp"
 #include "sky.hpp"
 
 //-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ void sky::draw()
 
             sun_map.bind(GL_TEXTURE0);
             sun.draw();
-        
+
             moon_map.bind(GL_TEXTURE0);
             moon.draw();
         }
