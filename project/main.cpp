@@ -19,7 +19,6 @@
 #include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
-//#include "objloader.hpp"
 
 
 sgct::Engine * gEngine;
@@ -90,7 +89,7 @@ GLuint vertexBuffers[3];
 GLuint VertexArrayID = GL_FALSE;
 GLsizei numberOfVertices = 0;
 
-//shader data - Heuightmap
+//Shader Heightmap
 sgct::ShaderProgram mSp;
 GLint myTextureLocations[]	= { -1, -1 };
 GLint MVP_Loc_G = -1;
@@ -118,7 +117,6 @@ GLint SunColor_Loc_S = -1;
 
 //Oriantation variables
 bool dirButtons[6];
-bool sunButtons[4];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 bool runningButton = false;
@@ -230,15 +228,7 @@ void myInitOGLFun()
         printf("THIS IS THE PROBLEM");
     }
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-
-
     initHeightMap();
-
-    //Set up backface culling
-    glCullFace(GL_BACK);
 
     //Textures
     glEnable(GL_TEXTURE_2D);
@@ -246,7 +236,7 @@ void myInitOGLFun()
     box.readOBJ("mesh/box.obj");
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
-    sun.readOBJ("mesh/teapot.obj");
+    sun.createSphere(50.0f, 200);
 
     realSun.createSphere(10.0f, 200);
 
@@ -417,10 +407,10 @@ void myPostSyncPreDrawFun()
         //reset locations
         skySp.bind();
 
-        MVP_Loc_S = sp.getUniformLocation( "MVP" );
-        NM_Loc_S = sp.getUniformLocation( "NM" );
-        Tex_Loc_S = sp.getUniformLocation( "Tex" );
-        lDir_Loc_S = sp.getUniformLocation("lightDir");
+        MVP_Loc_S = skySp.getUniformLocation( "MVP" );
+        NM_Loc_S = skySp.getUniformLocation( "NM" );
+        Tex_Loc_S = skySp.getUniformLocation( "Tex" );
+        lDir_Loc_S = skySp.getUniformLocation("lightDir");
         glUniform1i( Tex_Loc_S, 0 );
 
         skySp.unbind();
@@ -433,6 +423,7 @@ void myDrawFun()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+    glCullFace(GL_BACK);
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
@@ -516,7 +507,7 @@ void myDrawFun()
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
-        realSun.render();
+        sun.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 

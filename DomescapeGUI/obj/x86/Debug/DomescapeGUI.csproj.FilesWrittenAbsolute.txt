@@ -1,0 +1,7 @@
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/obj/x86/Debug/.NETFramework,Version=v4.0,Profile=Client.AssemblyAttribute.cs
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/obj/x86/Debug/DomescapeGUI.Form1.resources
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/obj/x86/Debug/SGCTRemote.Properties.Resources.resources
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/obj/x86/Debug/SGCTRemote.exe
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/obj/x86/Debug/SGCTRemote.exe.mdb
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/bin/Debug/SGCTRemote.exe.mdb
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/DomescapeGUI/bin/Debug/SGCTRemote.exe
