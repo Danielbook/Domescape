@@ -123,16 +123,23 @@ glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
 float sunX = 500.0f;
-float sunY = 100.f
-;
+float sunY = 100.f;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
+
 
 //variables to share across cluster
 sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
-model box, sun;
+
+//Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
+
+
+model land;
+model box;
+model sun;
+model realSun;
 
 int main( int argc, char* argv[] )
 {
@@ -223,6 +230,9 @@ void myInitOGLFun()
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(50.0f, 200);
 
+
+    //ObjReader  objReader("mesh/cornell_box.obj");
+
     //Initialize Shader Xform (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
@@ -253,15 +263,15 @@ void myPreSyncFun(){
             mouseDy = 0.0;
             mouseDx = 0.0;
         }
-        
-        
+
+
         sunX -= 1.0f;
-        
+
         if(sunX < -500.0f){
             sunX = 500.0f;
             sunY = 100.0f;
         }
-        
+
         if(sunX>0)
         {
             sunY += 1.0f;
@@ -292,7 +302,7 @@ void myPreSyncFun(){
                                             glm::mat4(1.0f),
 											tiltRot,
 											-right); //rotation around the movavble x-axis
-        
+
         if( dirButtons[FORWARD] ){
             runningButton ? walkingSpeed = runningSpeed: walkingSpeed = 2.5f;
             pos += (walkingSpeed * static_cast<float>(gEngine->getDt()) * bView);
@@ -336,8 +346,8 @@ void myPreSyncFun(){
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
 
         xform.setVal( result );
-        
-        
+
+
     }
 }
 
@@ -430,7 +440,7 @@ void myDrawFun()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    
+
     //SUN
     NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
@@ -502,7 +512,7 @@ void keyCallback(int key, int action)
                 if(action == SGCT_PRESS)
                     reloadShader.setVal(true);
                 break;
-                
+
             case SGCT_KEY_W:
                 dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
@@ -510,27 +520,27 @@ void keyCallback(int key, int action)
             case SGCT_KEY_S:
                 dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-                
+
             case SGCT_KEY_A:
                 dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-                
+
             case SGCT_KEY_D:
                 dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-                
+
             case SGCT_KEY_UP:
                 dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-                
+
             case SGCT_KEY_DOWN:
                 dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-                
+
             case SGCT_KEY_LEFT:
                 dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
-                
+
             case SGCT_KEY_RIGHT:
                 dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
@@ -738,26 +748,27 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Alex
  */
 float calcSunPosition(){
+
     SpiceDouble r = 3390.42;
     SpiceDouble lon = 16.1833333;
     SpiceDouble lat = 58.6;
-    
+
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
     SpiceChar *target;
-    
+
     SpiceDouble spoint[3];
     SpiceDouble et;
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
-    
+
     //#define   STRLEN    32
     //SpiceChar UTCDate[STRLEN];
 
     //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
-    
+
     /*
      convert planetocentric r/lon/lat to Cartesian vector
      */
@@ -783,10 +794,12 @@ float calcSunPosition(){
      spoint: Is a surface point on the target body, expressed in Cartesian coordinates
      trgepc: Is the "sub-solar point epoch."
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
-    
+            -srfvec is given in km
+
+
                |----------------------------INPUT-----------------------------| |---------OUTPUT-------|    */
     subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, spoint, &trgepc, srfvec );
-    
+
     std::cout << spoint[0] << ", " << spoint[1] << ", " << spoint[2] << std::endl;
     target = "EARTH";
     obsrvr = "SUN";
@@ -808,57 +821,17 @@ float calcSunPosition(){
      phase:  Is the phase angle at `spoint', as seen from `obsrvr' at time `et'.
      solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
      emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
-               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     */
+
+
+               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|   */
     ilumin_c ( "Ellipsoid", target, et, "IAU_EARTH", "LT+S", "SUN", spoint, &trgepc, srfvec, &phase, &solar, &emissn );
-    
+
+    //Calculate the distance to the sun
+    float dist = vnorm_c ( srfvec );
+
     //Convert the angles to degrees
     phase *= dpr_c();
-    
+
     //Tror vi ska skicka tillbaka phase
     return phase;
 }
-
-// /*
-// ilumin_c - finds the illumination angles at a specified surface point of a target body.
-// phaseq_c - computes the apparent phase angle between the centers of target, observer, and illuminator ephemeris objects.
-// Brief Example:
-// The following example computes the illumination angles for a point
-// specified using planetocentric coordinates, observed by MGS:
-// */
-//float calcSunPosition()
-//{
-//    SpiceDouble r = 3390.42;
-//    SpiceDouble lon = 175.30;
-//    SpiceDouble lat = -14.59;
-//    SpiceDouble point[3];
-//    SpiceDouble et;
-//    SpiceDouble srfvec[3];
-//    SpiceDouble trgepc;
-//    SpiceDouble phase, solar, emissn;
-//    
-//    /*
-//     load kernels: LSK, PCK, planet/satellite SPK
-//     and MGS spacecraft SPK
-//     */
-//    furnsh_c( "kernels/naif0011.tls" );
-//    furnsh_c( "kernels/mars_iau2000_v0.tpc"         );
-//    furnsh_c( "kernels/mar063.bsp" );
-//    furnsh_c( "kernels/mgs_ext22.bsp" );
-//    /*
-//     convert planetocentric r/lon/lat to Cartesian vector
-//     */
-//    latrec_c( r, lon * rpd_c(), lat * rpd_c(), point );
-//    /*
-//     convert UTC to ET
-//     */
-//    str2et_c ( "2006 JAN 31 01:00", &et );
-//    /*
-//     compute illumination angles
-//     */
-//    ilumin_c ( "Ellipsoid", "MARS", et, "IAU_MARS",
-//              "LT+S", "MGS", point,
-//              &trgepc, srfvec, &phase, &solar, &emissn );
-//    
-//    return 0.0f;
-//}
-

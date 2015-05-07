@@ -1,0 +1,100 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 06.05.2015 10:26:03
+
+newmtl Mossy_Tr
+	Ns 89.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.2510 0.2078 0.1608
+	Ks 0.1100 0.1100 0.1100
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\trees9\Mossy_Tr.jpg
+	map_Kd H:\3D_projekt\trees9\Mossy_Tr.jpg
+
+newmtl Bark___S
+	Ns 51.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.0431 0.0196 0.0314
+	Ks 0.2976 0.2753 0.2106
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\trees9\Bark___S.jpg
+	map_Kd H:\3D_projekt\trees9\Bark___S.jpg
+
+newmtl Sonnerat
+	Ns 86.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.0745 0.0863 0.0235
+	Ks 0.4700 0.4700 0.4700
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\trees9\Sonnerat.jpg
+	map_Kd H:\3D_projekt\trees9\Sonnerat.jpg
+
+newmtl Bark___1
+	Ns 104.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.1647 0.0706 0.0392
+	Ks 0.7044 0.6515 0.4984
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\trees9\Bark___1.jpg
+	map_Kd H:\3D_projekt\trees9\Bark___1.jpg
+
+newmtl Bark___0
+	Ns 104.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.2667 0.1216 0.0824
+	Ks 0.7044 0.6515 0.4984
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\trees9\Bark___0.jpg
+	map_Kd H:\3D_projekt\trees9\Bark___0.jpg
+
+newmtl 16___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5880 0.5880 0.5880
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\images.jpg
+	map_Kd H:\3D_projekt\images.jpg
+
+newmtl lambert13SG
+	Ns 30.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka H:\3D_projekt\cabin\Textures\Farmhouse Texture.jpg
+	map_Kd H:\3D_projekt\cabin\Textures\Farmhouse Texture.jpg
