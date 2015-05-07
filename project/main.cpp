@@ -123,7 +123,7 @@ glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
-float sunX = 400.0f;
+float sunX = 500.0f;
 float sunY = 100.f
 ;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
@@ -267,8 +267,8 @@ void myPreSyncFun(){
         
         sunX -= 1.0f;
         
-        if(sunX < -400.0f){
-            sunX = 100.0f;
+        if(sunX < -500.0f){
+            sunX = 500.0f;
             sunY = 100.0f;
         }
         
@@ -400,8 +400,8 @@ void myDrawFun()
 
     // Set light properties
     float fSunDis = 70;
-    float fSunAngleTheta = 45.0f *3.1415/180.0; // Degrees Celsius to radians
-    float fSunAnglePhi = 20.0f *3.1415/180.0; //Degrees Celsius to radians
+    float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
+    float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
@@ -440,29 +440,17 @@ void myDrawFun()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-            //SUN (Teapot)
-            NyMVP = MVP;
-                //Transformations from origo. ORDER MATTERS!
-                NyMVP = glm::translate(NyMVP, sunPosition);
-
-                //Send the transformations, texture and render
-                glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
-                realSun.render();
     
-//                    //SUN
-//                    NyMVP = MVP;
-//                    //Transformations from origo. ORDER MATTERS!
-//                    NyMVP = glm::translate(NyMVP, glm::vec3(5.0f, 0.0f, -15.0f));
-//    
-//                    //Send the transformations, texture and render
-//                    glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
-//                    glActiveTexture(GL_TEXTURE0);
-//                    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
-//                    realSun.render();
+    //SUN
+    NyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+        NyMVP = glm::translate(NyMVP, sunPosition);
 
-
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
+        realSun.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
