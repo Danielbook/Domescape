@@ -108,6 +108,7 @@ GLint Tex_Loc = -1;
 
 //Oriantation variables
 bool dirButtons[6];
+bool sunButtons[4];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
 bool runningButton = false;
@@ -123,6 +124,10 @@ glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
+float sunX = 500.0f;
+float sunY = 100.f;
+glm::vec3 sunPosition(sunX, sunY, 0.0f);
+
 
 //variables to share across cluster
 sgct::SharedDouble curr_time(0.0);
@@ -136,6 +141,7 @@ sgct::SharedObject<glm::mat4> xform;
 model land;
 model box;
 model sun;
+model realSun;
 
 int main( int argc, char* argv[] )
 {
@@ -213,6 +219,11 @@ void myInitOGLFun()
         printf("THIS IS THE PROBLEM");
     }
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    realSun.createSphere(50.0f, 200);
+
     initHeightMap();
 
     //Set up backface culling
@@ -225,6 +236,7 @@ void myInitOGLFun()
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.readOBJ("mesh/teapot.obj");
+
 
     //ObjReader  objReader("mesh/cornell_box.obj");
 
@@ -245,25 +257,37 @@ void myInitOGLFun()
     sgct::ShaderManager::instance()->unBindShaderProgram();
 }
 
-void myPreSyncFun()
-{
-    if( gEngine->isMaster() )
-    {
+void myPreSyncFun(){
+    if( gEngine->isMaster() ){
         curr_time.setVal( sgct::Engine::getTime() ); //Används ej för tillfället?
 
-        if( mouseLeftButton )
-        {
+        if( mouseLeftButton ){
             //get the mouse pos from first window
             sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &mouseYPos[0] );
             mouseDx = mouseXPos[0] - mouseXPos[1];
             mouseDy = mouseYPos[0] - mouseYPos[1];
         }
-
-        else
-        {
+        else{
             mouseDy = 0.0;
             mouseDx = 0.0;
         }
+
+
+        sunX -= 1.0f;
+
+        if(sunX < -500.0f){
+            sunX = 500.0f;
+            sunY = 100.0f;
+        }
+
+        if(sunX>0)
+        {
+            sunY += 1.0f;
+        }
+        else{
+            sunY -= 1.0f;
+        }
+        sunPosition = glm::vec3(sunX,sunY,0.0f);
 
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
@@ -330,6 +354,8 @@ void myPreSyncFun()
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
 
         xform.setVal( result );
+
+
     }
 }
 
@@ -382,8 +408,8 @@ void myDrawFun()
 
     // Set light properties
     float fSunDis = 70;
-    float fSunAngleTheta = 45.0f *3.1415/180.0; // Degrees Celsius to radians
-    float fSunAnglePhi = 20.0f *3.1415/180.0; //Degrees Celsius to radians
+    float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
+    float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
@@ -419,18 +445,20 @@ void myDrawFun()
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
         box.render();
 
-            //SUN (Teapot)
-            NyMVP = MVP;
-                //Transformations from origo. ORDER MATTERS!
-                NyMVP = glm::translate(NyMVP, glm::vec3(5.0f, 0.0f, -15.0f));
-                NyMVP = glm::scale(NyMVP, glm::vec3(0.05f, 0.05f, 0.05f));
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 
-                //Send the transformations, texture and render
-                glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
-                sun.render();
+    //SUN
+    NyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+        NyMVP = glm::translate(NyMVP, sunPosition);
 
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
+        realSun.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -492,25 +520,39 @@ void keyCallback(int key, int action)
                 if(action == SGCT_PRESS)
                     reloadShader.setVal(true);
                 break;
-            case SGCT_KEY_UP:
+
             case SGCT_KEY_W:
                 dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
-            case SGCT_KEY_DOWN:
             case SGCT_KEY_S:
                 dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
-            case SGCT_KEY_LEFT:
             case SGCT_KEY_A:
                 dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
 
-            case SGCT_KEY_RIGHT:
             case SGCT_KEY_D:
                 dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
                 break;
+
+            case SGCT_KEY_UP:
+                sunPosition[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                break;
+
+            case SGCT_KEY_DOWN:
+                sunPosition[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                break;
+
+            case SGCT_KEY_LEFT:
+                sunPosition[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                break;
+
+            case SGCT_KEY_RIGHT:
+                sunPosition[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
+                break;
+
 
                 //Running
             case SGCT_KEY_LEFT_SHIFT:
@@ -715,29 +757,37 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Alex
  */
 float calcSunPosition(){
- /*   SpiceChar *abcorr;
+
+    SpiceDouble r = 3390.42;
+    SpiceDouble lon = 16.1833333;
+    SpiceDouble lat = 58.6;
+
+    SpiceChar *abcorr;
     SpiceChar *obsrvr;
     SpiceChar *target;
 
-    SpiceDouble lon = 175.30;
-    SpiceDouble lat = -14.59;
-    SpiceDouble point[3];
+    SpiceDouble spoint[3];
     SpiceDouble et;
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
     SpiceDouble phase, solar, emissn;
 
-    #define   STRLEN    32
-    SpiceChar UTCDate[STRLEN];
+    //#define   STRLEN    32
+    //SpiceChar UTCDate[STRLEN];
 
     //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
 
+    /*
+     convert planetocentric r/lon/lat to Cartesian vector
+     */
+    latrec_c( r, lon * rpd_c(), lat * rpd_c(), spoint );
+
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! *
+    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
 
     target = "EARTH";
-    obsrvr = "SUN";
+    obsrvr = "SUN"; // SKA ÄNDRAS
     abcorr = "LT+S";
 
     /*
@@ -755,9 +805,14 @@ float calcSunPosition(){
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
             -srfvec is given in km
 
-               |----------------------------INPUT-----------------------------|  |--------OUTPUT-------|    *
 
-    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, point, &trgepc, srfvec );
+               |----------------------------INPUT-----------------------------| |---------OUTPUT-------|    */
+    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, spoint, &trgepc, srfvec );
+
+    std::cout << spoint[0] << ", " << spoint[1] << ", " << spoint[2] << std::endl;
+    target = "EARTH";
+    obsrvr = "SUN";
+    abcorr = "LT+S";
 
     /*
      Using the illumin_c function you can get the different angles to compute the lighting information
@@ -775,9 +830,10 @@ float calcSunPosition(){
      phase:  Is the phase angle at `spoint', as seen from `obsrvr' at time `et'.
      solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
      emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
-               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|     *
 
-    ilumin_c ( "Ellipsoid", "EARTH", et, "IAU_EARTH", "LT+S", "SUN", point, &trgepc, srfvec, &phase, &solar, &emissn );
+
+               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|   */
+    ilumin_c ( "Ellipsoid", target, et, "IAU_EARTH", "LT+S", "SUN", spoint, &trgepc, srfvec, &phase, &solar, &emissn );
 
     //Calculate the distance to the sun
     float dist = vnorm_c ( srfvec );
@@ -786,6 +842,5 @@ float calcSunPosition(){
     phase *= dpr_c();
 
     //Tror vi ska skicka tillbaka phase
-    return phase;       */
+    return phase;
 }
-

@@ -21,6 +21,7 @@ add_executable(${APP_NAME}
 	objloader.cpp
 	objloader.hpp)
 
+
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${EXAMPE_TARGET_PATH})
 
