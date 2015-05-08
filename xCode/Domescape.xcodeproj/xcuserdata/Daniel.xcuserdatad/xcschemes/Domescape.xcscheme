@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7443292CDE7641E0ACA14884"
+               BlueprintIdentifier = "F68890DCA1C54E0ABA2AD9BD"
                BuildableName = "Domescape"
                BlueprintName = "Domescape"
                ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7443292CDE7641E0ACA14884"
+            BlueprintIdentifier = "F68890DCA1C54E0ABA2AD9BD"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -52,7 +52,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7443292CDE7641E0ACA14884"
+            BlueprintIdentifier = "F68890DCA1C54E0ABA2AD9BD"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
@@ -61,11 +61,15 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-config single.xml"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-config single_fisheye.xml"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-config single_remote.xml"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
@@ -81,7 +85,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7443292CDE7641E0ACA14884"
+            BlueprintIdentifier = "F68890DCA1C54E0ABA2AD9BD"
             BuildableName = "Domescape"
             BlueprintName = "Domescape"
             ReferencedContainer = "container:../xCode/Domescape.xcodeproj">
