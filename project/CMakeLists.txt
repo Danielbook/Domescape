@@ -14,10 +14,11 @@ set_property (TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY}
 	    ${XCODE_VALUE})
 endmacro (set_xcode_property)
 
-
-
 if( APPLE )
 	include_directories ( "/usr/include" )
+
+elseif(WIN32)
+include_directories ( "C:/Users/Matthias/Documents/Medieteknik/cspice/include" )
 
 else () #linux
 	include_directories("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
@@ -185,6 +186,8 @@ if( APPLE )
 elseif (MSVC)
 
 elseif (WIN32)
+	target_link_libraries (${APP_NAME} C:/Users/Matthias/Documents/Medieteknik/spice/lib/cspice.lib)
+
 
 else () #linux
 	target_link_libraries(${APP_NAME} /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a)

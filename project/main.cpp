@@ -188,13 +188,13 @@ int main( int argc, char* argv[] )
     }
 #endif
 
-#ifdef __MINGW32__
+//#ifdef __MSC_VER__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-#endif
+//#endif
 
 #ifdef __linux__
     if( !gEngine->init( ) )
