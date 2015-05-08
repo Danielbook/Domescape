@@ -14,6 +14,15 @@ set_property (TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY}
 	    ${XCODE_VALUE})
 endmacro (set_xcode_property)
 
+
+
+if( APPLE )
+	include_directories ( "/usr/include" )
+
+else () #linux
+	include_directories("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
+endif()
+
 add_executable(${APP_NAME}
 	main.cpp
 	model.cpp

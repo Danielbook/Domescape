@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//For the time function
 #include <time.h>
 
 #include <SpiceUsr.h>
@@ -52,16 +53,17 @@ void mouseButtonCallback(int button, int action);//     |
 //      |                                               ^
 //      └-----------------------------------------------┘
 
+
+/*------------------MOVEMENT------------------*/
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
+/*--------------------------------------------*/
 
-//REGULAR FUNCTIONS
-
-float calcSunPosition();
-const std::string currentDateTime();
-
-enum MONTHS { JAN = 0, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC };
+/*------------------REGULAR FUNCTIONS------------------*/
+float calcSunPosition(); // Calculates the suns position
+const std::string currentDateTime(); // Used to calculate the time of the current computer
+/*-----------------------------------------------------*/
 
 /*------------------HEIGHTMAP------------------*/
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
@@ -87,13 +89,7 @@ std::vector<float> mTexCoord;
 GLsizei mNumberOfVerts = 0;
 /*---------------------------------------------*/
 
-//OpenGL objects
-enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
-GLuint vertexBuffers[3];
-GLuint VertexArrayID = GL_FALSE;
-GLsizei numberOfVertices = 0;
-
-//shader data
+/*------------------SHADER------------------*/
 sgct::ShaderProgram mSp;
 GLint myTextureLocations[]	= { -1, -1 };
 GLint MVP_Loc_G = -1;
@@ -109,8 +105,10 @@ GLint sColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
 GLint Tex_Loc = -1;
+/*------------------------------------------*/
 
-//Oriantation variables
+/*------------------ORIENTATION------------------*/
+
 bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
@@ -130,12 +128,13 @@ glm::vec3 pos(0.0f, 0.0f, 0.0f);
 float sunX = 500.0f;
 float sunY = 100.f;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
+/*-----------------------------------------------*/
 
-
-//variables to share across cluster
+/*------------------SHARED VARIABLES ACROSS THE CLUSTER------------------*/
 sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
+/*-----------------------------------------------------------------------*/
 
 /*------------------GUI------------------*/
 void externalControlMessageCallback(const char * receivedChars, int size);
@@ -204,9 +203,8 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 #endif
-    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
-    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
 
+    //TEMPORARY
     sunAngle = calcSunPosition();
 
     // Main loop
@@ -629,7 +627,6 @@ void externalControlStatusCallback(bool connected)
 
 
 //REGULAR FUNCTIONS
-
 void initHeightMap()
 {
     //setup textures
@@ -728,7 +725,6 @@ void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light
     mSp.unbind();
 }
 
-
 /*!
  Will draw a flat surface that can be used for the heightmapped terrain.
  @param	width	Width of the surface
@@ -786,6 +782,11 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
     mNumberOfVerts = static_cast<GLsizei>(mVertPos.size() / 3); //each vertex has three componets (x, y & z)
 }
 
+/* 
+ http://en.cppreference.com/w/cpp/chrono/c/strftime
+ Function to calculate the current time, maybe needed to send this out to all the slaves later?
+ */
+
 const std::string currentDateTime() {
     time_t now = time(0);
     struct tm tstruct;
@@ -832,7 +833,6 @@ float calcSunPosition(){
     
     //convert planetocentric r/lon/lat to Cartesian vector
     latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
-    
     
     std::string str = currentDateTime();
     char *cstr = new char[str.length() + 1];
