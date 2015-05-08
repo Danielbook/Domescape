@@ -14,14 +14,21 @@ set_property (TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY}
 	    ${XCODE_VALUE})
 endmacro (set_xcode_property)
 
-if(WIN32)
+if( APPLE )
+	include_directories ( "/usr/include" )
+
+elseif(WIN32)
 include_directories ( "C:/Users/Matthias/Documents/Medieteknik/cspice/include" )
+
+else () #linux
+	include_directories("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
 endif()
 
 add_executable(${APP_NAME}
 	main.cpp
 	model.cpp
 	model.hpp)
+
 
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${EXAMPE_TARGET_PATH})

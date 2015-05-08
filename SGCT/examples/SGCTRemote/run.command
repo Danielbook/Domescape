@@ -1,3 +1,3 @@
 #!/bin/sh
 cd "$(dirname "$0")"
-./SGCTRemote -config ../../config/single.xml
+./SGCTRemote -config single_remote.xml

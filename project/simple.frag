@@ -11,6 +11,7 @@ in vec3 tnormals;
 out vec4 color;
 
 
+
 void main()
 {
  //PHONG from TNM046
@@ -45,6 +46,6 @@ float dotNL = max ( dot (N , L) , 0.0) ; // If negative , set to zero
 float dotRV = max ( dot (R , V) , 0.0) ;
 if ( dotNL == 0.0) dotRV = 0.0; // Do not show highlight on the dark side
 vec3 shadedcolor = Ia * ka + Id * kd * dotNL + Is * ks * pow ( dotRV , n);
-color = vTexColor * vec4( shadedcolor , 1.0) ;
+color =  vTexColor * vec4( shadedcolor , 1.0) ;
 
 }

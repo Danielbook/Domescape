@@ -1,0 +1,3 @@
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/xCode/CMakeFiles/SGCTRemote.dir
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/xCode/CMakeFiles/ALL_BUILD.dir
+/Users/Daniel/Skolarbeten/Nuvarande/TNM061_3D-Grafik/3D_Projekt/SGCT/examples/SGCTRemote/xCode/CMakeFiles/ZERO_CHECK.dir

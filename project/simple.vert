@@ -14,6 +14,7 @@ out vec3 lDir;
 out vec2 UV;
 out vec3 tnormals; //transformed normals
 
+
 void main()
 {
     // Output position of the vertex, in clip space : MVP * position
