@@ -1,6 +1,12 @@
 ﻿<Properties StartupItem="Domescape.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Form1.Designer.cs">
+    <Files>
+      <File FileName="Form1.Designer.cs" Line="191" Column="68" />
+      <File FileName="Form1.cs" Line="41" Column="50" />
+      <File FileName="NetworkManager.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

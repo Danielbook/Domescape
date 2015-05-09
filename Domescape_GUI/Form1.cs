@@ -37,8 +37,8 @@ namespace Domescape
 
             this.toolStripStatusLabel1.Text = "Disconnected";
             this.ipTextBox.Text = c.ip;
-            this.SizeTrackBar.Value = 50;
-            this.SizeLabel.Text = "Size = 50 %";
+            this.SpeedTrackBar.Value = 50;
+            this.SpeedLabel.Text = "Speed of Time = 1.0x";
 
             componentVisibility(false);
         }
@@ -54,7 +54,7 @@ namespace Domescape
          */
         private void componentVisibility(bool status)
         {
-            this.PropertiesGroupBox.Enabled = status;
+            this.ControlsGroupBox.Enabled = status;
         }
 
         #region Network
@@ -69,7 +69,7 @@ namespace Domescape
                 this.toolStripStatusLabel1.Text = "Connected";
                 
                 //send defaults
-                c.connection.Send("stats=0\r\ngraph=0\r\nwire=0\r\nsize=50");
+                c.connection.Send("stats=0\r\ngraph=0\r\nwire=0\r\nspeed=50");
             }
             else
             {
@@ -78,6 +78,11 @@ namespace Domescape
                 this.toolStripStatusLabel1.Text = "Disconnected";
             }
         }
+
+		private void useDate()
+		{
+			
+		}
 
         private void disconnect()
         {
@@ -116,6 +121,31 @@ namespace Domescape
             }
         }
 
+		private void dateButton_Click(object sender, EventArgs e)
+		{
+			if (c.connection.valid)
+			{
+				string date = this.dateTextBox.Text;
+				c.connection.Send (date);
+			}
+		}
+
+		private void resetButton_Click(object sender, EventArgs e)
+		{
+			if (c.connection.valid)
+			{
+				c.connection.Send ("resetButton=1");
+			}
+		}
+
+		private void pauseButton_Click(object sender, EventArgs e)
+		{
+			if (c.connection.valid)
+			{
+				c.connection.Send ("pause=1");
+			}
+		}
+
         private void StatsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (c.connection.valid)
@@ -142,27 +172,14 @@ namespace Domescape
             }
         }
 
-        private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            if (c.connection.valid)
-            {
-                CheckBox cb = (CheckBox)sender;
-
-                if (cb.Checked)
-                    c.connection.Send("wire=1");
-                else
-                    c.connection.Send("wire=0");
-            }
-        }
-
-        private void SizeTrackBar_Scroll(object sender, EventArgs e)
+        private void SpeedTrackBar_Scroll(object sender, EventArgs e)
         {
             TrackBar tb = (TrackBar)sender;
-            this.SizeLabel.Text = "Size: " + tb.Value.ToString() + " %";
+            this.SpeedLabel.Text = "Speed of time: " + tb.Value.ToString() + "x";
 
             if (c.connection.valid)
             {
-                c.connection.Send("size=" + tb.Value.ToString());
+                c.connection.Send("speed=" + tb.Value.ToString());
             }
         }
 

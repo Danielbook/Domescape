@@ -179,23 +179,28 @@ int main( int argc, char* argv[] )
         dirButtons[i] = false;
 
 
-#ifdef __APPLE__
+#if __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-#endif
 
-#ifdef __MSC_VER__
+#elif __MSC_VER__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-#endif
+    
+#elif __WIN32__
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
+    {
+        delete gEngine;
+        return EXIT_FAILURE;
+    }
 
-#ifdef __linux__
+#elif __linux__
     if( !gEngine->init( ) )
     {
         delete gEngine;
@@ -418,7 +423,9 @@ void myDrawFun()
     float fSunDis = 70;
     //float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
     float fSunAngleTheta = calcSunPosition();
-    std::cout << "Sun angle: " << fSunAngleTheta << std::endl;
+   
+    //std::cout << "Sun angle: " << fSunAngleTheta << std::endl;
+    
     float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
@@ -527,68 +534,23 @@ void myCleanUpFun()
 
 void keyCallback(int key, int action)
 {
-    if( gEngine->isMaster() )
-    {
-        switch( key )
-        {
-            case SGCT_KEY_R:
-                if(action == SGCT_PRESS)
-                    reloadShader.setVal(true);
-                break;
-
-            case SGCT_KEY_W:
-                dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_S:
-                dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_A:
-                dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_D:
-                dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_UP:
-                dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_DOWN:
-                dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_LEFT:
-                dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_RIGHT:
-                dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-                //Running
-            case SGCT_KEY_LEFT_SHIFT:
-            case SGCT_KEY_RIGHT_SHIFT:
-                runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-        	case SGCT_KEY_Q:
-            	dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-				break;
-
-        	case SGCT_KEY_E:
-	            dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-				break;
+    if( gEngine->isMaster() ){
+        switch( key ){
+            case SGCT_KEY_R: if(action == SGCT_PRESS) reloadShader.setVal(true); break;
+            case SGCT_KEY_W: case SGCT_KEY_UP: dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+            case SGCT_KEY_S: case SGCT_KEY_DOWN:dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+            case SGCT_KEY_A: case SGCT_KEY_LEFT: dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+            case SGCT_KEY_D: case SGCT_KEY_RIGHT:dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+ /*Running*/case SGCT_KEY_LEFT_SHIFT: case SGCT_KEY_RIGHT_SHIFT: runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+        	case SGCT_KEY_Q: dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+        	case SGCT_KEY_E: dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
         }
     }
 }
 
 void mouseButtonCallback(int button, int action)
 {
-    if( gEngine->isMaster() )
-    {
+    if( gEngine->isMaster() ){
         switch( button ) {
             case SGCT_MOUSE_BUTTON_LEFT:
                 mouseLeftButton = (action == SGCT_PRESS ? true : false);
@@ -796,7 +758,7 @@ const std::string currentDateTime() {
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%Y %b %d %X", &tstruct);
     
-    std::cout << buffer << std:: endl;
+    //std::cout << buffer << std:: endl;
     
     return buffer;
 }
@@ -805,9 +767,9 @@ const std::string currentDateTime() {
 /*Function to calculate the suns illumination angle relative to the earth*/
 float calcSunPosition(){
 
-    SpiceDouble r = 6371.0;
-    SpiceDouble lon = 16.1833333;
-    SpiceDouble lat = 58.6;
+    SpiceDouble r = 6371.0;         // Earth radius
+    SpiceDouble lon = 16.192421;    // Longitude of Nrkpg
+    SpiceDouble lat = 58.587745;    // Latitude of Nrkpg
 
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
@@ -877,11 +839,11 @@ float calcSunPosition(){
      
              |------------INPUT-------------| |----OUTPUT-----|    */
     spkpos_c(target, et, ref, abcorr, obsrvr, sunPosition, &lt);
-    
+   /*
     std::cout << "Our position on earth: " << ourPosition[0] << ", " << ourPosition[1] << ", " << ourPosition[2] << std::endl;
     std::cout << "Suns position relative to earth: " << sunPosition[0] << ", " << sunPosition[1] << ", " << sunPosition[2] << std::endl;
     std::cout << "Suns point on earth (Zenit): " << sunPointOnEarth[0] << ", " << sunPointOnEarth[1] << ", " << sunPointOnEarth[2] << std::endl;
-    
+    */
     float a, b, xd, yd, zd;
     
     //CALCULATE DISTANCE BETWEEN ZENIT POINT AND SUN = a
@@ -899,7 +861,7 @@ float calcSunPosition(){
     //CALCULATE ANGLE ( arctan (a/b) = angle
     angle = atan(a/b);
     
-    std::cout << "Sun angle in radians: " << angle << std::endl;
+    //std::cout << "Sun angle in radians: " << angle << std::endl;
     
     //Convert the angles to degrees
     //angle *= dpr_c();
