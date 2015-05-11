@@ -62,7 +62,7 @@ float runningSpeed = 5.0f;
 
 /*------------------REGULAR FUNCTIONS------------------*/
 float calcSunPosition(); // Calculates the suns position
-const std::string currentDateTime(); // Used to calculate the time of the current computer
+const std::string getCurrentTime(); // Used to calculate the time of the current computer
 /*-----------------------------------------------------*/
 
 /*------------------HEIGHTMAP------------------*/
@@ -139,9 +139,12 @@ sgct::SharedObject<glm::mat4> xform;
 void externalControlMessageCallback(const char * receivedChars, int size);
 void externalControlStatusCallback(bool connected);
 
-sgct::SharedBool showStats(false);
-sgct::SharedBool showGraph(false);
+sgct::SharedBool timeIsTicking(true);
+sgct::SharedString date;
+sgct::SharedBool resetTime(false);
 /*---------------------------------------*/
+
+
 
 float sunAngle;
 
@@ -370,9 +373,14 @@ void myPreSyncFun(){
 
 void myPostSyncPreDrawFun()
 {
-    //GUI
-    gEngine->setDisplayInfoVisibility( showStats.getVal() );
-    //
+    if( timeIsTicking.getVal() )
+    {
+        std::cout << "Time is ticking" << std::endl;
+    }
+    else
+    {
+        std::cout << "Time is paused" << std::endl;
+    }
     
     if( reloadShader.getVal() )
     {
@@ -496,7 +504,7 @@ void myEncodeFun()
     sgct::SharedData::instance()->writeInt( &stereoMode );
     
     //GUI
-    sgct::SharedData::instance()->writeBool( &showStats );
+    sgct::SharedData::instance()->writeBool( &timeIsTicking );
 }
 
 void myDecodeFun()
@@ -512,7 +520,7 @@ void myDecodeFun()
     sgct::SharedData::instance()->readInt( &stereoMode );
     
     //GUI
-    sgct::SharedData::instance()->readBool( &showStats );
+    sgct::SharedData::instance()->readBool( &timeIsTicking );
 
 }
 
@@ -561,19 +569,35 @@ void mouseButtonCallback(int button, int action)
     }
 }
 
-
 void externalControlMessageCallback(const char * receivedChars, int size)
 {
     if( gEngine->isMaster() )
     {
-        if(size == 7 && strncmp(receivedChars, "stats", 5) == 0)
+        if(size == 7 && strncmp(receivedChars, "pause", 5) == 0)
         {
-            showStats.setVal(strncmp(receivedChars + 6, "1", 1) == 0);
+            timeIsTicking.setVal(true);
+            std::cout << "CONTINUE TIME" << std::endl;
         }
-        else if(size == 7 && strncmp(receivedChars, "graph", 5) == 0)
+        
+        else if(size == 7 && strncmp(receivedChars, "pause", 5) == 1)
         {
-            showGraph.setVal(strncmp(receivedChars + 6, "1", 1) == 0);
+            timeIsTicking.setVal(false);
+            std::cout << "STOP TIME" << std::endl;
         }
+        
+        if(size == 7 && strncmp(receivedChars, "reset", 5) == 1)
+        {
+            //RESET TO CURRENT TIME
+            getCurrentTime();
+            std::cout << "RESET TO CURRENT TIME" << std::endl;
+        }
+        
+        if(size >= 7 && strncmp(receivedChars, "date", 4) == 1)
+        {
+            //SET DATE MANUALLY
+            std::cout << "SET DATE MANUALLY" << std::endl;
+        }
+        
         
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
@@ -749,7 +773,7 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
 
-const std::string currentDateTime() {
+const std::string getCurrentTime() {
     time_t now = time(0);
     struct tm tstruct;
     char buffer[80];
@@ -796,7 +820,7 @@ float calcSunPosition(){
     //convert planetocentric r/lon/lat to Cartesian vector
     latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
     
-    std::string str = currentDateTime();
+    std::string str = getCurrentTime();
     char *cstr = new char[str.length() + 1];
     strcpy(cstr, str.c_str());
     

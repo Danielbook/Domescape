@@ -69,7 +69,7 @@ namespace Domescape
                 this.toolStripStatusLabel1.Text = "Connected";
                 
                 //send defaults
-                c.connection.Send("stats=0\r\ngraph=0\r\nwire=0\r\nspeed=50");
+                c.connection.Send("pause=0\r\nreset=0\r\nspeed=1.0");
             }
             else
             {
@@ -78,11 +78,6 @@ namespace Domescape
                 this.toolStripStatusLabel1.Text = "Disconnected";
             }
         }
-
-		private void useDate()
-		{
-			
-		}
 
         private void disconnect()
         {
@@ -126,7 +121,7 @@ namespace Domescape
 			if (c.connection.valid)
 			{
 				string date = this.dateTextBox.Text;
-				c.connection.Send (date);
+				c.connection.Send("date=" + date);
 			}
 		}
 
@@ -134,7 +129,7 @@ namespace Domescape
 		{
 			if (c.connection.valid)
 			{
-				c.connection.Send ("resetButton=1");
+				c.connection.Send ("reset=1");
 			}
 		}
 
@@ -146,31 +141,6 @@ namespace Domescape
 			}
 		}
 
-        private void StatsCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            if (c.connection.valid)
-            {
-                CheckBox cb = (CheckBox)sender;
-
-                if (cb.Checked)
-                    c.connection.Send("stats=1");
-                else
-                    c.connection.Send("stats=0");
-            }
-        }
-
-        private void GraphCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            if (c.connection.valid)
-            {
-                CheckBox cb = (CheckBox)sender;
-
-                if (cb.Checked)
-                    c.connection.Send("graph=1");
-                else
-                    c.connection.Send("graph=0");
-            }
-        }
 
         private void SpeedTrackBar_Scroll(object sender, EventArgs e)
         {
