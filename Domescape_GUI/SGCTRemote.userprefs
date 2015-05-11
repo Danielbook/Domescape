@@ -1,0 +1,40 @@
+﻿<Properties StartupItem="Domescape.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Program.cs">
+    <Files>
+      <File FileName="Properties/AssemblyInfo.cs" Line="13" Column="48" />
+      <File FileName="Properties/Resources.resx" Line="1" Column="11" />
+      <File FileName="Properties/Resources.Designer.cs" Line="47" Column="109" />
+      <File FileName="Properties/Settings.settings" Line="1" Column="1" />
+      <File FileName="Properties/Settings.Designer.cs" Line="11" Column="20" />
+      <File FileName="Form1.cs" Line="10" Column="20" />
+      <File FileName="Form1.resx" Line="1" Column="11" />
+      <File FileName="Form1.Designer.cs" Line="183" Column="26" />
+      <File FileName="NetworkManager.cs" Line="7" Column="20" />
+      <File FileName="Program.cs" Line="6" Column="20" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="SGCTRemote" expanded="True">
+            <Node name="Domescape" expanded="True">
+              <Node name="Properties" expanded="True">
+                <Node name="Resources.resx" expanded="True" />
+                <Node name="Settings.settings" expanded="True" />
+              </Node>
+              <Node name="Form1.cs" expanded="True" />
+              <Node name="Program.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

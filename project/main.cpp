@@ -13,10 +13,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//#include <SpiceUsr.h>
-#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
-//#include <SpiceZfc.h>
-#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
+//For the time function
+#include <time.h>
+
+#include <SpiceUsr.h>
+//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
+#include <SpiceZfc.h>
+//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
 //#include "objloader.hpp"
@@ -59,15 +62,19 @@ void mouseButtonCallback(int button, int action);//     |
 //      |                                               ^
 //      └-----------------------------------------------┘
 
+
+/*------------------MOVEMENT------------------*/
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
+/*--------------------------------------------*/
 
-//REGULAR FUNCTIONS
+/*------------------REGULAR FUNCTIONS------------------*/
+float calcSunPosition(); // Calculates the suns position
+const std::string getCurrentTime(); // Used to calculate the time of the current computer
+/*-----------------------------------------------------*/
 
-float calcSunPosition();
-
-//////////////////////HEIGTHMAP//////////////////////
+/*------------------HEIGHTMAP------------------*/
 void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
 void initHeightMap();
 void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb);
@@ -89,15 +96,9 @@ sgct::SharedInt stereoMode(0);
 std::vector<float> mVertPos;
 std::vector<float> mTexCoord;
 GLsizei mNumberOfVerts = 0;
-//////////////////////////////////////////////////////
+/*---------------------------------------------*/
 
-//OpenGL objects
-enum VBO_INDEXES { VBO_POSITIONS = 0, VBO_UVS, VBO_NORMALS };
-GLuint vertexBuffers[3];
-GLuint VertexArrayID = GL_FALSE;
-GLsizei numberOfVertices = 0;
-
-//Shader Heightmap
+/*------------------SHADER------------------*/
 sgct::ShaderProgram mSp;
 GLint myTextureLocations[]	= { -1, -1 };
 GLint MVP_Loc_G = -1;
@@ -114,6 +115,7 @@ GLint sColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
 GLint Tex_Loc = -1;
+/*------------------------------------------*/
 
 //Shader Sky
 GLint MVP_Loc_S = -1;
@@ -142,14 +144,15 @@ glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
 
 float sunX = 500.0f;
-float sunY = 300.f;
+float sunY = 100.f;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
+/*-----------------------------------------------*/
 
-
-//variables to share across cluster
+/*------------------SHARED VARIABLES ACROSS THE CLUSTER------------------*/
 sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
+/*-----------------------------------------------------------------------*/
 
 // Skriva eget!? Bör nog göra det oavsett -> Skriv upp på papper först!
 // Skapa en sky med images och obj -> länka shaders -> rita ut
@@ -157,15 +160,28 @@ sgct::SharedObject<glm::mat4> xform;
 //data d = data();
 //sky dome = sky(d);
 
+/*------------------GUI------------------*/
+void externalControlMessageCallback(const char * receivedChars, int size);
+void externalControlStatusCallback(bool connected);
+
+sgct::SharedBool timeIsTicking(true);
+sgct::SharedString date;
+sgct::SharedBool resetTime(false);
+/*---------------------------------------*/
+
+
+
+float sunAngle;
+
+//Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
 model land;
 model box;
 model sun;
-model realSun;
 
 int main( int argc, char* argv[] )
 {
     gEngine = new sgct::Engine( argc, argv );
-
+    
     gEngine->setInitOGLFunction( myInitOGLFun );
     gEngine->setPreSyncFunction( myPreSyncFun );
     gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
@@ -173,6 +189,12 @@ int main( int argc, char* argv[] )
     gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
+    
+    /*------------------GUI------------------*/
+    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
+    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
+    /*-----------------------------------------*/
+    
 
     /*------------------SPICE------------------*/
     //load kernels
@@ -185,35 +207,37 @@ int main( int argc, char* argv[] )
         dirButtons[i] = false;
 
 
-#ifdef __APPLE__
+#if __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-#endif
 
-#ifdef __MINGW32__
+#elif __MSC_VER__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
-#endif
+    
+#elif __WIN32__
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
+    {
+        delete gEngine;
+        return EXIT_FAILURE;
+    }
 
-#ifdef __linux__
+#elif __linux__
     if( !gEngine->init( ) )
     {
         delete gEngine;
         return EXIT_FAILURE;
     }
 #endif
-    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
-    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
 
-    float test = calcSunPosition();
-
-    std::cout << "Phase: " << test << std::endl;
+    //TEMPORARY
+    sunAngle = calcSunPosition();
 
     // Main loop
     gEngine->render();
@@ -246,9 +270,8 @@ void myInitOGLFun()
     box.readOBJ("mesh/box.obj");
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
-    sun.createSphere(50.0f, 200);
+    sun.createSphere(50.0f, 80);
 
-    realSun.createSphere(10.0f, 200);
 
     //ObjReader  objReader("mesh/cornell_box.obj");
 
@@ -391,6 +414,15 @@ void myPreSyncFun(){
 
 void myPostSyncPreDrawFun()
 {
+    if( timeIsTicking.getVal() )
+    {
+        std::cout << "Time is ticking" << std::endl;
+    }
+    else
+    {
+        std::cout << "Time is paused" << std::endl;
+    }
+    
     if( reloadShader.getVal() )
     {
         sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "scene" );
@@ -451,19 +483,19 @@ void myDrawFun()
     //glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
-
-    //Calculate the angle to the sun!
-    //float phase = calcSunPosition();
-
+    //Call calcSunPosition();
+    //Ex: vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
+    
     // Set light properties
-    float fSunDis = 1000;
-    float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
+    float fSunDis = 70;
+    //float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
+    float fSunAngleTheta = calcSunPosition();
+   
+    //std::cout << "Sun angle: " << fSunAngleTheta << std::endl;
+    
     float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
     float fSine = sin(fSunAnglePhi);
-
-    //ÄNDRA TILLBAKA HÄR SEN!!!
-    //glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
-    glm::vec3 vSunPos = sunPosition;
+    glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
     // We'll change color of skies depending on sun's position
     glClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
@@ -483,7 +515,6 @@ void myDrawFun()
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
-
 
     //BOX
     glm::mat4 NyMVP = MVP;
@@ -537,6 +568,9 @@ void myEncodeFun()
     sgct::SharedData::instance()->writeBool( &takeScreenshot );
     sgct::SharedData::instance()->writeBool( &useTracking );
     sgct::SharedData::instance()->writeInt( &stereoMode );
+    
+    //GUI
+    sgct::SharedData::instance()->writeBool( &timeIsTicking );
 }
 
 void myDecodeFun()
@@ -550,6 +584,9 @@ void myDecodeFun()
     sgct::SharedData::instance()->readBool( &takeScreenshot );
     sgct::SharedData::instance()->readBool( &useTracking );
     sgct::SharedData::instance()->readInt( &stereoMode );
+    
+    //GUI
+    sgct::SharedData::instance()->readBool( &timeIsTicking );
 
 }
 
@@ -571,56 +608,23 @@ void myCleanUpFun()
 
 void keyCallback(int key, int action)
 {
-    if( gEngine->isMaster() )
-    {
-        switch( key )
-        {
-            case SGCT_KEY_R:
-                if(action == SGCT_PRESS)
-                    reloadShader.setVal(true);
-                break;
-
-            case SGCT_KEY_UP:
-            case SGCT_KEY_W:
-                dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_DOWN:
-            case SGCT_KEY_S:
-                dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_LEFT:
-            case SGCT_KEY_A:
-                dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-            case SGCT_KEY_RIGHT:
-            case SGCT_KEY_D:
-                dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-                //Running
-            case SGCT_KEY_LEFT_SHIFT:
-            case SGCT_KEY_RIGHT_SHIFT:
-                runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-                break;
-
-        	case SGCT_KEY_Q:
-            	dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-				break;
-
-        	case SGCT_KEY_E:
-	            dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false);
-				break;
+    if( gEngine->isMaster() ){
+        switch( key ){
+            case SGCT_KEY_R: if(action == SGCT_PRESS) reloadShader.setVal(true); break;
+            case SGCT_KEY_W: case SGCT_KEY_UP: dirButtons[FORWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+            case SGCT_KEY_S: case SGCT_KEY_DOWN:dirButtons[BACKWARD] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+            case SGCT_KEY_A: case SGCT_KEY_LEFT: dirButtons[LEFT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+            case SGCT_KEY_D: case SGCT_KEY_RIGHT:dirButtons[RIGHT] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+ /*Running*/case SGCT_KEY_LEFT_SHIFT: case SGCT_KEY_RIGHT_SHIFT: runningButton = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+        	case SGCT_KEY_Q: dirButtons[UP] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
+        	case SGCT_KEY_E: dirButtons[DOWN] = ((action == SGCT_REPEAT || action == SGCT_PRESS) ? true : false); break;
         }
     }
 }
 
 void mouseButtonCallback(int button, int action)
 {
-    if( gEngine->isMaster() )
-    {
+    if( gEngine->isMaster() ){
         switch( button ) {
             case SGCT_MOUSE_BUTTON_LEFT:
                 mouseLeftButton = (action == SGCT_PRESS ? true : false);
@@ -631,9 +635,50 @@ void mouseButtonCallback(int button, int action)
     }
 }
 
+void externalControlMessageCallback(const char * receivedChars, int size)
+{
+    if( gEngine->isMaster() )
+    {
+        if(size == 7 && strncmp(receivedChars, "pause", 5) == 0)
+        {
+            timeIsTicking.setVal(true);
+            std::cout << "CONTINUE TIME" << std::endl;
+        }
+        
+        else if(size == 7 && strncmp(receivedChars, "pause", 5) == 1)
+        {
+            timeIsTicking.setVal(false);
+            std::cout << "STOP TIME" << std::endl;
+        }
+        
+        if(size == 7 && strncmp(receivedChars, "reset", 5) == 1)
+        {
+            //RESET TO CURRENT TIME
+            getCurrentTime();
+            std::cout << "RESET TO CURRENT TIME" << std::endl;
+        }
+        
+        if(size >= 7 && strncmp(receivedChars, "date", 4) == 1)
+        {
+            //SET DATE MANUALLY
+            std::cout << "SET DATE MANUALLY" << std::endl;
+        }
+        
+        
+        sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
+    }
+}
+
+void externalControlStatusCallback(bool connected)
+{
+    if(connected)
+        sgct::MessageHandler::instance()->print("External control connected.\n");
+    else
+        sgct::MessageHandler::instance()->print("External control disconnected.\n");
+}
+
 
 //REGULAR FUNCTIONS
-
 void initHeightMap()
 {
     //setup textures
@@ -732,7 +777,6 @@ void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light
     mSp.unbind();
 }
 
-
 /*!
  Will draw a flat surface that can be used for the heightmapped terrain.
  @param	width	Width of the surface
@@ -790,52 +834,74 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
     mNumberOfVerts = static_cast<GLsizei>(mVertPos.size() / 3); //each vertex has three componets (x, y & z)
 }
 
-/*
- Hi,
- there are a couple of functions that you can use:
- subslr_c (http://naif.jpl.nasa.gov/…/toolkit_d…/C/cspice/subslr_c.html) provides you wiht the coordinates on the Earth where the Sun is directly above.
- illumin_c (ftp://naif.jpl.nasa.gov/…/toolkit_do…/C/cspice/ilumin_c.html) to get all of the angles that are necessary for your computation.
- The two necessary kernels:
- http://naif.jpl.nasa.gov/…/generic_ke…/spk/planets/de430.bsp Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
- http://naif.jpl.nasa.gov/…/naif/generic_ke…/lsk/naif0011.tls Is a leapsecond kernel so that you get the accurate times
- After loading the kernels, you can use the str2et_c function to convert between time as a string into ET, which is in seconds. All functions take the time as ET to compute their values. Using the illumin_c function you can get the different angles to compute the lighting information.
- Hope that helps,
- Alex
+/* 
+ http://en.cppreference.com/w/cpp/chrono/c/strftime
+ Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
+
+const std::string getCurrentTime() {
+    time_t now = time(0);
+    struct tm tstruct;
+    char buffer[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buffer, sizeof(buffer), "%Y %b %d %X", &tstruct);
+    
+    //std::cout << buffer << std:: endl;
+    
+    return buffer;
+}
+
+
+/*Function to calculate the suns illumination angle relative to the earth*/
 float calcSunPosition(){
 
-    SpiceDouble r = 3390.42;
-    SpiceDouble lon = 16.1833333;
-    SpiceDouble lat = 58.6;
+    SpiceDouble r = 6371.0;         // Earth radius
+    SpiceDouble lon = 16.192421;    // Longitude of Nrkpg
+    SpiceDouble lat = 58.587745;    // Latitude of Nrkpg
 
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
     SpiceChar *target;
+    SpiceChar *ref;
 
-    SpiceDouble spoint[3];
-    SpiceDouble et;
+    SpiceDouble ourPosition[3];
+    
+    SpiceDouble sunPointOnEarth[3];
+    
+    SpiceDouble sunPosition[3];
+    
+    SpiceDouble et, lt;
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
-    SpiceDouble phase, solar, emissn;
+    SpiceDouble angle;
 
     //#define   STRLEN    32
     //SpiceChar UTCDate[STRLEN];
 
-    //Prompts the user to input date in format YEAR-MONTH-DAY-HOUR:MIN:SEC
+    //Prompts the user to input date in format YEAR MONTH DAY HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
-
-    /*
-     convert planetocentric r/lon/lat to Cartesian vector
-     */
-    latrec_c( r, lon * rpd_c(), lat * rpd_c(), spoint );
-
+    
+    //convert planetocentric r/lon/lat to Cartesian vector
+    latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
+    
+    std::string str = getCurrentTime();
+    char *cstr = new char[str.length() + 1];
+    strcpy(cstr, str.c_str());
+    
+    SpiceChar * date = cstr;
+    
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( "2004 JAN 9 12:00:00", &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+    str2et_c ( date, &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
 
+    delete [] cstr;
+    
     target = "EARTH";
-    obsrvr = "SUN"; // SKA ÄNDRAS
+    obsrvr = "SUN";
     abcorr = "LT+S";
-
+    ref = "iau_earth";
+    
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
               |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
@@ -850,46 +916,45 @@ float calcSunPosition(){
      trgepc: Is the "sub-solar point epoch."
      srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
             -srfvec is given in km
+     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/subslr.html
 
-
-               |----------------------------INPUT-----------------------------| |---------OUTPUT-------|    */
-    subslr_c ( "Intercept: ellipsoid", target, et, "iau_earth", abcorr, obsrvr, spoint, &trgepc, srfvec );
-
-    std::cout << spoint[0] << ", " << spoint[1] << ", " << spoint[2] << std::endl;
-    target = "EARTH";
-    obsrvr = "SUN";
-    abcorr = "LT+S";
-
+               |----------------------------INPUT---------------------| |-----------OUTPUT------------|    */
+    subslr_c ( "Intercept: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
+    
     /*
-     Using the illumin_c function you can get the different angles to compute the lighting information
-              |-----------------------------INPUT----------------------------|  |------------------OUTPUT--------------------|
-     ilumin_c("method", "target", "et", "fixref", "abcorr", "obsrvr", "spoint", "trgepc", "srfvec", "phase", "solar", "emissn")
-     method: The only choice currently supported is "Ellipsoid"
-     target: Is the name of the target body
-     et:     Is the epoch, time stuff...
-     fixref: Is the name of the body-fixed, body-centered reference frame associated with the target body
-     abcorr: Is the aberration correction to be used, use "LT+S"
-     obsrvr: Is the name of the observing body.  This is typically a spacecraft, the earth, or a surface point on the earth.
-     spoint: Is a surface point on the target body, expressed in Cartesian coordinates
-     trgepc: Is the "surface point point epoch." `trgepc' is expressed as seconds
-     srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
-     phase:  Is the phase angle at `spoint', as seen from `obsrvr' at time `et'.
-     solar:  Is the solar incidence angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-sun vector. Units are radians.
-     emissn: Is the emission angle at `spoint', as seen from `obsrvr' at time `et'. This is the angle between the surface normal vector at `spoint' and the spoint-observer vector. Units are radians.
+     Return the position of a target body relative to an observing
+     body, optionally corrected for light time (planetary aberration)
+     and stellar aberration.
+     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkpos_c.html
+     
+             |------------INPUT-------------| |----OUTPUT-----|    */
+    spkpos_c(target, et, ref, abcorr, obsrvr, sunPosition, &lt);
+   /*
+    std::cout << "Our position on earth: " << ourPosition[0] << ", " << ourPosition[1] << ", " << ourPosition[2] << std::endl;
+    std::cout << "Suns position relative to earth: " << sunPosition[0] << ", " << sunPosition[1] << ", " << sunPosition[2] << std::endl;
+    std::cout << "Suns point on earth (Zenit): " << sunPointOnEarth[0] << ", " << sunPointOnEarth[1] << ", " << sunPointOnEarth[2] << std::endl;
+    */
+    float a, b, xd, yd, zd;
+    
+    //CALCULATE DISTANCE BETWEEN ZENIT POINT AND SUN = a
+    xd = sunPosition[0]-sunPointOnEarth[0];
+    yd = sunPosition[1]-sunPointOnEarth[1];
+    zd = sunPosition[2]-sunPointOnEarth[2];
+    a = sqrtf(xd*xd + yd*yd + zd*zd);
+    
+    //CALCULATE DISTANCE BETWEEN US AND THE ZENIT POINT = b
+    xd = ourPosition[0]-sunPointOnEarth[0];
+    yd = ourPosition[1]-sunPointOnEarth[1];
+    zd = ourPosition[2]-sunPointOnEarth[2];
+    b = sqrtf(xd*xd + yd*yd + zd*zd);
 
-
-               |-----------------------------INPUT----------------------|  |---------------OUTPUT-----------------|   */
-    ilumin_c ( "Ellipsoid", target, et, "IAU_EARTH", "LT+S", "SUN", spoint, &trgepc, srfvec, &phase, &solar, &emissn );
-
-    //Calculate the distance to the sun
-    float dist = vnorm_c ( srfvec );
-
+    //CALCULATE ANGLE ( arctan (a/b) = angle
+    angle = atan(a/b);
+    
+    //std::cout << "Sun angle in radians: " << angle << std::endl;
+    
     //Convert the angles to degrees
-    phase *= dpr_c();
-
-    //Tror vi ska skicka tillbaka phase
-    return phase;
+    //angle *= dpr_c();
+    
+    return angle;
 }
-
-
-
