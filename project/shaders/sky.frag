@@ -27,5 +27,6 @@ void main()
     vec4 sTexColor = texture(Tex, UV.st);
 
     // Combine the color and glow giving the pixel value.
+    //color = sTexColor * vec4(Kc.rgb + Kg.rgb * Kg.a / 2.0, Kc.a);
     color = sTexColor * vec4(Kc.rgb + Kg.rgb * Kg.a / 2.0, Kc.a);
 }

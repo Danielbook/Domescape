@@ -55,6 +55,6 @@ void main()
 	color.rgb = vec3(0.3,sin(Pi*hVal),0.0);
 
 	// multiply color with shading
-	color.rgb *= calcShading( normalize(NM * normal), lDir ).rgb;
+	color.rgb *= calcShading( normalize(-NM * normal), lDir ).rgb;
 	color.a = 1.0;
 }

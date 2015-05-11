@@ -17,19 +17,12 @@
 #include <time.h>
 
 #include <SpiceUsr.h>
-//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceUsr.h>
 #include <SpiceZfc.h>
-//#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
 //#include "objloader.hpp"
 //#include "MVstack.hpp"
 
-#include "skydome/sky.hpp"
-#include "skydome/data.hpp"
-#include "skydome/image.hpp"
-#include "skydome/obj.hpp"
-#include "skydome/entity.hpp"
 
 
 sgct::Engine * gEngine;
@@ -98,7 +91,8 @@ std::vector<float> mTexCoord;
 GLsizei mNumberOfVerts = 0;
 /*---------------------------------------------*/
 
-/*------------------SHADER------------------*/
+/*------------------SHADERS------------------*/
+//Heightmap shader
 sgct::ShaderProgram mSp;
 GLint myTextureLocations[]	= { -1, -1 };
 GLint MVP_Loc_G = -1;
@@ -115,7 +109,6 @@ GLint sColor_Loc = -1;
 GLint lDir_Loc = -1;
 GLint Amb_Loc = -1;
 GLint Tex_Loc = -1;
-/*------------------------------------------*/
 
 //Shader Sky
 GLint MVP_Loc_S = -1;
@@ -124,6 +117,7 @@ GLint lDir_Loc_S = -1;
 GLint Tex_Loc_S = -1;
 GLint Glow_Loc_S = -1;
 GLint SunColor_Loc_S = -1;
+/*------------------------------------------*/
 
 //Oriantation variables
 bool dirButtons[6];
@@ -154,11 +148,6 @@ sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 /*-----------------------------------------------------------------------*/
 
-// Skriva eget!? Bör nog göra det oavsett -> Skriv upp på papper först!
-// Skapa en sky med images och obj -> länka shaders -> rita ut
-// I slutändan behöver vi bara en bråkdel av vad de har!
-//data d = data();
-//sky dome = sky(d);
 
 /*------------------GUI------------------*/
 void externalControlMessageCallback(const char * receivedChars, int size);
@@ -170,10 +159,8 @@ sgct::SharedBool resetTime(false);
 /*---------------------------------------*/
 
 
-
 float sunAngle;
 
-//Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
 model land;
 model box;
 model sun;
@@ -181,7 +168,7 @@ model sun;
 int main( int argc, char* argv[] )
 {
     gEngine = new sgct::Engine( argc, argv );
-    
+
     gEngine->setInitOGLFunction( myInitOGLFun );
     gEngine->setPreSyncFunction( myPreSyncFun );
     gEngine->setPostSyncPreDrawFunction( myPostSyncPreDrawFun );
@@ -189,12 +176,12 @@ int main( int argc, char* argv[] )
     gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
-    
+
     /*------------------GUI------------------*/
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     /*-----------------------------------------*/
-    
+
 
     /*------------------SPICE------------------*/
     //load kernels
@@ -220,7 +207,7 @@ int main( int argc, char* argv[] )
         delete gEngine;
         return EXIT_FAILURE;
     }
-    
+
 #elif __WIN32__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
     {
@@ -271,9 +258,6 @@ void myInitOGLFun()
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(50.0f, 80);
-
-
-    //ObjReader  objReader("mesh/cornell_box.obj");
 
     //Initialize Shader scene (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
@@ -416,13 +400,13 @@ void myPostSyncPreDrawFun()
 {
     if( timeIsTicking.getVal() )
     {
-        std::cout << "Time is ticking" << std::endl;
+        //std::cout << "Time is ticking" << std::endl;
     }
     else
     {
         std::cout << "Time is paused" << std::endl;
     }
-    
+
     if( reloadShader.getVal() )
     {
         sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "scene" );
@@ -479,22 +463,20 @@ void myDrawFun()
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
     glm::mat3 NML = glm::inverseTranspose(glm::mat3( MV_light ));
 
-    glm::mat4 MVP = P * MV * Model;
-    //glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
+    //glm::mat4 MVP = P * MV * Model;
+
+    //Det ska räcka med dessa två senare!?
+    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat; //Måste ändra dessa parameter
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
-    //Call calcSunPosition();
-    //Ex: vec3 sunData(float fSunDis, float fSunAngleTheta, float fSunAnglePhi) = calcSunPosition();
-    
+
     // Set light properties
-    float fSunDis = 70;
+    float fSunDis = 100;
     //float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
     float fSunAngleTheta = calcSunPosition();
-   
-    //std::cout << "Sun angle: " << fSunAngleTheta << std::endl;
-    
+
     float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
-    float fSine = sin(fSunAnglePhi);
+    float fSine = sin(fSunAngleTheta);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
     // We'll change color of skies depending on sun's position
@@ -503,9 +485,12 @@ void myDrawFun()
 
     glm::vec4 sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); //Calculate Sun Color depending on sunAngle!
     glm::vec3 lDir = glm::normalize(vSunPos);
-    float fAmb = 0.3f; //Calculate Ambient Light depending on sunAngle!
+    float fAmb = 0.6f; //Calculate Ambient Light depending on sunAngle!
 
     drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
+
+
+    /*------------------SCENE SHADER------------------*/
 
     //Bind Shader scene
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
@@ -530,6 +515,9 @@ void myDrawFun()
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
+    /*----------------------------------------------*/
+
+    /*------------------SKY SHADER------------------*/
 
     //Bind Shader sky
     sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
@@ -543,6 +531,7 @@ void myDrawFun()
     NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
         NyMVP = glm::translate(NyMVP, sunPosition);
+        //NyMVP = glm::translate(NyMVP, vSunPos); //TO BE USED
 
         //Send the transformations, texture and render
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
@@ -551,6 +540,8 @@ void myDrawFun()
         sun.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    /*----------------------------------------------*/
 
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
@@ -568,7 +559,7 @@ void myEncodeFun()
     sgct::SharedData::instance()->writeBool( &takeScreenshot );
     sgct::SharedData::instance()->writeBool( &useTracking );
     sgct::SharedData::instance()->writeInt( &stereoMode );
-    
+
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
 }
@@ -584,7 +575,7 @@ void myDecodeFun()
     sgct::SharedData::instance()->readBool( &takeScreenshot );
     sgct::SharedData::instance()->readBool( &useTracking );
     sgct::SharedData::instance()->readInt( &stereoMode );
-    
+
     //GUI
     sgct::SharedData::instance()->readBool( &timeIsTicking );
 
@@ -644,27 +635,27 @@ void externalControlMessageCallback(const char * receivedChars, int size)
             timeIsTicking.setVal(true);
             std::cout << "CONTINUE TIME" << std::endl;
         }
-        
+
         else if(size == 7 && strncmp(receivedChars, "pause", 5) == 1)
         {
             timeIsTicking.setVal(false);
             std::cout << "STOP TIME" << std::endl;
         }
-        
+
         if(size == 7 && strncmp(receivedChars, "reset", 5) == 1)
         {
             //RESET TO CURRENT TIME
             getCurrentTime();
             std::cout << "RESET TO CURRENT TIME" << std::endl;
         }
-        
+
         if(size >= 7 && strncmp(receivedChars, "date", 4) == 1)
         {
             //SET DATE MANUALLY
             std::cout << "SET DATE MANUALLY" << std::endl;
         }
-        
-        
+
+
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
 }
@@ -834,7 +825,7 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
     mNumberOfVerts = static_cast<GLsizei>(mVertPos.size() / 3); //each vertex has three componets (x, y & z)
 }
 
-/* 
+/*
  http://en.cppreference.com/w/cpp/chrono/c/strftime
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
@@ -847,9 +838,9 @@ const std::string getCurrentTime() {
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%Y %b %d %X", &tstruct);
-    
+
     //std::cout << buffer << std:: endl;
-    
+
     return buffer;
 }
 
@@ -857,7 +848,7 @@ const std::string getCurrentTime() {
 /*Function to calculate the suns illumination angle relative to the earth*/
 float calcSunPosition(){
 
-    SpiceDouble r = 6371.0;         // Earth radius
+    SpiceDouble r = 6371.0;         // Earth radius [km]
     SpiceDouble lon = 16.192421;    // Longitude of Nrkpg
     SpiceDouble lat = 58.587745;    // Latitude of Nrkpg
 
@@ -867,11 +858,11 @@ float calcSunPosition(){
     SpiceChar *ref;
 
     SpiceDouble ourPosition[3];
-    
+
     SpiceDouble sunPointOnEarth[3];
-    
+
     SpiceDouble sunPosition[3];
-    
+
     SpiceDouble et, lt;
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
@@ -882,26 +873,26 @@ float calcSunPosition(){
 
     //Prompts the user to input date in format YEAR MONTH DAY HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
-    
+
     //convert planetocentric r/lon/lat to Cartesian vector
     latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
-    
+
     std::string str = getCurrentTime();
     char *cstr = new char[str.length() + 1];
     strcpy(cstr, str.c_str());
-    
+
     SpiceChar * date = cstr;
-    
+
     //Used to convert between time as a string into ET, which is in seconds.
     str2et_c ( date, &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
 
     delete [] cstr;
-    
+
     target = "EARTH";
     obsrvr = "SUN";
     abcorr = "LT+S";
     ref = "iau_earth";
-    
+
     /*
      Provides you with the coordinates on the Earth where the Sun is directly above
               |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
@@ -920,41 +911,46 @@ float calcSunPosition(){
 
                |----------------------------INPUT---------------------| |-----------OUTPUT------------|    */
     subslr_c ( "Intercept: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
-    
+
     /*
      Return the position of a target body relative to an observing
      body, optionally corrected for light time (planetary aberration)
      and stellar aberration.
      ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkpos_c.html
-     
+
              |------------INPUT-------------| |----OUTPUT-----|    */
     spkpos_c(target, et, ref, abcorr, obsrvr, sunPosition, &lt);
-   /*
-    std::cout << "Our position on earth: " << ourPosition[0] << ", " << ourPosition[1] << ", " << ourPosition[2] << std::endl;
+
+  /*  std::cout << "Our position on earth: " << ourPosition[0] << ", " << ourPosition[1] << ", " << ourPosition[2] << std::endl;
     std::cout << "Suns position relative to earth: " << sunPosition[0] << ", " << sunPosition[1] << ", " << sunPosition[2] << std::endl;
     std::cout << "Suns point on earth (Zenit): " << sunPointOnEarth[0] << ", " << sunPointOnEarth[1] << ", " << sunPointOnEarth[2] << std::endl;
-    */
-    float a, b, xd, yd, zd;
-    
-    //CALCULATE DISTANCE BETWEEN ZENIT POINT AND SUN = a
-    xd = sunPosition[0]-sunPointOnEarth[0];
-    yd = sunPosition[1]-sunPointOnEarth[1];
-    zd = sunPosition[2]-sunPointOnEarth[2];
-    a = sqrtf(xd*xd + yd*yd + zd*zd);
-    
-    //CALCULATE DISTANCE BETWEEN US AND THE ZENIT POINT = b
-    xd = ourPosition[0]-sunPointOnEarth[0];
-    yd = ourPosition[1]-sunPointOnEarth[1];
-    zd = ourPosition[2]-sunPointOnEarth[2];
-    b = sqrtf(xd*xd + yd*yd + zd*zd);
+*/
+    float a, b, xd1, yd1, zd1, xd2, yd2, zd2;
 
-    //CALCULATE ANGLE ( arctan (a/b) = angle
-    angle = atan(a/b);
-    
+    //Normalized vector from earth to sun (need to change sign?)
+    SpiceDouble sunVec[3];
+    SpiceDouble mag;
+    unorm_c(sunPosition, sunVec, &mag);
+
+    //CALCULATE DISTANCE BETWEEN US AND THE ZENIT POINT
+    SpiceDouble posVecTemp[3];
+    posVecTemp[0] = ourPosition[0]-sunPointOnEarth[0];
+    posVecTemp[1] = ourPosition[1]-sunPointOnEarth[1];
+    posVecTemp[2] = ourPosition[2]-sunPointOnEarth[2];
+
+    SpiceDouble posVec[3];
+    unorm_c(posVecTemp, posVec, &mag);
+
+
+    //CALCULATE ANGLE
+    angle = acos(vdot_c(posVec, sunVec));
+
     //std::cout << "Sun angle in radians: " << angle << std::endl;
-    
+
     //Convert the angles to degrees
     //angle *= dpr_c();
-    
+
     return angle;
 }
+
+

@@ -3,6 +3,9 @@ case "$1" in
         -f )
                 optirun ./Domescape -config single_fisheye.xml
         ;;
+	-r )
+                optirun ./Domescape -config single_remote.xml
+        ;;
         -m )
                 optirun ./Domescape -config dome_sim.xml
         ;;

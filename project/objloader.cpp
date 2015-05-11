@@ -63,7 +63,7 @@ void ObjReader::loadMTL(const std::string &mtlFilename)
 
         if (!strncmp(token, "d", 1)) { parseSep(token += 1); mat->d = getFloat(token); continue; }
         if (!strncmp(token, "Ns", 1)) { parseSep(token += 2); mat->Ns = getFloat(token); continue; }
-        if (!strncmp(token, "Ns", 1)) { parseSep(token += 2); mat->Ni = getFloat(token); continue; }
+        if (!strncmp(token, "Ni", 1)) { parseSep(token += 2); mat->Ni = getFloat(token); continue; }
         if (!strncmp(token, "Ka", 2)) { parseSep(token += 2); mat->Ka = getVec3f(token); continue; }
         if (!strncmp(token, "Kd", 2)) { parseSep(token += 2); mat->Kd = getVec3f(token); continue; }
         if (!strncmp(token, "Ks", 2)) { parseSep(token += 2); mat->Ks = getVec3f(token); continue; }

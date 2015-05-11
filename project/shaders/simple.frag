@@ -33,12 +33,12 @@ vec4 vTexColor = texture(Tex, UV.st);
 vec3 V = vec3(0.0,0.0,1.0);
 vec3 L = lDir;
 vec3 N = tnormals;
-float n = 30;
+float n = 10;
 vec3 ka = vec3(fAmbInt-0.1,fAmbInt-0.1,fAmbInt-0.1);
 vec3 Ia = vec3(fAmbInt,fAmbInt,fAmbInt);
-vec3 kd = vec3(0.6,0.6,0.6);
-vec3 Id = vec3(0.7,0.7,0.7);
-vec3 ks = vec3(0.8,0.8,0.8);
+vec3 kd = vec3(0.9,0.9,0.9);
+vec3 Id = vec3(0.9,0.9,0.9);
+vec3 ks = vec3(0.9,0.9,0.9);
 vec3 Is = vec3(1.0,1.0,1.0);
 
 vec3 R = 2.0* dot (N ,L) *L - L; // Could also have used the function reflect ()
