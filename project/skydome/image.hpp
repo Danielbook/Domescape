@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "opengl.hpp"
+//#include "opengl.hpp"
 #include "data.hpp"
 
 //-----------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 #include <cmath>
 
-#include "util.hpp"
+//#include "util.hpp"
 #include "entity.hpp"
-#include "opengl.hpp"
+//#include "opengl.hpp"
 
 //-----------------------------------------------------------------------------
 

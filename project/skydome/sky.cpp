@@ -1,4 +1,4 @@
-#include "opengl.hpp"
+//#include "opengl.hpp"
 #include "sky.hpp"
 
 //-----------------------------------------------------------------------------
@@ -12,9 +12,6 @@ sky::sky(data *d) :
     star_map (d, "star.png"),
     sky_glow (d, "glow.png"),
     sky_color(d, "sky.png"),
-
-    sky_prog(d->get_txt("sky.vert"),
-             d->get_txt("sky.frag")),
 
     sun (-90.0f, 0.0f, 0.0f, 1.0f),
     moon(+90.0f, 0.0f, 0.0f, 1.0f)
@@ -83,7 +80,7 @@ void sky::draw()
 
             sun_map.bind(GL_TEXTURE0);
             sun.draw();
-        
+
             moon_map.bind(GL_TEXTURE0);
             moon.draw();
         }

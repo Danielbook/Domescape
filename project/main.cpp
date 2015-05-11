@@ -22,6 +22,15 @@
 //#include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
+//#include "objloader.hpp"
+//#include "MVstack.hpp"
+
+#include "skydome/sky.hpp"
+#include "skydome/data.hpp"
+#include "skydome/image.hpp"
+#include "skydome/obj.hpp"
+#include "skydome/entity.hpp"
+
 
 sgct::Engine * gEngine;
 
@@ -99,6 +108,7 @@ GLint NM_Loc_G = -1;
 GLint lDir_Loc_G = -1;
 GLint Amb_Loc_G = -1;
 
+//Shader Scene
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
 GLint sColor_Loc = -1;
@@ -107,7 +117,15 @@ GLint Amb_Loc = -1;
 GLint Tex_Loc = -1;
 /*------------------------------------------*/
 
-/*------------------ORIENTATION------------------*/
+//Shader Sky
+GLint MVP_Loc_S = -1;
+GLint NM_Loc_S = -1;
+GLint lDir_Loc_S = -1;
+GLint Tex_Loc_S = -1;
+GLint Glow_Loc_S = -1;
+GLint SunColor_Loc_S = -1;
+
+//Oriantation variables
 bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
@@ -124,6 +142,7 @@ glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
+
 float sunX = 500.0f;
 float sunY = 100.f;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
@@ -134,6 +153,12 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 /*-----------------------------------------------------------------------*/
+
+// Skriva eget!? Bör nog göra det oavsett -> Skriv upp på papper först!
+// Skapa en sky med images och obj -> länka shaders -> rita ut
+// I slutändan behöver vi bara en bråkdel av vad de har!
+//data d = data();
+//sky dome = sky(d);
 
 /*------------------GUI------------------*/
 void externalControlMessageCallback(const char * receivedChars, int size);
@@ -236,11 +261,8 @@ void myInitOGLFun()
     {
         printf("THIS IS THE PROBLEM");
     }
-    
-    initHeightMap();
 
-    //Set up backface culling
-    glCullFace(GL_BACK);
+    initHeightMap();
 
     //Textures
     glEnable(GL_TEXTURE_2D);
@@ -253,18 +275,36 @@ void myInitOGLFun()
 
     //ObjReader  objReader("mesh/cornell_box.obj");
 
-    //Initialize Shader Xform (simple)
-    sgct::ShaderManager::instance()->addShaderProgram( "xform", "simple.vert", "simple.frag" );
-    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    //Initialize Shader scene (simple)
+    sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
-    MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "MVP" );
-    NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "NM" );
-    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "sunColor" );
-    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "lightDir" );
-    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "fAmbInt" );
-    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "xform").getUniformLocation( "Tex" );
+
+    MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "MVP" );
+    NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "NM" );
+    sColor_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "sunColor" );
+    lDir_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "lightDir" );
+    Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "fAmbInt" );
+    Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "Tex" );
     glUniform1i( Tex_Loc, 0 );
 
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+
+    //Initialize Shader sky (sky)
+    sgct::ShaderManager::instance()->addShaderProgram( "sky", "shaders/sky.vert", "shaders/sky.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
+
+
+    MVP_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "MVP" );
+    NM_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "NM" );
+    lDir_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "lightDir" );
+    Tex_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "Tex" );
+    Glow_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "glow" );
+    SunColor_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "colorSky" );
+    glUniform1i( Glow_Loc_S, 0 );
+    glUniform1i( SunColor_Loc_S, 0 );
+    glUniform1i( Tex_Loc_S, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 }
@@ -300,6 +340,7 @@ void myPreSyncFun(){
             sunY -= 1.0f;
         }
         sunPosition = glm::vec3(sunX,sunY,0.0f);
+
 
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
@@ -384,7 +425,7 @@ void myPostSyncPreDrawFun()
     
     if( reloadShader.getVal() )
     {
-        sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "xform" );
+        sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "scene" );
         sp.reload();
 
         //reset locations
@@ -400,14 +441,32 @@ void myPostSyncPreDrawFun()
 
         sp.unbind();
         reloadShader.setVal(false);
+
+
+        sgct::ShaderProgram skySp = sgct::ShaderManager::instance()->getShaderProgram( "sky" );
+        skySp.reload();
+
+        //reset locations
+        skySp.bind();
+
+        MVP_Loc_S = skySp.getUniformLocation( "MVP" );
+        NM_Loc_S = skySp.getUniformLocation( "NM" );
+        Tex_Loc_S = skySp.getUniformLocation( "Tex" );
+        lDir_Loc_S = skySp.getUniformLocation("lightDir");
+        glUniform1i( Tex_Loc_S, 0 );
+
+        skySp.unbind();
+        reloadShader.setVal(false);
     }
 }
 
 void myDrawFun()
 {
-    glEnable( GL_DEPTH_TEST );
-    glEnable( GL_CULL_FACE );
-    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glCullFace(GL_BACK);
+
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
 
@@ -448,8 +507,8 @@ void myDrawFun()
 
     drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
 
-    //Bind Shader
-    sgct::ShaderManager::instance()->bindShaderProgram( "xform" );
+    //Bind Shader scene
+    sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &NM[0][0]);
@@ -469,9 +528,16 @@ void myDrawFun()
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
         box.render();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+
+    //Bind Shader sky
+    sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
+
+    glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix3fv(NM_Loc_S, 1, GL_FALSE, &NM[0][0]);
+    glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
+
 
     //SUN
     NyMVP = MVP;
@@ -479,7 +545,7 @@ void myDrawFun()
         NyMVP = glm::translate(NyMVP, sunPosition);
 
         //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
         sun.render();
@@ -620,7 +686,7 @@ void initHeightMap()
     sgct::TextureManager::instance()->loadTexure("normalmap", "texture/normal.png", true, 0);
 
     //setup shader
-    sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "heightmap.vert", "heightmap.frag" );
+    sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "shaders/heightmap.vert", "shaders/heightmap.frag" );
 
     mSp.bind();
     myTextureLocations[0]	= mSp.getUniformLocation( "hTex" );

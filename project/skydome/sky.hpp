@@ -17,7 +17,7 @@ class sprite
     float s;
 
 public:
-    
+
     sprite(float a, float b, float c, float d) : x(a), y(b), z(c), s(d) { }
 
     void draw();
@@ -35,17 +35,14 @@ public:
                              rnd(1.0f,   2.0f)) { }
 };
 
-//-----------------------------------------------------------------------------
 
-class sky : public entity
+class sky
 {
     image  sun_map;
     image  moon_map;
     image  star_map;
     image  sky_glow;
     image  sky_color;
-
-    shader sky_prog;
 
     sprite sun;
     sprite moon;
