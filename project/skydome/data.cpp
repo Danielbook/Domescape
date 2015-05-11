@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include "data.hpp"
-#include "obj.h"
+#include "obj.hpp"
 
 //-----------------------------------------------------------------------------
 

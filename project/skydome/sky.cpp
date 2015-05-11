@@ -13,9 +13,6 @@ sky::sky(data *d) :
     sky_glow (d, "glow.png"),
     sky_color(d, "sky.png"),
 
-    sky_prog(d->get_txt("sky.vert"),
-             d->get_txt("sky.frag")),
-
     sun (-90.0f, 0.0f, 0.0f, 1.0f),
     moon(+90.0f, 0.0f, 0.0f, 1.0f)
 {

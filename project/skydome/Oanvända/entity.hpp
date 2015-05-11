@@ -1,7 +1,7 @@
 #ifndef ENTITY_HPP
 #define ENTITY_HPP
 
-#include "obj.h"
+#include "obj.hpp"
 
 //-----------------------------------------------------------------------------
 

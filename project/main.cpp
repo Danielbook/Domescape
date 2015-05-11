@@ -19,6 +19,14 @@
 #include </home/adam/Dokument/GitHub/CSPICE/cspice/include/SpiceZfc.h>
 
 #include "model.hpp"
+//#include "objloader.hpp"
+//#include "MVstack.hpp"
+
+#include "skydome/sky.hpp"
+#include "skydome/data.hpp"
+#include "skydome/image.hpp"
+#include "skydome/obj.hpp"
+#include "skydome/entity.hpp"
 
 
 sgct::Engine * gEngine;
@@ -143,9 +151,11 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 
-
-//Skapa sky, sun, moon. Kolla Demo. Sen är det bara att ritaut dem där nere, skissa med papper och penna!
-
+// Skriva eget!? Bör nog göra det oavsett -> Skriv upp på papper först!
+// Skapa en sky med images och obj -> länka shaders -> rita ut
+// I slutändan behöver vi bara en bråkdel av vad de har!
+//data d = data();
+//sky dome = sky(d);
 
 model land;
 model box;

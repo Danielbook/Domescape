@@ -3,7 +3,7 @@
 
 #include <vector>
 
-//#include "entity.hpp"
+#include "entity.hpp"
 #include "image.hpp"
 #include "data.hpp"
 
@@ -35,17 +35,14 @@ public:
                              rnd(1.0f,   2.0f)) { }
 };
 
-//-----------------------------------------------------------------------------
 
-class sky : public entity
+class sky
 {
     image  sun_map;
     image  moon_map;
     image  star_map;
     image  sky_glow;
     image  sky_color;
-
-    shader sky_prog;
 
     sprite sun;
     sprite moon;
