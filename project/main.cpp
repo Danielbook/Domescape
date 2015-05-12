@@ -63,7 +63,7 @@ float runningSpeed = 5.0f;
 
 /*------------------REGULAR FUNCTIONS------------------*/
 float calcSunPosition(); // Calculates the suns position
-const std::string getCurrentTime(); // Used to calculate the time of the current computer
+void resetToCurrentTime(); // Used to calculate the time of the current computer
 /*-----------------------------------------------------*/
 
 /*------------------HEIGHTMAP------------------*/
@@ -153,10 +153,15 @@ void externalControlMessageCallback(const char * receivedChars, int size);
 void externalControlStatusCallback(bool connected);
 
 sgct::SharedBool timeIsTicking(true);
+sgct::SharedInt timeSpeed = 1;
 sgct::SharedString date;
-sgct::SharedFloat timeSpeed = 1.0f;
 sgct::SharedBool writeOut = false;
 /*---------------------------------------*/
+
+void addSecondToTime();
+
+enum timeVariables{YEAR = 0, MONTH = 1, DAY = 2, HOUR = 3, MINUTE = 4, SECOND = 5};
+int currentTime[6];
 
 int timeCount = 0;
 
@@ -226,6 +231,7 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 #endif
+    resetToCurrentTime();
 
     //TEMPORARY
     sunAngle = calcSunPosition();
@@ -457,7 +463,17 @@ void myDrawFun(){
             timeCount = 0;
         }
     /////
-    
+    if(writeOut.getVal())
+    {
+        if( timeIsTicking.getVal() ){
+            for(int i = 0; i < timeSpeed.getVal(); i++){
+                addSecondToTime();
+            }
+        }
+        
+    std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+    }
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -593,7 +609,7 @@ void myEncodeFun(){
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
-    sgct::SharedData::instance()->writeFloat( &timeSpeed );
+    sgct::SharedData::instance()->writeInt( &timeSpeed );
     sgct::SharedData::instance()->writeBool( &writeOut );
 }
 
@@ -611,7 +627,7 @@ void myDecodeFun(){
     //GUI
     sgct::SharedData::instance()->readBool( &timeIsTicking );
     sgct::SharedData::instance()->readString( &date );
-    sgct::SharedData::instance()->readFloat( &timeSpeed );
+    sgct::SharedData::instance()->readInt( &timeSpeed );
     sgct::SharedData::instance()->readBool( &writeOut );
 }
 
@@ -664,38 +680,49 @@ void externalControlMessageCallback(const char * receivedChars, int size){
         if(size == 7 && strncmp(receivedChars, "pause", 5) == 0){
             if( strncmp(receivedChars, "pause=0", 7) == 0 ){
                 timeIsTicking.setVal( true );
-                std::cout << "CONTINUE TIME" << std::endl;
+                //std::cout << "CONTINUE TIME" << std::endl;
             }
             else if( strncmp(receivedChars, "pause=1", 7) == 0 ){
                 timeIsTicking.setVal( false );
-                std::cout << "PAUSE TIME" << std::endl;
+                //std::cout << "PAUSE TIME" << std::endl;
             }
         }
         
         //RESET TO CURRENT TIME
         if( size == 7 && strncmp( receivedChars, "reset", 4 ) == 0 ){
             if( strncmp(receivedChars, "reset=1", 7) == 0 ){
-                std::cout << "RESET TO CURRENT TIME" << std::endl;
-                date.setVal( getCurrentTime() );
+                //std::cout << "RESET TO CURRENT TIME" << std::endl;
+                resetToCurrentTime();
             }
         }
         
         //SET SPEED OF TIME
-        if( (size == 7 || size == 8) && strncmp( receivedChars, "speed", 5 ) == 0 ){
+        if( strncmp( receivedChars, "speed", 5 ) == 0 ){
             //parse string to int
             int tmpVal = atoi(receivedChars + 6);
-            timeSpeed.setVal(static_cast<float>(tmpVal));
+            timeSpeed.setVal(static_cast<int>(tmpVal));
             
-            std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
+            //std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
         }
 
         //SET DATE MANUALLY
-        if( size == 25 && strncmp( receivedChars, "date", 4 ) == 0 ){
-            std::cout << "SET DATE MANUALLY" << std::endl;
-            std::string tempDate = ( receivedChars + 5 );
+        if( strncmp( receivedChars, "date", 4 ) == 0 ){
+            //std::cout << "SET DATE MANUALLY" << std::endl;
+            std::string tempTime = ( receivedChars + 5 );
             
-            std::cout << "Date: " << tempDate << std::endl;
-            date.setVal( tempDate );
+            std::string tempYear = tempTime.substr(0,4);
+            std::string tempMonth = tempTime.substr(5,2);
+            std::string tempDay = tempTime.substr(8,2);
+            std::string tempHour = tempTime.substr(11,2);
+            std::string tempMinute = tempTime.substr(14,2);
+            std::string tempSeconds = tempTime.substr(17,2);
+            
+            currentTime[YEAR] = atoi(tempYear.c_str());
+            currentTime[MONTH] = atoi(tempMonth.c_str());
+            currentTime[DAY] = atoi(tempDay.c_str());
+            currentTime[HOUR] = atoi(tempHour.c_str());
+            currentTime[MINUTE] = atoi(tempMinute.c_str());
+            currentTime[SECOND] = atoi(tempSeconds.c_str());
         }
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
@@ -867,18 +894,33 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
 
-const std::string getCurrentTime() {
+void resetToCurrentTime() {
     time_t now = time(0);
     struct tm tstruct;
     char buffer[80];
     tstruct = *localtime(&now);
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
-    strftime(buffer, sizeof(buffer), "%Y %b %d %X", &tstruct);
+    strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
 
     //std::cout << buffer << std:: endl;
-
-    return buffer;
+//    static_cast<int>()
+    std::string tempTime(&buffer[0]);
+    
+    std::string tempYear = tempTime.substr(0,4);
+    std::string tempMonth= tempTime.substr(5,2);
+    std::string tempDay = tempTime.substr(8,2);
+    std::string tempHour= tempTime.substr(11,2);
+    std::string tempMinute= tempTime.substr(14,2);
+    std::string tempSeconds= tempTime.substr(17,2);
+    
+    currentTime[YEAR] = atoi(tempYear.c_str());
+    currentTime[MONTH] = atoi(tempMonth.c_str());
+    currentTime[DAY] = atoi(tempDay.c_str());
+    currentTime[HOUR] = atoi(tempHour.c_str());
+    currentTime[MINUTE] = atoi(tempMinute.c_str());
+    currentTime[SECOND] = atoi(tempSeconds.c_str());
+    
 }
 
 /*Function to calculate the suns illumination angle relative to the earth*/
@@ -911,12 +953,17 @@ float calcSunPosition(){
     //convert planetocentric r/lon/lat to Cartesian vector
     latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
 
-    std::string str = getCurrentTime();
-    char *cstr = new char[str.length() + 1];
-    strcpy(cstr, str.c_str());
+//    std::string str = getCurrentTime();
+//    char *cstr = new char[str.length() + 1];
+//    strcpy(cstr, str.c_str());
+    
+    std::string tempDate = std::to_string( currentTime[YEAR] ) + " " + std::to_string( currentTime[MONTH] ) + " " + std::to_string( currentTime[DAY] ) + " " + std::to_string( currentTime[HOUR] )  + ":" + std::to_string( currentTime[MINUTE] ) + ":" + std::to_string( currentTime[SECOND] );
+    
+    char *cstr = new char[tempDate.length() + 1];
+    strcpy(cstr, tempDate.c_str());
 
     SpiceChar * date = cstr;
-
+    
     //Used to convert between time as a string into ET, which is in seconds.
     str2et_c ( date, &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
 
@@ -985,6 +1032,65 @@ float calcSunPosition(){
     //angle *= dpr_c();
 
     return angle;
+}
+
+void addSecondToTime(){
+    bool leapYear = false;
+    if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) )
+    {
+        leapYear = true;
+    }
+
+    //Add Second
+    currentTime[SECOND] += 1;
+
+    //Add Minute
+    if ( currentTime[SECOND] >= 60 ) {
+        currentTime[MINUTE] += 1;
+        currentTime[SECOND] = 0;
+    }
+    
+    //Add Hour
+    if ( currentTime[MINUTE] >= 60) {
+        currentTime[HOUR] += 1;
+        currentTime[MINUTE] = 0;
+    }
+    
+    //Add Day
+    if ( currentTime[HOUR] >= 24 ) {
+        currentTime[DAY] += 1;
+        currentTime[HOUR] = 0;
+    }
+    
+    //Add Month
+        //February and leap year
+        if (leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29) {
+            currentTime[MONTH] += 1;
+            currentTime[DAY] = 1;
+        }
+    
+        else if (currentTime[MONTH] == 2 && currentTime[DAY] > 28)
+        {
+            currentTime[MONTH] += 1;
+            currentTime[DAY] = 1;
+        }
+    
+        else if( (currentTime[MONTH] == 4 || currentTime[MONTH] == 6 || currentTime[MONTH] == 9 ||
+                  currentTime[MONTH] == 11) && currentTime[DAY] > 30  ){
+            currentTime[MONTH] += 1;
+            currentTime[DAY] = 1;
+        }
+    
+        else if(currentTime[DAY] > 31){
+            currentTime[MONTH] += 1;
+            currentTime[DAY] = 1;
+        }
+    
+    //Add Year
+    if ( currentTime[MONTH] == 12 && currentTime[DAY] > 31 ) {
+        currentTime[YEAR] += 1;
+        currentTime[MONTH] = 1;
+    }
 }
 
 
