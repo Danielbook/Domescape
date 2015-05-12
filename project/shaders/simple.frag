@@ -36,10 +36,10 @@ vec3 N = tnormals;
 float n = 10;
 vec3 ka = vec3(fAmbInt-0.1,fAmbInt-0.1,fAmbInt-0.1);
 vec3 Ia = vec3(fAmbInt,fAmbInt,fAmbInt);
-vec3 kd = vec3(0.9,0.9,0.9);
-vec3 Id = vec3(0.9,0.9,0.9);
-vec3 ks = vec3(0.9,0.9,0.9);
-vec3 Is = vec3(1.0,1.0,1.0);
+vec3 kd = vec3(sunColor-0.2);
+vec3 Id = vec3(sunColor-0.15);
+vec3 ks = vec3(sunColor-0.1);
+vec3 Is = vec3(sunColor);
 
 vec3 R = 2.0* dot (N ,L) *L - L; // Could also have used the function reflect ()
 float dotNL = max ( dot (N , L) , 0.0) ; // If negative , set to zero

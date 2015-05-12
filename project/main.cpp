@@ -24,7 +24,6 @@
 //#include "MVstack.hpp"
 
 
-
 sgct::Engine * gEngine;
 
 void myInitOGLFun();
@@ -166,6 +165,7 @@ float sunAngle;
 model land;
 model box;
 model sun;
+model skyDome;
 
 int main( int argc, char* argv[] )
 {
@@ -255,7 +255,9 @@ void myInitOGLFun(){
     box.readOBJ("mesh/box.obj");
 
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
-    sun.createSphere(50.0f, 80);
+    sun.createSphere(10.0f, 80);
+
+    skyDome.createSphere(5.0f, 100);
 
     //Initialize Shader scene (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
@@ -307,6 +309,7 @@ void myPreSyncFun(){
         }
 
 
+        //SUNPOSITION, fullösning
         sunX -= 1.0f;
 
         if(sunX < -500.0f){
@@ -323,6 +326,7 @@ void myPreSyncFun(){
         sunPosition = glm::vec3(sunX,sunY,0.0f);
 
 
+        //MOUSE AND KEYBOARD INPUT
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
 
@@ -430,6 +434,10 @@ void myPostSyncPreDrawFun(){
         NM_Loc_S = skySp.getUniformLocation( "NM" );
         Tex_Loc_S = skySp.getUniformLocation( "Tex" );
         lDir_Loc_S = skySp.getUniformLocation("lightDir");
+        Glow_Loc_S = skySp.getUniformLocation( "glow" );
+        SunColor_Loc_S = skySp.getUniformLocation( "colorSky" );
+        glUniform1i( Glow_Loc_S, 0 );
+        glUniform1i( SunColor_Loc_S, 0 );
         glUniform1i( Tex_Loc_S, 0 );
 
         skySp.unbind();
@@ -458,41 +466,48 @@ void myDrawFun(){
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
 
-    //Projection matrix - för att ändra clipping
-    glm::mat4 Model = glm::mat4(1.0f);
-    //glm::mat4 P = glm::infinitePerspective(50.0f, 16.0f/9.0f, 0.1f);
-    glm::mat4 P = glm::perspectiveFov(50.0f, 1200.0f, 720.0f, 0.1f, 1000.0f);
-    
-    // http://webstaff.itn.liu.se/~miran/sgct/docs/sgct_2.5.2/html/classsgct_1_1_engine.html#a8b61e0b5f0f398718cf4ed9d92330834
-    gEngine->setNearAndFarClippingPlanes(1.0f, 5000.0f);
-
+    //För heightmap - onödiga?
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
     glm::mat3 NML = glm::inverseTranspose(glm::mat3( MV_light ));
 
-    //glm::mat4 MVP = P * MV * Model;
-
-    //Det ska räcka med dessa två senare!?
-    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat; //Måste ändra dessa parameter
+    gEngine->setNearAndFarClippingPlanes(0.1f, 1500.0f);
+    glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
 
     // Set light properties
-    float fSunDis = 100;
-    //float fSunAngleTheta = 45.0f * 3.1415/180.0; // Degrees Celsius to radians
-    float fSunAngleTheta = calcSunPosition();
+    float fSunDis = 800;
+    float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
 
-    float fSunAnglePhi = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
-    float fSine = sin(fSunAngleTheta);
+    float fSunAngleTheta = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
+    float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
     // We'll change color of skies depending on sun's position
     glClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::vec4 sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); //Calculate Sun Color depending on sunAngle!
+    //Calculate Sun color and Ambient light
+    float fAmb = 0.2f; //Initialize to low for debugging purposes
+    glm::vec4 sColor = glm::vec4(0.5f, 0.5f, 0.5f, 0.5f); //Initialize to low for debugging purposes
+    if(fSunAnglePhi >= 30.0f*3.1415/180.0 && fSunAnglePhi <= 150.0f*3.1415/180.0) //DAY
+    {
+        sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        fAmb = 0.8f;
+    }
+    else if(fSunAnglePhi <= 0.0f*3.1415/180.0 || fSunAnglePhi >= 180.0f*3.1415/180.0) //NIGHT
+    {
+        sColor = glm::vec4(110.0f/256.0f, 40.0f/256.0f, 189.0f/256.0f, 1.0f);
+        fAmb = 0.3f;
+    }
+    else // DAWN/DUSK
+    {
+        sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        fAmb = 0.6f;
+    }
+
     glm::vec3 lDir = glm::normalize(vSunPos);
-    float fAmb = 0.6f; //Calculate Ambient Light depending on sunAngle!
 
     drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
 
@@ -537,14 +552,24 @@ void myDrawFun(){
     //SUN
     NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
-        NyMVP = glm::translate(NyMVP, sunPosition);
-        //NyMVP = glm::translate(NyMVP, vSunPos); //TO BE USED
+        //NyMVP = glm::translate(NyMVP, sunPosition);
+        NyMVP = glm::translate(NyMVP, vSunPos);
 
         //Send the transformations, texture and render
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
         sun.render();
+
+
+    //SKYDOME
+    NyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        //glBindTexture(GL_TEXTURE_2D, 0);
+        skyDome.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
