@@ -155,9 +155,11 @@ void externalControlStatusCallback(bool connected);
 
 sgct::SharedBool timeIsTicking(true);
 sgct::SharedString date;
-sgct::SharedBool resetTime(false);
+sgct::SharedFloat timeSpeed = 1.0f;
+sgct::SharedBool writeOut = false;
 /*---------------------------------------*/
 
+int timeCount = 0;
 
 float sunAngle;
 
@@ -176,6 +178,8 @@ int main( int argc, char* argv[] )
     gEngine->setCleanUpFunction( myCleanUpFun );
     gEngine->setKeyboardCallbackFunction( keyCallback );
     gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
+    gEngine->setExternalControlCallback( externalControlMessageCallback );
+    gEngine->setExternalControlStatusCallback( externalControlStatusCallback );
 
     /*------------------GUI------------------*/
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
@@ -238,16 +242,10 @@ int main( int argc, char* argv[] )
     return( 0 );
 }
 
-void myInitOGLFun()
-{
+void myInitOGLFun(){
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
-
-    if (glGenVertexArrays == NULL)
-    {
-        printf("THIS IS THE PROBLEM");
-    }
 
     initHeightMap();
 
@@ -316,8 +314,7 @@ void myPreSyncFun(){
             sunY = 100.0f;
         }
 
-        if(sunX>0)
-        {
+        if(sunX>0){
             sunY += 1.0f;
         }
         else{
@@ -391,19 +388,15 @@ void myPreSyncFun(){
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
 
         xform.setVal( result );
-
-
     }
 }
 
-void myPostSyncPreDrawFun()
-{
-    if( timeIsTicking.getVal() )
-    {
-        //std::cout << "Time is ticking" << std::endl;
+void myPostSyncPreDrawFun(){
+    if( timeIsTicking.getVal() == true && writeOut.getVal() == true){
+        std::cout << "Time is ticking" << std::endl;
     }
-    else
-    {
+    
+    else if( timeIsTicking.getVal() == false && writeOut.getVal() == true ){
         std::cout << "Time is paused" << std::endl;
     }
 
@@ -444,8 +437,19 @@ void myPostSyncPreDrawFun()
     }
 }
 
-void myDrawFun()
-{
+void myDrawFun(){
+    ////fuLhaxX
+        writeOut = false;
+        if( timeIsTicking.getVal() == true ){
+            timeCount++;
+        }
+    
+        if(timeCount == 60){
+            writeOut.setVal(true);
+            timeCount = 0;
+        }
+    /////
+    
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -458,6 +462,9 @@ void myDrawFun()
     glm::mat4 Model = glm::mat4(1.0f);
     //glm::mat4 P = glm::infinitePerspective(50.0f, 16.0f/9.0f, 0.1f);
     glm::mat4 P = glm::perspectiveFov(50.0f, 1200.0f, 720.0f, 0.1f, 1000.0f);
+    
+    // http://webstaff.itn.liu.se/~miran/sgct/docs/sgct_2.5.2/html/classsgct_1_1_engine.html#a8b61e0b5f0f398718cf4ed9d92330834
+    gEngine->setNearAndFarClippingPlanes(1.0f, 5000.0f);
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
@@ -545,11 +552,9 @@ void myDrawFun()
 
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
-
 }
 
-void myEncodeFun()
-{
+void myEncodeFun(){
     sgct::SharedData::instance()->writeObj( &xform );
     sgct::SharedData::instance()->writeDouble( &curr_time );
     sgct::SharedData::instance()->writeBool( &reloadShader );
@@ -559,13 +564,15 @@ void myEncodeFun()
     sgct::SharedData::instance()->writeBool( &takeScreenshot );
     sgct::SharedData::instance()->writeBool( &useTracking );
     sgct::SharedData::instance()->writeInt( &stereoMode );
-
+    
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
+    sgct::SharedData::instance()->writeString( &date );
+    sgct::SharedData::instance()->writeFloat( &timeSpeed );
+    sgct::SharedData::instance()->writeBool( &writeOut );
 }
 
-void myDecodeFun()
-{
+void myDecodeFun(){
     sgct::SharedData::instance()->readObj( &xform );
     sgct::SharedData::instance()->readDouble( &curr_time );
     sgct::SharedData::instance()->readBool( &reloadShader );
@@ -578,7 +585,9 @@ void myDecodeFun()
 
     //GUI
     sgct::SharedData::instance()->readBool( &timeIsTicking );
-
+    sgct::SharedData::instance()->readString( &date );
+    sgct::SharedData::instance()->readFloat( &timeSpeed );
+    sgct::SharedData::instance()->readBool( &writeOut );
 }
 
 /*!
@@ -586,8 +595,7 @@ void myDecodeFun()
 	Textures are deleted automatically when using texture manager
 	Shaders are deleted automatically when using shader manager
  */
-void myCleanUpFun()
-{
+void myCleanUpFun(){
     if(vertexPositionBuffer)
         glDeleteBuffers(1, &vertexPositionBuffer);
     if(texCoordBuffer)
@@ -613,8 +621,7 @@ void keyCallback(int key, int action)
     }
 }
 
-void mouseButtonCallback(int button, int action)
-{
+void mouseButtonCallback(int button, int action){
     if( gEngine->isMaster() ){
         switch( button ) {
             case SGCT_MOUSE_BUTTON_LEFT:
@@ -626,52 +633,57 @@ void mouseButtonCallback(int button, int action)
     }
 }
 
-void externalControlMessageCallback(const char * receivedChars, int size)
-{
-    if( gEngine->isMaster() )
-    {
-        if(size == 7 && strncmp(receivedChars, "pause", 5) == 0)
-        {
-            timeIsTicking.setVal(true);
-            std::cout << "CONTINUE TIME" << std::endl;
+void externalControlMessageCallback(const char * receivedChars, int size){
+    if( gEngine->isMaster() ){
+        //PAUSE TIME
+        if(size == 7 && strncmp(receivedChars, "pause", 5) == 0){
+            if( strncmp(receivedChars, "pause=0", 7) == 0 ){
+                timeIsTicking.setVal( true );
+                std::cout << "CONTINUE TIME" << std::endl;
+            }
+            else if( strncmp(receivedChars, "pause=1", 7) == 0 ){
+                timeIsTicking.setVal( false );
+                std::cout << "PAUSE TIME" << std::endl;
+            }
+        }
+        
+        //RESET TO CURRENT TIME
+        if( size == 7 && strncmp( receivedChars, "reset", 4 ) == 0 ){
+            if( strncmp(receivedChars, "reset=1", 7) == 0 ){
+                std::cout << "RESET TO CURRENT TIME" << std::endl;
+                date.setVal( getCurrentTime() );
+            }
+        }
+        
+        //SET SPEED OF TIME
+        if( (size == 7 || size == 8) && strncmp( receivedChars, "speed", 5 ) == 0 ){
+            //parse string to int
+            int tmpVal = atoi(receivedChars + 6);
+            timeSpeed.setVal(static_cast<float>(tmpVal));
+            
+            std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
         }
 
-        else if(size == 7 && strncmp(receivedChars, "pause", 5) == 1)
-        {
-            timeIsTicking.setVal(false);
-            std::cout << "STOP TIME" << std::endl;
-        }
-
-        if(size == 7 && strncmp(receivedChars, "reset", 5) == 1)
-        {
-            //RESET TO CURRENT TIME
-            getCurrentTime();
-            std::cout << "RESET TO CURRENT TIME" << std::endl;
-        }
-
-        if(size >= 7 && strncmp(receivedChars, "date", 4) == 1)
-        {
-            //SET DATE MANUALLY
+        //SET DATE MANUALLY
+        if( size == 25 && strncmp( receivedChars, "date", 4 ) == 0 ){
             std::cout << "SET DATE MANUALLY" << std::endl;
+            std::string tempDate = ( receivedChars + 5 );
+            
+            std::cout << "Date: " << tempDate << std::endl;
+            date.setVal( tempDate );
         }
-
-
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
 }
 
-void externalControlStatusCallback(bool connected)
-{
-    if(connected)
+void externalControlStatusCallback( bool connected ){
+    if( connected )
         sgct::MessageHandler::instance()->print("External control connected.\n");
     else
         sgct::MessageHandler::instance()->print("External control disconnected.\n");
 }
 
-
-//REGULAR FUNCTIONS
-void initHeightMap()
-{
+void initHeightMap(){
     //setup textures
     sgct::TextureManager::instance()->loadTexure("heightmap", "texture/map.png", true, 0);
     sgct::TextureManager::instance()->loadTexure("normalmap", "texture/normal.png", true, 0);
@@ -844,7 +856,6 @@ const std::string getCurrentTime() {
     return buffer;
 }
 
-
 /*Function to calculate the suns illumination angle relative to the earth*/
 float calcSunPosition(){
 
@@ -858,9 +869,7 @@ float calcSunPosition(){
     SpiceChar *ref;
 
     SpiceDouble ourPosition[3];
-
     SpiceDouble sunPointOnEarth[3];
-
     SpiceDouble sunPosition[3];
 
     SpiceDouble et, lt;

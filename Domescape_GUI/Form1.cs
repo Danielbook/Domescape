@@ -15,6 +15,7 @@ namespace Domescape
         public string ip;
         public Int32 port;
         public int bufferSize;
+		public bool pauseTime;
     }
     
     public partial class Form1 : Form
@@ -34,10 +35,11 @@ namespace Domescape
             c.port = 20500;
             c.ip = "127.0.0.1"; //default ip
             c.bufferSize = 1024;
+			c.pauseTime = false;
 
             this.toolStripStatusLabel1.Text = "Disconnected";
             this.ipTextBox.Text = c.ip;
-            this.SpeedTrackBar.Value = 50;
+            this.SpeedTrackBar.Value = 1;
             this.SpeedLabel.Text = "Speed of Time = 1.0x";
 
             componentVisibility(false);
@@ -137,7 +139,17 @@ namespace Domescape
 		{
 			if (c.connection.valid)
 			{
-				c.connection.Send ("pause=1");
+				if (!c.pauseTime) {
+					c.connection.Send ("pause=1");
+					c.pauseTime = true;
+					this.pauseButton.Text = "Continue time";
+				} 
+				else 
+				{
+					c.connection.Send ("pause=0");
+					c.pauseTime = false;
+					this.pauseButton.Text = "Pause time";
+				}
 			}
 		}
 

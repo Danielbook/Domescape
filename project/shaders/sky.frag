@@ -20,8 +20,8 @@ void main()
     float vl = dot(V, L);
 
     // Look up the sky color and glow colors.
-    vec4 Kc = texture2D(colorSky, vec2((L.y + 1.0) / 2.0, V.y));
-    vec4 Kg = texture2D(glow,  vec2((L.y + 1.0) / 2.0, vl));
+    vec4 Kc = texture(colorSky, vec2((L.y + 1.0) / 2.0, V.y));
+    vec4 Kg = texture(glow,  vec2((L.y + 1.0) / 2.0, vl));
 
 
     vec4 sTexColor = texture(Tex, UV.st);
