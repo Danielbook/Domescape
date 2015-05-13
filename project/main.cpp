@@ -148,7 +148,7 @@ void externalControlStatusCallback(bool connected);
 sgct::SharedBool timeIsTicking(true);
 sgct::SharedInt timeSpeed = 1;
 sgct::SharedString date;
-sgct::SharedBool writeOut = false;
+sgct::SharedBool secondsCounted(false);
 /*---------------------------------------*/
 
 void addSecondToTime();
@@ -441,11 +441,11 @@ void myPreSyncFun(){
 }
 
 void myPostSyncPreDrawFun(){
-    if( timeIsTicking.getVal() == true && writeOut.getVal() == true){
+    if( timeIsTicking.getVal() == true && secondsCounted.getVal() == true){
         std::cout << "Time is ticking" << std::endl;
     }
 
-    else if( timeIsTicking.getVal() == false && writeOut.getVal() == true ){
+    else if( timeIsTicking.getVal() == false && secondsCounted.getVal() == true ){
         std::cout << "Time is paused" << std::endl;
     }
 
@@ -494,24 +494,24 @@ void myPostSyncPreDrawFun(){
 }
 
 void myDrawFun(){
+    secondsCounted.setVal(false);
     ////fuLhaxX
-        writeOut = false;
-        if( timeIsTicking.getVal() == true ){
-            timeCount++;
-        }
-
-        if(timeCount == 60){
-            writeOut.setVal(true);
-            timeCount = 0;
-        }
+    if( timeIsTicking.getVal() == true ){
+        timeCount++;
+    }
     
-    if( timeIsTicking.getVal() && writeOut.getVal()){
+    if(timeCount == 60){
+        secondsCounted.setVal(true);
+        timeCount = 0;
+    }
+    
+    if( secondsCounted.getVal() ){
         for(int i = 0; i < timeSpeed.getVal(); i++){
             addSecondToTime();
         }
     }
 
-    if(writeOut.getVal()){
+    if(secondsCounted.getVal() ){
     std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
     }
     /////
@@ -537,8 +537,10 @@ void myDrawFun(){
 
     //float fSunAngleTheta = 90.0f * 3.1415/180.0; //Degrees Celsius to radians
     calcSunPosition();
-    //std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
-    //std::cout<<"PHI: " << fSunAnglePhi << std::endl;
+    if(secondsCounted.getVal()){
+        std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
+        std::cout<<"PHI: " << fSunAnglePhi << std::endl;
+    }
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
@@ -719,7 +721,7 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
     sgct::SharedData::instance()->writeInt( &timeSpeed );
-    sgct::SharedData::instance()->writeBool( &writeOut );
+    sgct::SharedData::instance()->writeBool( &secondsCounted );
 }
 
 void myDecodeFun(){
@@ -737,7 +739,7 @@ void myDecodeFun(){
     sgct::SharedData::instance()->readBool( &timeIsTicking );
     sgct::SharedData::instance()->readString( &date );
     sgct::SharedData::instance()->readInt( &timeSpeed );
-    sgct::SharedData::instance()->readBool( &writeOut );
+    sgct::SharedData::instance()->readBool( &secondsCounted );
 }
 
 /*!
@@ -882,8 +884,8 @@ void resetToCurrentTime() {
 void calcSunPosition(){
 
     SpiceDouble r = 6371.0;         // Earth radius [km]
-    SpiceDouble lon = 16.192421;    // Longitude of Nrkpg
-    SpiceDouble lat = 58.587745;    // Latitude of Nrkpg
+    SpiceDouble ourLon = 16.192421;    // Longitude of Nrkpg
+    SpiceDouble ourLat = 58.587745;    // Latitude of Nrkpg
 
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
@@ -906,7 +908,10 @@ void calcSunPosition(){
     //prompt_c("Date: ", STRLEN, UTCDate);
 
     //convert planetocentric r/lon/lat to Cartesian 3-vector
-    latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
+    ourLon = ourLon * rpd_c();
+    ourLat = ourLat * rpd_c();
+    
+    latrec_c( r, ourLon, ourLat, ourPosition );
     
     std::string tempDate = std::to_string( currentTime[YEAR] ) + " " + std::to_string( currentTime[MONTH] ) + " " + std::to_string( currentTime[DAY] ) + " " + std::to_string( currentTime[HOUR] )  + ":" + std::to_string( currentTime[MINUTE] ) + ":" + std::to_string( currentTime[SECOND] );
     
@@ -948,7 +953,7 @@ void calcSunPosition(){
      Return the position of a target body relative to an observing
      body, optionally corrected for light time (planetary aberration)
      and stellar aberration.
-     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkpos_c.html
+     http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/spkpos.html
 
              |------------INPUT-------------| |----OUTPUT-----|    */
     spkpos_c(target, et, ref, abcorr, obsrvr, sunPosition, &lt);
@@ -984,24 +989,30 @@ void calcSunPosition(){
     
     target = "EARTH";
     obsrvr = "SUN";
-    abcorr = "LT+S";
+    abcorr = "NONE";
     ref = "iau_earth";
     
     SpiceDouble solar;
     SpiceDouble emissn;
-    SpiceDouble sscpt[3];
-    SpiceDouble sscsol;
     SpiceDouble sslemi;
     SpiceDouble sslphs;
     SpiceDouble sslsol;
     SpiceDouble ssolpt[3];
-    SpiceDouble sscphs;
-    SpiceDouble sscemi;
+    SpiceDouble phase;
+    SpiceDouble emission;
     
-    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, sscpt, &trgepc, srfvec, &sscphs, &sscsol, &sscemi );
+    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
+
+    fSunAnglePhi = 3.1415/2 - emission;
+    //fSunAngleTheta = emission;
     
-    fSunAnglePhi = sscsol;
-    fSunAngleTheta = sscemi;
+    SpiceDouble sunPointLon = 0;    // Longitude of zenit
+    SpiceDouble sunPointLat = 0;    // Latitude of zenit
+    
+    reclat_c(&sunPointOnEarth, &r, &sunPointLon, &sunPointLat);
+    
+    fSunAngleTheta = ourLon - sunPointLon;
+    
 }
 
 void addSecondToTime(){
