@@ -505,7 +505,7 @@ void myDrawFun(){
             timeCount = 0;
         }
     
-    if( timeIsTicking.getVal() ){
+    if( timeIsTicking.getVal() && writeOut.getVal()){
         for(int i = 0; i < timeSpeed.getVal(); i++){
             addSecondToTime();
         }
@@ -534,12 +534,11 @@ void myDrawFun(){
 
     // Set light properties
     float fSunDis = 800;
-    float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
 
     //float fSunAngleTheta = 90.0f * 3.1415/180.0; //Degrees Celsius to radians
     calcSunPosition();
-    std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
-    std::cout<<"PHI: " << fSunAnglePhi << std::endl;
+    //std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
+    //std::cout<<"PHI: " << fSunAnglePhi << std::endl;
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
