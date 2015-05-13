@@ -23,7 +23,6 @@
 //#include "objloader.hpp"
 //#include "MVstack.hpp"
 
-
 sgct::Engine * gEngine;
 
 void myInitOGLFun();
@@ -62,7 +61,7 @@ float runningSpeed = 5.0f;
 /*--------------------------------------------*/
 
 /*------------------REGULAR FUNCTIONS------------------*/
-float calcSunPosition(); // Calculates the suns position
+void calcSunPosition(); // Calculates the suns position
 void resetToCurrentTime(); // Used to calculate the time of the current computer
 /*-----------------------------------------------------*/
 
@@ -172,8 +171,10 @@ model box;
 model sun;
 model skyDome;
 
-int main( int argc, char* argv[] )
-{
+float fSunAnglePhi;
+float fSunAngleTheta;
+
+int main( int argc, char* argv[] ){
     gEngine = new sgct::Engine( argc, argv );
 
     gEngine->setInitOGLFunction( myInitOGLFun );
@@ -232,9 +233,6 @@ int main( int argc, char* argv[] )
     }
 #endif
     resetToCurrentTime();
-
-    //TEMPORARY
-    sunAngle = calcSunPosition();
 
     // Main loop
     gEngine->render();
@@ -462,18 +460,18 @@ void myDrawFun(){
             writeOut.setVal(true);
             timeCount = 0;
         }
-    /////
-    if(writeOut.getVal())
-    {
-        if( timeIsTicking.getVal() ){
-            for(int i = 0; i < timeSpeed.getVal(); i++){
-                addSecondToTime();
-            }
+    
+    if( timeIsTicking.getVal() ){
+        for(int i = 0; i < timeSpeed.getVal(); i++){
+            addSecondToTime();
         }
-        
-    std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
     }
 
+    if(writeOut.getVal()){
+    std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+    }
+    /////
+    
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -493,10 +491,13 @@ void myDrawFun(){
 
 
     // Set light properties
-    float fSunDis = 800;
-    float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
+    float fSunDis = 50;
+    //float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
 
-    float fSunAngleTheta = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
+    //float fSunAngleTheta = 90.0f * 3.1415/180.0; //Degrees Celsius to radians
+    calcSunPosition();
+    std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
+    std::cout<<"PHI: " << fSunAnglePhi << std::endl;
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
@@ -564,7 +565,6 @@ void myDrawFun(){
     glUniformMatrix3fv(NM_Loc_S, 1, GL_FALSE, &NM[0][0]);
     glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
 
-
     //SUN
     NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
@@ -576,7 +576,6 @@ void myDrawFun(){
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
         sun.render();
-
 
     //SKYDOME
     NyMVP = MVP;
@@ -645,9 +644,7 @@ void myCleanUpFun(){
         glDeleteVertexArrays(1, &vertexArray);
 }
 
-
-void keyCallback(int key, int action)
-{
+void keyCallback(int key, int action){
     if( gEngine->isMaster() ){
         switch( key ){
             case SGCT_KEY_R: if(action == SGCT_PRESS) reloadShader.setVal(true); break;
@@ -801,9 +798,7 @@ void initHeightMap(){
     mTexCoord.clear();
 }
 
-
-void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb)
-{
+void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb){
     glEnable(GL_CULL_FACE);
 
     glActiveTexture(GL_TEXTURE0);
@@ -839,8 +834,7 @@ void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light
  @param	wRes	Width resolution of the surface
  @param	dRes	Depth resolution of the surface
  */
-void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned int dRes )
-{
+void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned int dRes ){
     float wStart = -width * 0.5f;
     float dStart = -depth * 0.5f;
 
@@ -893,7 +887,6 @@ void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned 
  http://en.cppreference.com/w/cpp/chrono/c/strftime
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
-
 void resetToCurrentTime() {
     time_t now = time(0);
     struct tm tstruct;
@@ -903,8 +896,6 @@ void resetToCurrentTime() {
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
 
-    //std::cout << buffer << std:: endl;
-//    static_cast<int>()
     std::string tempTime(&buffer[0]);
     
     std::string tempYear = tempTime.substr(0,4);
@@ -924,7 +915,7 @@ void resetToCurrentTime() {
 }
 
 /*Function to calculate the suns illumination angle relative to the earth*/
-float calcSunPosition(){
+void calcSunPosition(){
 
     SpiceDouble r = 6371.0;         // Earth radius [km]
     SpiceDouble lon = 16.192421;    // Longitude of Nrkpg
@@ -950,12 +941,8 @@ float calcSunPosition(){
     //Prompts the user to input date in format YEAR MONTH DAY HOUR:MIN:SEC
     //prompt_c("Date: ", STRLEN, UTCDate);
 
-    //convert planetocentric r/lon/lat to Cartesian vector
+    //convert planetocentric r/lon/lat to Cartesian 3-vector
     latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
-
-//    std::string str = getCurrentTime();
-//    char *cstr = new char[str.length() + 1];
-//    strcpy(cstr, str.c_str());
     
     std::string tempDate = std::to_string( currentTime[YEAR] ) + " " + std::to_string( currentTime[MONTH] ) + " " + std::to_string( currentTime[DAY] ) + " " + std::to_string( currentTime[HOUR] )  + ":" + std::to_string( currentTime[MINUTE] ) + ":" + std::to_string( currentTime[SECOND] );
     
@@ -965,7 +952,7 @@ float calcSunPosition(){
     SpiceChar * date = cstr;
     
     //Used to convert between time as a string into ET, which is in seconds.
-    str2et_c ( date, &et ); /* <-- Denna ska vi kunna ändra på med en slider senare! */
+    str2et_c ( date, &et );
 
     delete [] cstr;
 
@@ -978,7 +965,7 @@ float calcSunPosition(){
      Provides you with the coordinates on the Earth where the Sun is directly above
               |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
      subslr_c("method", "target", "et", "fixref", "abcorr", "obsrvr", "spoint", "trgepc", "srfvec");
-     method: Is the name of the computation method, use "Intercept: ellipsoid"
+     method: Is the name of the computation method, use "Near point: ellipsoid"
      target: Is the name of the target body
      et:     Is the epoch, time stuff...
      fixref: Is the name of the body-fixed, body-centered reference frame associated with the target body
@@ -991,7 +978,7 @@ float calcSunPosition(){
      ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/subslr.html
 
                |----------------------------INPUT---------------------| |-----------OUTPUT------------|    */
-    subslr_c ( "Intercept: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
+    subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
 
     /*
      Return the position of a target body relative to an observing
@@ -1030,8 +1017,27 @@ float calcSunPosition(){
 
     //Convert the angles to degrees
     //angle *= dpr_c();
-
-    return angle;
+    
+    target = "EARTH";
+    obsrvr = "SUN";
+    abcorr = "LT+S";
+    ref = "iau_earth";
+    
+    SpiceDouble solar;
+    SpiceDouble emissn;
+    SpiceDouble sscpt[3];
+    SpiceDouble sscsol;
+    SpiceDouble sslemi;
+    SpiceDouble sslphs;
+    SpiceDouble sslsol;
+    SpiceDouble ssolpt[3];
+    SpiceDouble sscphs;
+    SpiceDouble sscemi;
+    
+    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, sscpt, &trgepc, srfvec, &sscphs, &sscsol, &sscemi );
+    
+    fSunAnglePhi = sscsol;
+    fSunAngleTheta = sscemi;
 }
 
 void addSecondToTime(){
@@ -1087,7 +1093,7 @@ void addSecondToTime(){
         }
     
     //Add Year
-    if ( currentTime[MONTH] == 12 && currentTime[DAY] > 31 ) {
+    if ( currentTime[MONTH] > 12 ) {
         currentTime[YEAR] += 1;
         currentTime[MONTH] = 1;
     }
