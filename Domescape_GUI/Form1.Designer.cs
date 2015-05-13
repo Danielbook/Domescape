@@ -178,12 +178,12 @@
             // 
             this.SpeedTrackBar.AutoSize = false;
             this.SpeedTrackBar.Location = new System.Drawing.Point(11, 213);
-            this.SpeedTrackBar.Maximum = 60;
+            this.SpeedTrackBar.Maximum = 100000;
 			this.SpeedTrackBar.Minimum = 1;
 			this.SpeedTrackBar.Name = "SpeedTrackBar";
             this.SpeedTrackBar.Size = new System.Drawing.Size(600, 28);
             this.SpeedTrackBar.TabIndex = 9;
-            this.SpeedTrackBar.TickFrequency = 1;
+            this.SpeedTrackBar.TickFrequency = 10;
             this.SpeedTrackBar.Scroll += new System.EventHandler(this.SpeedTrackBar_Scroll);
             // 
             // SpeedLabel

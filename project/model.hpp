@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string>
 #include "sgct.h"
-#include "GLFW/glfw3.h"
+#include "../GLFW/glfw3.h"
 
 class model
 {
