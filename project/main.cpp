@@ -65,12 +65,12 @@ void calcSunPosition(); // Calculates the suns position
 void resetToCurrentTime(); // Used to calculate the time of the current computer
 /*-----------------------------------------------------*/
 
-/*------------------HEIGHTMAP------------------*/
-void generateTerrainGrid( float width, float height, unsigned int wRes, unsigned int dRes );
-void initHeightMap();
-void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb);
-
+/*------------------HEIGHTMAP->SHADOWMAP?------------------*/
+//Implementera i Shadowmap!?
 //opengl objects
+GLuint FramebufferName = 0;
+GLuint depthTexture;
+
 GLuint vertexArray = GL_FALSE;
 GLuint vertexPositionBuffer = GL_FALSE;
 GLuint texCoordBuffer = GL_FALSE;
@@ -90,15 +90,10 @@ GLsizei mNumberOfVerts = 0;
 /*---------------------------------------------*/
 
 /*------------------SHADERS------------------*/
-//Heightmap shader
-sgct::ShaderProgram mSp;
-GLint myTextureLocations[]	= { -1, -1 };
-GLint MVP_Loc_G = -1;
-GLint MV_Loc_G = -1;
-GLint MVL_Loc_G = -1;
-GLint NM_Loc_G = -1;
-GLint lDir_Loc_G = -1;
-GLint Amb_Loc_G = -1;
+//Shader Shadowmap
+GLint depthMVP_Loc = -1;
+GLint depthBiasMVP_Loc = -1;
+GLint shadowmap_Loc = -1;
 
 //Shader Scene
 GLint MVP_Loc = -1;
@@ -134,7 +129,7 @@ glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
-
+//Fullösning
 float sunX = 500.0f;
 float sunY = 100.f;
 glm::vec3 sunPosition(sunX, sunY, 0.0f);
@@ -145,7 +140,6 @@ sgct::SharedDouble curr_time(0.0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 /*-----------------------------------------------------------------------*/
-
 
 /*------------------GUI------------------*/
 void externalControlMessageCallback(const char * receivedChars, int size);
@@ -166,7 +160,7 @@ int timeCount = 0;
 
 float sunAngle;
 
-model land;
+model landscape;
 model box;
 model sun;
 model skyDome;
@@ -191,7 +185,6 @@ int main( int argc, char* argv[] ){
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     /*-----------------------------------------*/
-
 
     /*------------------SPICE------------------*/
     //load kernels
@@ -251,9 +244,9 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
 
-    initHeightMap();
 
-    //Textures
+    /*----------------OBJECTS AND TEXTURES--------------*/
+
     glEnable(GL_TEXTURE_2D);
     sgct::TextureManager::instance()->loadTexure("box", "texture/box.png", true);
     box.readOBJ("mesh/box.obj");
@@ -261,7 +254,41 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(10.0f, 80);
 
+    sgct::TextureManager::instance()->loadTexure("landscape", "texture/landscape2.png", true);
+    landscape.readOBJ("mesh/landscape2.obj");
+
     skyDome.createSphere(5.0f, 100);
+
+    /*-----------------------------------------------------*/
+
+        /*---------------------SHADOWMAP-------------*/
+    // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+     glGenFramebuffers(1, &FramebufferName);
+     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+     // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+     glGenTextures(1, &depthTexture);
+     glBindTexture(GL_TEXTURE_2D, depthTexture);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+     glDrawBuffer(GL_NONE); // No color buffer is drawn to.
+
+     // Always check that our framebuffer is ok
+     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+     { std::cout << "Frame Buffer in bad state" << std::endl;  }
+
+    /*-----------------------------------------------------------*/
+
+
+    /*---------------------SHADERS-----------------------*/
 
     //Initialize Shader scene (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
@@ -275,6 +302,18 @@ void myInitOGLFun(){
     Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "fAmbInt" );
     Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "Tex" );
     glUniform1i( Tex_Loc, 0 );
+    depthBiasMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "depthBiasMVP" );
+    shadowmap_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "shadowMap" );
+    glUniform1i( shadowmap_Loc, 1 );
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+
+    //Initialize Shader shadowmap (shadow)
+    sgct::ShaderManager::instance()->addShaderProgram( "shadowmap", "shaders/shadow.vert", "shaders/shadow.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
+
+    depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "shadowmap").getUniformLocation( "depthMVP" );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -290,11 +329,13 @@ void myInitOGLFun(){
     Tex_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "Tex" );
     Glow_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "glow" );
     SunColor_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "colorSky" );
-    glUniform1i( Glow_Loc_S, 0 );
-    glUniform1i( SunColor_Loc_S, 0 );
+    glUniform1i( Glow_Loc_S, 2 );
+    glUniform1i( SunColor_Loc_S, 1 );
     glUniform1i( Tex_Loc_S, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    /*---------------------------------------------------------*/
 }
 
 void myPreSyncFun(){
@@ -403,7 +444,7 @@ void myPostSyncPreDrawFun(){
     if( timeIsTicking.getVal() == true && writeOut.getVal() == true){
         std::cout << "Time is ticking" << std::endl;
     }
-    
+
     else if( timeIsTicking.getVal() == false && writeOut.getVal() == true ){
         std::cout << "Time is paused" << std::endl;
     }
@@ -418,11 +459,14 @@ void myPostSyncPreDrawFun(){
 
         MVP_Loc = sp.getUniformLocation( "MVP" );
         NM_Loc = sp.getUniformLocation( "NM" );
-        Tex_Loc = sp.getUniformLocation( "Tex" );
+        depthMVP_Loc = sp.getUniformLocation( "depthMVP" );
         sColor_Loc = sp.getUniformLocation("sunColor");
         lDir_Loc = sp.getUniformLocation("lightDir");
         Amb_Loc = sp.getUniformLocation("fAmbInt");
+        Tex_Loc = sp.getUniformLocation( "Tex" );
         glUniform1i( Tex_Loc, 0 );
+        shadowmap_Loc = sp.getUniformLocation( "shadowMap" );
+        glUniform1i( shadowmap_Loc, 1);
 
         sp.unbind();
         reloadShader.setVal(false);
@@ -440,8 +484,8 @@ void myPostSyncPreDrawFun(){
         lDir_Loc_S = skySp.getUniformLocation("lightDir");
         Glow_Loc_S = skySp.getUniformLocation( "glow" );
         SunColor_Loc_S = skySp.getUniformLocation( "colorSky" );
-        glUniform1i( Glow_Loc_S, 0 );
-        glUniform1i( SunColor_Loc_S, 0 );
+        glUniform1i( Glow_Loc_S, 2 );
+        glUniform1i( SunColor_Loc_S, 1 );
         glUniform1i( Tex_Loc_S, 0 );
 
         skySp.unbind();
@@ -455,7 +499,7 @@ void myDrawFun(){
         if( timeIsTicking.getVal() == true ){
             timeCount++;
         }
-    
+
         if(timeCount == 60){
             writeOut.setVal(true);
             timeCount = 0;
@@ -474,25 +518,23 @@ void myDrawFun(){
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
 
-    //För heightmap - onödiga?
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
-    glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
-    glm::mat3 NML = glm::inverseTranspose(glm::mat3( MV_light ));
 
-    gEngine->setNearAndFarClippingPlanes(0.1f, 1500.0f);
+    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
 
     // Set light properties
-    float fSunDis = 50;
-    //float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
+    float fSunDis = 800;
+    float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
 
     //float fSunAngleTheta = 90.0f * 3.1415/180.0; //Degrees Celsius to radians
     calcSunPosition();
@@ -526,8 +568,51 @@ void myDrawFun(){
 
     glm::vec3 lDir = glm::normalize(vSunPos);
 
-    drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
 
+
+    /*------------------SHADOW MAP------------------*/
+/*    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    glViewport(0,0,1024,1024); // Render on the whole framebuffer
+
+    glm::vec3 lightInvDir = lDir;
+
+    // Compute the MVP matrix from the light's point of view
+    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-100,100,-100,100,-100,200);
+    glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+    glm::mat4 depthModelMatrix = glm::mat4(1.0);
+    glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0,    0.0, 0.5, 0.0, 0.0,    0.0, 0.0, 0.5, 0.0,    0.5, 0.5, 0.5, 1.0);
+    glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+
+    sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
+
+    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, &depthMVP[0][0]);
+
+    // HA MED ALLA TRANSFORMATIONER? MÅSTE STÄMMA ÖVERENS MED SCENE-SHADER
+    glm::mat4 nyDepthMVP = depthMVP;
+    nyDepthMVP = glm::translate(nyDepthMVP, glm::vec3(0.0f, -20.0f, 0.0f));
+    nyDepthMVP = glm::scale(nyDepthMVP, glm::vec3(1.0f, 1.0f, 1.0f));
+    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+    landscape.render();
+
+    nyDepthMVP = depthMVP;
+    nyDepthMVP = glm::translate(nyDepthMVP, glm::vec3(0.0f, 0.0f, -5.0f));
+    nyDepthMVP = glm::scale(nyDepthMVP, glm::vec3(2.0f, 2.0f, 2.0f));
+    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+    box.render();
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    // Render to the screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0,0,1024,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    // Clear the screen
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+*/
+    /*------------------------------------------------*/
 
     /*------------------SCENE SHADER------------------*/
 
@@ -539,9 +624,27 @@ void myDrawFun(){
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
+    //glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
+
+
+    //LANDSCAPE
+    glm::mat4 NyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+        NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, -20.0f, 0.0f));
+        NyMVP = glm::scale(NyMVP, glm::vec3(1.0f, 1.0f, 1.0f));
+
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("landscape"));
+        glUniform1i(Tex_Loc, 0);
+        //glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, depthTexture);
+		//glUniform1i(shadowmap_Loc, 1);
+        landscape.render();
 
     //BOX
-    glm::mat4 NyMVP = MVP;
+    NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
         NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, 0.0f, -5.0f));
         NyMVP = glm::scale(NyMVP, glm::vec3(2.0f, 2.0f, 2.0f));
@@ -550,6 +653,10 @@ void myDrawFun(){
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+        glUniform1i(Tex_Loc, 0);
+        //glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, depthTexture);
+		//glUniform1i(shadowmap_Loc, 1);
         box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
@@ -575,8 +682,10 @@ void myDrawFun(){
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
+        glUniform1i(Tex_Loc, 0);
         sun.render();
 
+/* SKIPPAR DENNA SÅ LÄNGE
     //SKYDOME
     NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
@@ -584,14 +693,16 @@ void myDrawFun(){
         //Send the transformations, texture and render
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         //glBindTexture(GL_TEXTURE_2D, 0);
+        //glUniform1i(Tex_Loc, 0);
         skyDome.render();
-
+*/
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     /*----------------------------------------------*/
 
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
+
 }
 
 void myEncodeFun(){
@@ -604,7 +715,7 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeBool( &takeScreenshot );
     sgct::SharedData::instance()->writeBool( &useTracking );
     sgct::SharedData::instance()->writeInt( &stereoMode );
-    
+
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
@@ -642,6 +753,9 @@ void myCleanUpFun(){
         glDeleteBuffers(1, &texCoordBuffer);
     if(vertexArray)
         glDeleteVertexArrays(1, &vertexArray);
+
+    	glDeleteFramebuffers(1, &FramebufferName);
+    	glDeleteTextures(1, &depthTexture);
 }
 
 void keyCallback(int key, int action){
@@ -684,7 +798,7 @@ void externalControlMessageCallback(const char * receivedChars, int size){
                 //std::cout << "PAUSE TIME" << std::endl;
             }
         }
-        
+
         //RESET TO CURRENT TIME
         if( size == 7 && strncmp( receivedChars, "reset", 4 ) == 0 ){
             if( strncmp(receivedChars, "reset=1", 7) == 0 ){
@@ -692,13 +806,14 @@ void externalControlMessageCallback(const char * receivedChars, int size){
                 resetToCurrentTime();
             }
         }
-        
+
         //SET SPEED OF TIME
         if( strncmp( receivedChars, "speed", 5 ) == 0 ){
             //parse string to int
             int tmpVal = atoi(receivedChars + 6);
+
             timeSpeed.setVal(static_cast<int>(tmpVal));
-            
+
             //std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
         }
 
@@ -706,14 +821,14 @@ void externalControlMessageCallback(const char * receivedChars, int size){
         if( strncmp( receivedChars, "date", 4 ) == 0 ){
             //std::cout << "SET DATE MANUALLY" << std::endl;
             std::string tempTime = ( receivedChars + 5 );
-            
+
             std::string tempYear = tempTime.substr(0,4);
             std::string tempMonth = tempTime.substr(5,2);
             std::string tempDay = tempTime.substr(8,2);
             std::string tempHour = tempTime.substr(11,2);
             std::string tempMinute = tempTime.substr(14,2);
             std::string tempSeconds = tempTime.substr(17,2);
-            
+
             currentTime[YEAR] = atoi(tempYear.c_str());
             currentTime[MONTH] = atoi(tempMonth.c_str());
             currentTime[DAY] = atoi(tempDay.c_str());
@@ -732,156 +847,6 @@ void externalControlStatusCallback( bool connected ){
         sgct::MessageHandler::instance()->print("External control disconnected.\n");
 }
 
-void initHeightMap(){
-    //setup textures
-    sgct::TextureManager::instance()->loadTexure("heightmap", "texture/map.png", true, 0);
-    sgct::TextureManager::instance()->loadTexure("normalmap", "texture/normal.png", true, 0);
-
-    //setup shader
-    sgct::ShaderManager::instance()->addShaderProgram( mSp, "Heightmap", "shaders/heightmap.vert", "shaders/heightmap.frag" );
-
-    mSp.bind();
-    myTextureLocations[0]	= mSp.getUniformLocation( "hTex" );
-    myTextureLocations[1]	= mSp.getUniformLocation( "nTex" );
-
-    MVP_Loc_G		= mSp.getUniformLocation( "MVP" );
-    MV_Loc_G		= mSp.getUniformLocation( "MV" );
-    MVL_Loc_G		= mSp.getUniformLocation( "MV_light" );
-    NM_Loc_G		= mSp.getUniformLocation( "normalMatrix" );
-    lDir_Loc_G		= mSp.getUniformLocation( "light_dir" );
-    Amb_Loc_G       = mSp.getUniformLocation( "lAmb");
-    glUniform1i( myTextureLocations[0], 0 );
-    glUniform1i( myTextureLocations[1], 1 );
-
-    sgct::ShaderManager::instance()->unBindShaderProgram();
-
-    //generate mesh
-    generateTerrainGrid( 250.0f, 250.0f, 1024, 1024  );
-
-    //generate vertex array
-    glGenVertexArrays(1, &vertexArray);
-    glBindVertexArray(vertexArray);
-
-    //generate vertex position buffer
-    glGenBuffers(1, &vertexPositionBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexPositionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * mVertPos.size(), &mVertPos[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(
-                          0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                          3,                  // size
-                          GL_FLOAT,           // type
-                          GL_FALSE,           // normalized?
-                          0,                  // stride
-                          reinterpret_cast<void*>(0) // array buffer offset
-                          );
-
-    //generate texture coord buffer
-    glGenBuffers(1, &texCoordBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, texCoordBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * mTexCoord.size(), &mTexCoord[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-                          1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                          2,                  // size
-                          GL_FLOAT,           // type
-                          GL_FALSE,           // normalized?
-                          0,                  // stride
-                          reinterpret_cast<void*>(0) // array buffer offset
-                          );
-
-    glBindVertexArray(0); //unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    //cleanup
-    mVertPos.clear();
-    mTexCoord.clear();
-}
-
-void drawHeightMap(glm::mat4 MVP, glm::mat3 NM, glm::mat4 MV, glm::mat4 MV_light, glm::vec3 lDir, float fAmb){
-    glEnable(GL_CULL_FACE);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "heightmap" ));
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId( "normalmap" ));
-
-    mSp.bind();
-
-    glUniformMatrix4fv(MVP_Loc_G, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix4fv(MV_Loc_G, 1, GL_FALSE, &MV[0][0]);
-    glUniformMatrix4fv(MVL_Loc_G, 1, GL_FALSE, &MV_light[0][0]);
-    glUniformMatrix3fv(NM_Loc_G, 1, GL_FALSE, &NM[0][0]);
-    glUniform3fv(lDir_Loc_G, 1, &lDir[0]);
-    glUniform1fv(Amb_Loc_G, 1, &fAmb);
-
-    glBindVertexArray(vertexArray);
-
-    // Draw the triangle !
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, mNumberOfVerts);
-
-    //unbind
-    glBindVertexArray(0);
-
-    mSp.unbind();
-}
-
-/*!
- Will draw a flat surface that can be used for the heightmapped terrain.
- @param	width	Width of the surface
- @param	depth	Depth of the surface
- @param	wRes	Width resolution of the surface
- @param	dRes	Depth resolution of the surface
- */
-void generateTerrainGrid( float width, float depth, unsigned int wRes, unsigned int dRes ){
-    float wStart = -width * 0.5f;
-    float dStart = -depth * 0.5f;
-
-
-    float dW = width / static_cast<float>( wRes );
-    float dD = depth / static_cast<float>( dRes );
-
-    //cleanup
-    mVertPos.clear();
-    mTexCoord.clear();
-
-
-    for( unsigned int depthIndex = 0; depthIndex < dRes; ++depthIndex )
-    {
-        float dPosLow = dStart + dD * static_cast<float>( depthIndex );
-        float dPosHigh = dStart + dD * static_cast<float>( depthIndex + 1 );
-        float dTexCoordLow = depthIndex / static_cast<float>( dRes );
-        float dTexCoordHigh = (depthIndex+1) / static_cast<float>( dRes );
-
-        for( unsigned widthIndex = 0; widthIndex < wRes; ++widthIndex )
-        {
-            float wPos = wStart + dW * static_cast<float>( widthIndex );
-            float wTexCoord = widthIndex / static_cast<float>( wRes );
-
-            //p0
-            mVertPos.push_back( wPos ); //x
-            mVertPos.push_back( 0.0f ); //y
-            mVertPos.push_back( dPosLow ); //z
-
-            //p1
-            mVertPos.push_back( wPos ); //x
-            mVertPos.push_back( 0.0f ); //y
-            mVertPos.push_back( dPosHigh ); //z
-
-
-            //tex0
-            mTexCoord.push_back( wTexCoord ); //s
-            mTexCoord.push_back( dTexCoordLow ); //t
-
-            //tex1
-            mTexCoord.push_back( wTexCoord ); //s
-            mTexCoord.push_back( dTexCoordHigh ); //t
-        }
-    }
-
-    mNumberOfVerts = static_cast<GLsizei>(mVertPos.size() / 3); //each vertex has three componets (x, y & z)
-}
 
 /*
  http://en.cppreference.com/w/cpp/chrono/c/strftime
@@ -897,21 +862,21 @@ void resetToCurrentTime() {
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
 
     std::string tempTime(&buffer[0]);
-    
+
     std::string tempYear = tempTime.substr(0,4);
     std::string tempMonth= tempTime.substr(5,2);
     std::string tempDay = tempTime.substr(8,2);
     std::string tempHour= tempTime.substr(11,2);
     std::string tempMinute= tempTime.substr(14,2);
     std::string tempSeconds= tempTime.substr(17,2);
-    
+
     currentTime[YEAR] = atoi(tempYear.c_str());
     currentTime[MONTH] = atoi(tempMonth.c_str());
     currentTime[DAY] = atoi(tempDay.c_str());
     currentTime[HOUR] = atoi(tempHour.c_str());
     currentTime[MINUTE] = atoi(tempMinute.c_str());
     currentTime[SECOND] = atoi(tempSeconds.c_str());
-    
+
 }
 
 /*Function to calculate the suns illumination angle relative to the earth*/
@@ -950,7 +915,7 @@ void calcSunPosition(){
     strcpy(cstr, tempDate.c_str());
 
     SpiceChar * date = cstr;
-    
+
     //Used to convert between time as a string into ET, which is in seconds.
     str2et_c ( date, &et );
 
@@ -1055,43 +1020,43 @@ void addSecondToTime(){
         currentTime[MINUTE] += 1;
         currentTime[SECOND] = 0;
     }
-    
+
     //Add Hour
     if ( currentTime[MINUTE] >= 60) {
         currentTime[HOUR] += 1;
         currentTime[MINUTE] = 0;
     }
-    
+
     //Add Day
     if ( currentTime[HOUR] >= 24 ) {
         currentTime[DAY] += 1;
         currentTime[HOUR] = 0;
     }
-    
+
     //Add Month
         //February and leap year
         if (leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29) {
             currentTime[MONTH] += 1;
             currentTime[DAY] = 1;
         }
-    
+
         else if (currentTime[MONTH] == 2 && currentTime[DAY] > 28)
         {
             currentTime[MONTH] += 1;
             currentTime[DAY] = 1;
         }
-    
+
         else if( (currentTime[MONTH] == 4 || currentTime[MONTH] == 6 || currentTime[MONTH] == 9 ||
                   currentTime[MONTH] == 11) && currentTime[DAY] > 30  ){
             currentTime[MONTH] += 1;
             currentTime[DAY] = 1;
         }
-    
+
         else if(currentTime[DAY] > 31){
             currentTime[MONTH] += 1;
             currentTime[DAY] = 1;
         }
-    
+
     //Add Year
     if ( currentTime[MONTH] > 12 ) {
         currentTime[YEAR] += 1;
