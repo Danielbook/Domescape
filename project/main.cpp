@@ -101,6 +101,13 @@ GLint NM_Loc_G = -1;
 GLint lDir_Loc_G = -1;
 GLint Amb_Loc_G = -1;
 
+//Shader Shadowmap
+GLint depthMVP_Loc = -1;
+GLint depthBiasMVP_Loc = -1;
+GLint shadowmap_Loc = -1;
+GLuint FramebufferName = 0;
+GLuint depthTexture;
+
 //Shader Scene
 GLint MVP_Loc = -1;
 GLint NM_Loc = -1;
@@ -147,7 +154,6 @@ sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 /*-----------------------------------------------------------------------*/
 
-
 /*------------------GUI------------------*/
 void externalControlMessageCallback(const char * receivedChars, int size);
 void externalControlStatusCallback(bool connected);
@@ -162,7 +168,7 @@ int timeCount = 0;
 
 float sunAngle;
 
-model land;
+model landscape;
 model box;
 model sun;
 model skyDome;
@@ -185,7 +191,6 @@ int main( int argc, char* argv[] )
     sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     /*-----------------------------------------*/
-
 
     /*------------------SPICE------------------*/
     //load kernels
@@ -227,9 +232,6 @@ int main( int argc, char* argv[] )
     }
 #endif
 
-    //TEMPORARY
-    sunAngle = calcSunPosition();
-
     // Main loop
     gEngine->render();
 
@@ -247,9 +249,11 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
 
-    initHeightMap();
+    // TO BE REPLACED
+    //initHeightMap();
 
-    //Textures
+    /*----------------OBJECTS AND TEXTURES--------------*/
+
     glEnable(GL_TEXTURE_2D);
     sgct::TextureManager::instance()->loadTexure("box", "texture/box.png", true);
     box.readOBJ("mesh/box.obj");
@@ -257,7 +261,41 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(10.0f, 80);
 
+    sgct::TextureManager::instance()->loadTexure("landscape", "texture/landscape2.png", true);
+    landscape.readOBJ("mesh/landscape2.obj");
+
     skyDome.createSphere(5.0f, 100);
+
+    /*-----------------------------------------------------*/
+
+        /*---------------------SHADOWMAP-------------*/
+    // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+     glGenFramebuffers(1, &FramebufferName);
+     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+     // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+     glGenTextures(1, &depthTexture);
+     glBindTexture(GL_TEXTURE_2D, depthTexture);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+     glDrawBuffer(GL_NONE); // No color buffer is drawn to.
+
+     // Always check that our framebuffer is ok
+     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+     { std::cout << "Frame Buffer in bad state" << std::endl;  }
+
+    /*-----------------------------------------------------------*/
+
+
+    /*---------------------SHADERS-----------------------*/
 
     //Initialize Shader scene (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
@@ -271,6 +309,18 @@ void myInitOGLFun(){
     Amb_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "fAmbInt" );
     Tex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "Tex" );
     glUniform1i( Tex_Loc, 0 );
+    depthBiasMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "depthBiasMVP" );
+    shadowmap_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "shadowMap" );
+    glUniform1i( shadowmap_Loc, 0 );
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+
+    //Initialize Shader shadowmap (shadow)
+    sgct::ShaderManager::instance()->addShaderProgram( "shadowmap", "shaders/shadow.vert", "shaders/shadow.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
+
+    depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "shadowmap").getUniformLocation( "depthMVP" );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -286,11 +336,13 @@ void myInitOGLFun(){
     Tex_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "Tex" );
     Glow_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "glow" );
     SunColor_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "colorSky" );
-    glUniform1i( Glow_Loc_S, 0 );
-    glUniform1i( SunColor_Loc_S, 0 );
+    glUniform1i( Glow_Loc_S, 2 );
+    glUniform1i( SunColor_Loc_S, 1 );
     glUniform1i( Tex_Loc_S, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    /*---------------------------------------------------------*/
 }
 
 void myPreSyncFun(){
@@ -399,7 +451,7 @@ void myPostSyncPreDrawFun(){
     if( timeIsTicking.getVal() == true && writeOut.getVal() == true){
         std::cout << "Time is ticking" << std::endl;
     }
-    
+
     else if( timeIsTicking.getVal() == false && writeOut.getVal() == true ){
         std::cout << "Time is paused" << std::endl;
     }
@@ -414,11 +466,14 @@ void myPostSyncPreDrawFun(){
 
         MVP_Loc = sp.getUniformLocation( "MVP" );
         NM_Loc = sp.getUniformLocation( "NM" );
-        Tex_Loc = sp.getUniformLocation( "Tex" );
+        depthMVP_Loc = sp.getUniformLocation( "depthMVP" );
         sColor_Loc = sp.getUniformLocation("sunColor");
         lDir_Loc = sp.getUniformLocation("lightDir");
         Amb_Loc = sp.getUniformLocation("fAmbInt");
+        Tex_Loc = sp.getUniformLocation( "Tex" );
         glUniform1i( Tex_Loc, 0 );
+        shadowmap_Loc = sp.getUniformLocation( "shadowMap" );
+        glUniform1i( shadowmap_Loc, 1);
 
         sp.unbind();
         reloadShader.setVal(false);
@@ -436,8 +491,8 @@ void myPostSyncPreDrawFun(){
         lDir_Loc_S = skySp.getUniformLocation("lightDir");
         Glow_Loc_S = skySp.getUniformLocation( "glow" );
         SunColor_Loc_S = skySp.getUniformLocation( "colorSky" );
-        glUniform1i( Glow_Loc_S, 0 );
-        glUniform1i( SunColor_Loc_S, 0 );
+        glUniform1i( Glow_Loc_S, 2 );
+        glUniform1i( SunColor_Loc_S, 1 );
         glUniform1i( Tex_Loc_S, 0 );
 
         skySp.unbind();
@@ -451,17 +506,18 @@ void myDrawFun(){
         if( timeIsTicking.getVal() == true ){
             timeCount++;
         }
-    
+
         if(timeCount == 60){
             writeOut.setVal(true);
             timeCount = 0;
         }
     /////
-    
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
@@ -471,7 +527,7 @@ void myDrawFun(){
     glm::mat4 MV_light = gEngine->getActiveModelViewMatrix();
     glm::mat3 NML = glm::inverseTranspose(glm::mat3( MV_light ));
 
-    gEngine->setNearAndFarClippingPlanes(0.1f, 1500.0f);
+    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
@@ -480,7 +536,7 @@ void myDrawFun(){
     float fSunDis = 800;
     float fSunAnglePhi = calcSunPosition(); //SunAngle in radians
 
-    float fSunAngleTheta = 20.0f * 3.1415/180.0; //Degrees Celsius to radians
+    float fSunAngleTheta = 20.0f * 3.1415/180.0; //Degrees Celsius to radians -> Bero på månad!?
     float fSine = sin(fSunAnglePhi);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
@@ -509,8 +565,54 @@ void myDrawFun(){
 
     glm::vec3 lDir = glm::normalize(vSunPos);
 
-    drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
+    //TO BE REPLACED
+    //drawHeightMap(MVP, NML, MV, MV_light, lDir, fAmb);
 
+
+
+    /*------------------SHADOW MAP------------------*/
+/*    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    glViewport(0,0,1024,1024); // Render on the whole framebuffer
+
+    glm::vec3 lightInvDir = lDir;
+
+    // Compute the MVP matrix from the light's point of view
+    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-100,100,-100,100,-100,200);
+    glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+    glm::mat4 depthModelMatrix = glm::mat4(1.0);
+    glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0,    0.0, 0.5, 0.0, 0.0,    0.0, 0.0, 0.5, 0.0,    0.5, 0.5, 0.5, 1.0);
+    glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+
+    sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
+
+    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, &depthMVP[0][0]);
+
+    // HA MED ALLA TRANSFORMATIONER? MÅSTE STÄMMA ÖVERENS MED SCENE-SHADER
+    glm::mat4 nyDepthMVP = depthMVP;
+    nyDepthMVP = glm::translate(nyDepthMVP, glm::vec3(0.0f, -20.0f, 0.0f));
+    nyDepthMVP = glm::scale(nyDepthMVP, glm::vec3(1.0f, 1.0f, 1.0f));
+    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+    landscape.render();
+
+    nyDepthMVP = depthMVP;
+    nyDepthMVP = glm::translate(nyDepthMVP, glm::vec3(0.0f, 0.0f, -5.0f));
+    nyDepthMVP = glm::scale(nyDepthMVP, glm::vec3(2.0f, 2.0f, 2.0f));
+    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+    box.render();
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    // Render to the screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0,0,1024,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    // Clear the screen
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+*/
+    /*------------------------------------------------*/
 
     /*------------------SCENE SHADER------------------*/
 
@@ -522,9 +624,27 @@ void myDrawFun(){
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
+    //glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
+
+
+    //LANDSCAPE
+    glm::mat4 NyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+        NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, -20.0f, 0.0f));
+        NyMVP = glm::scale(NyMVP, glm::vec3(1.0f, 1.0f, 1.0f));
+
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("landscape"));
+        glUniform1i(Tex_Loc, 0);
+        //glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, depthTexture);
+		//glUniform1i(shadowmap_Loc, 1);
+        landscape.render();
 
     //BOX
-    glm::mat4 NyMVP = MVP;
+    NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
         NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, 0.0f, -5.0f));
         NyMVP = glm::scale(NyMVP, glm::vec3(2.0f, 2.0f, 2.0f));
@@ -533,6 +653,10 @@ void myDrawFun(){
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
+        glUniform1i(Tex_Loc, 0);
+        //glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, depthTexture);
+		//glUniform1i(shadowmap_Loc, 1);
         box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
@@ -559,9 +683,10 @@ void myDrawFun(){
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
+        glUniform1i(Tex_Loc, 0);
         sun.render();
 
-
+/* SKIPPAR DENNA SÅ LÄNGE
     //SKYDOME
     NyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
@@ -569,14 +694,16 @@ void myDrawFun(){
         //Send the transformations, texture and render
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
         //glBindTexture(GL_TEXTURE_2D, 0);
+        //glUniform1i(Tex_Loc, 0);
         skyDome.render();
-
+*/
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     /*----------------------------------------------*/
 
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
+
 }
 
 void myEncodeFun(){
@@ -589,7 +716,7 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeBool( &takeScreenshot );
     sgct::SharedData::instance()->writeBool( &useTracking );
     sgct::SharedData::instance()->writeInt( &stereoMode );
-    
+
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
@@ -627,6 +754,9 @@ void myCleanUpFun(){
         glDeleteBuffers(1, &texCoordBuffer);
     if(vertexArray)
         glDeleteVertexArrays(1, &vertexArray);
+
+    	glDeleteFramebuffers(1, &FramebufferName);
+    	glDeleteTextures(1, &depthTexture);
 }
 
 
@@ -671,7 +801,7 @@ void externalControlMessageCallback(const char * receivedChars, int size){
                 std::cout << "PAUSE TIME" << std::endl;
             }
         }
-        
+
         //RESET TO CURRENT TIME
         if( size == 7 && strncmp( receivedChars, "reset", 4 ) == 0 ){
             if( strncmp(receivedChars, "reset=1", 7) == 0 ){
@@ -679,13 +809,13 @@ void externalControlMessageCallback(const char * receivedChars, int size){
                 date.setVal( getCurrentTime() );
             }
         }
-        
+
         //SET SPEED OF TIME
         if( (size == 7 || size == 8) && strncmp( receivedChars, "speed", 5 ) == 0 ){
             //parse string to int
             int tmpVal = atoi(receivedChars + 6);
             timeSpeed.setVal(static_cast<float>(tmpVal));
-            
+
             std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
         }
 
@@ -693,7 +823,7 @@ void externalControlMessageCallback(const char * receivedChars, int size){
         if( size == 25 && strncmp( receivedChars, "date", 4 ) == 0 ){
             std::cout << "SET DATE MANUALLY" << std::endl;
             std::string tempDate = ( receivedChars + 5 );
-            
+
             std::cout << "Date: " << tempDate << std::endl;
             date.setVal( tempDate );
         }
