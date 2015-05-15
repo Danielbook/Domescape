@@ -353,24 +353,6 @@ void myPreSyncFun(){
             mouseDx = 0.0;
         }
 
-
-        //SUNPOSITION, fullösning
-        sunX -= 1.0f;
-
-        if(sunX < -500.0f){
-            sunX = 500.0f;
-            sunY = 100.0f;
-        }
-
-        if(sunX>0){
-            sunY += 1.0f;
-        }
-        else{
-            sunY -= 1.0f;
-        }
-        sunPosition = glm::vec3(sunX,sunY,0.0f);
-
-
         //MOUSE AND KEYBOARD INPUT
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
@@ -388,7 +370,7 @@ void myPreSyncFun(){
         bView = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
 
         glm::vec3 right = glm::cross(bView, up);
-
+       
         glm::mat4 ViewRotateY = glm::rotate(
                                             glm::mat4(1.0f),
 											tiltRot,
@@ -435,7 +417,7 @@ void myPreSyncFun(){
 
         //0. Translate to eye height of a person
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
-
+        
         xform.setVal( result );
     }
 }

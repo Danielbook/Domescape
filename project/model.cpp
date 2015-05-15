@@ -78,7 +78,7 @@ void model::clean() {
 /*
  * readObj(const char* filename)
  *
- * Load TriangleSoup geometry data from an OBJ file.
+ * Load model geometry data from an OBJ file.
  * The vertex array is on interleaved format. For each vertex, there
  * are 8 floats: three for the vertex coordinates (x, y, z), three
  * for the normal vector (n_x, n_y, n_z) and finally two for texture
