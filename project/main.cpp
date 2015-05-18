@@ -312,7 +312,7 @@ void myInitOGLFun(){
 
     depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "depthMVP" );
     texID_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "shadowMap" );
-    glUniform1i( texID_Loc, 1 );
+    glUniform1i( texID_Loc, 0 );
 
     fxNearLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "near" );
     fxFarLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "far" );
@@ -602,8 +602,8 @@ void myDrawFun(){
     glm::mat4 depthProjectionMatrix = glm::ortho<float>(-100,100,-100,100,-100,200);
     glm::mat4 depthViewMatrix = glm::lookAt(lDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
-    glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-    //glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * scene_mat;
+    //glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+    glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * scene_mat;
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -625,13 +625,9 @@ void myDrawFun(){
 
         sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
-//        glActiveTexture(GL_TEXTURE1);
-//        glEnable(GL_TEXTURE_2D);
-//        //glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
-//        glBindTexture(GL_TEXTURE_2D, buffers[i].shadowTexture);
-//        glUniform1i( texID_Loc, 1 );
-//        glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
-//        glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
+
+        glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
+        glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
 
 
         std::vector<model>::iterator it;

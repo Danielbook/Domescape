@@ -7,7 +7,7 @@ uniform float far;
 
 in vec2 UV;
 
-out vec4 color;
+//out vec4 color;
 
 layout(location = 0) out float fragmentdepth;
 
