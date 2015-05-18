@@ -20,7 +20,6 @@ shadow::shadow()
 shadow::~shadow()
 {
     clearBuffers();
-    delete mEngine;
 }
 
 //Initialize Framebuffers and shadowmap-texture
@@ -28,10 +27,12 @@ void shadow::createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h)
 {
 
     mEngine = engine;
-    fbo = 0;
-    shadowTexture = 0;
+    fbo = -1;
+    shadowTexture = -1;
     width = fb_w;
     height = fb_h;
+    quad_vertexbuffer = -1;
+	passThroughTex_Loc = -1;
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -40,15 +41,13 @@ void shadow::createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h)
 	createTexture();
 
     // No color output in the bound framebuffer, only depth.
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTexture, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowTexture, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
-
 
     //Does the GPU support current FBO configuration?
     if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE )
     {    sgct::MessageHandler::instance()->print("FrameBuffer in bad state!\n");   }
-
 
     //unbind
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -62,13 +61,13 @@ void shadow::createTexture()
 
     glGenTextures(1, &shadowTexture);
     glBindTexture(GL_TEXTURE_2D, shadowTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); //Sista -> GL_LINEAR?
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
 	mEngine->checkForOGLErrors();
 	//sgct::MessageHandler::instance()->print("%d target textures created.\n");
@@ -97,18 +96,17 @@ void shadow::clearBuffers()
 
     //delete buffers
     glDeleteFramebuffers(1,	&fbo);
+    glDeleteBuffers(1, &quad_vertexbuffer);
 
     //delete textures
     glDeleteTextures(1,	&shadowTexture);
 
-    fbo = 0;
-    shadowTexture = 0;
     width = 1;
     height = 1;
 }
 
 
-void shadow::setShadowTex(unsigned int index, GLint Loc)
+void shadow::setShadowTex( GLint Loc)
 {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, shadowTexture);
@@ -118,25 +116,17 @@ void shadow::setShadowTex(unsigned int index, GLint Loc)
 
 void shadow::shadowpass()
 {
+    //glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT); // Stämmer detta?
-    glEnable(GL_BACK);
-
-    //CLear the screen, only depth buffer
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_FRONT); // Stämmer detta?
+    //glEnable(GL_BACK);
 
 }
 
-
-/*
-    // -----------------------------------------
-	// Setup rendering shadow map to screen
-	// -----------------------------------------
-
-	glGenVertexArrays(1, &quad_VertexArrayID);
-	glBindVertexArray(quad_VertexArrayID);
-
+void shadow::initPrintMap()
+{
+    // The quad's FBO. Used only for visualizing the shadowmap.
 	static const GLfloat g_quad_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
 		 1.0f, -1.0f, 0.0f,
@@ -146,32 +136,37 @@ void shadow::shadowpass()
 		 1.0f,  1.0f, 0.0f,
 	};
 
+
 	glGenBuffers(1, &quad_vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 
-	//Initialize Shader passThroughShadowmap
-    sgct::ShaderManager::instance()->addShaderProgram( "passThroughShadowmap", "shaders/passThroughShadow.vert", "shaders/passThroughShadow.frag" );
-    sgct::ShaderManager::instance()->bindShaderProgram( "passThroughShadowmap" );
 
-    texID_Loc = sgct::ShaderManager::instance()->getShaderProgram( "passThroughShadowmap").getUniformLocation( "texShadow" );
-    //glUniform1i( texID_Loc, 0 );
+	//Initialize Shader depthShadowmap
+    sgct::ShaderManager::instance()->addShaderProgram( "passthroughShadowmap", "shaders/passthroughShadow.vert", "shaders/passthroughShadow.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "passthroughShadowmap" );
+
+    passThroughTex_Loc = sgct::ShaderManager::instance()->getShaderProgram( "passthroughShadowmap").getUniformLocation( "depthTexture" );
+    glUniform1i( passThroughTex_Loc, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-*/
 
-    // -----------------------------------------
-    // Optionally render the shadowmap (for debug only)
-    // -----------------------------------------
+}
 
-		// Render only on a corner of the window (or we we won't see the real rendering...)
-		//glViewport(0,0,256,256);
-		//Bind Shader passThroughShadowmap
-  /*      sgct::ShaderManager::instance()->bindShaderProgram( "passThroughShadowmap" );
+//Render Shadowmap for debug
+void shadow::printMap()
+{
 
-		glActiveTexture(GL_TEXTURE0);				// Bind our texture in Texture Unit 0
-		glBindTexture(GL_TEXTURE_2D, depthTexture);
-		glUniform1i(texID_Loc, 0);					// Set our "renderedTexture" sampler to user Texture Unit 0
+		glViewport(0, 0, width/5, height/5);
+
+		// Use our shader
+		sgct::ShaderManager::instance()->bindShaderProgram( "passthroughShadowmap" );
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, shadowTexture);
+		// Set our "renderedTexture" sampler to user Texture Unit 0
+		glUniform1i(passThroughTex_Loc, 0);
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -191,5 +186,8 @@ void shadow::shadowpass()
 		glDisableVertexAttribArray(0);
 
 		sgct::ShaderManager::instance()->unBindShaderProgram();
-*/
+
+}
+
+
 

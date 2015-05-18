@@ -30,8 +30,10 @@ public:
     void createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h);
     void resizeFBOs();
     void createTexture();
-    void setShadowTex(unsigned int index, GLint Loc);
+    void setShadowTex(GLint Loc);
     void shadowpass();
+    void initPrintMap();
+    void printMap();
 
     GLuint shadowTexture;
     GLuint fbo;
@@ -43,6 +45,10 @@ private:
 
 	GLint width;
 	GLint height;
+
+	//For visualization of shadowmap
+	GLuint quad_vertexbuffer;
+	GLint passThroughTex_Loc;
 
 
 };

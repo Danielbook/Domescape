@@ -9,6 +9,8 @@ in vec2 UV;
 
 out vec4 color;
 
+layout(location = 0) out float fragmentdepth;
+
 
 float LinearizeDepth()
 {
@@ -22,14 +24,17 @@ void main()
 //    depth = 1.0 - (1.0 - depth) * 25.0;
 //    color = vec4(depth);
 
-    vec4 texel = texture(shadowMap, UV.st);
-	if( UV.x < 0.5 )
-		color = texel;
-	else
-	{
-		float d = LinearizeDepth();
-		color = vec4(d, d, d, 1.0);
-		//color = vec4(1.0-d, sqrt(d), d, 1.0);
-	}
+
+//    vec4 texel = texture(shadowMap, UV.st);
+//	if( UV.x < 0.5 )
+//		color = texel;
+//	else
+//	{
+//		float d = LinearizeDepth();
+//		color = vec4(d, d, d, 1.0);
+//		//color = vec4(1.0-d, sqrt(d), d, 1.0);
+//	}
+
+	fragmentdepth = gl_FragCoord.z;
 }
 
