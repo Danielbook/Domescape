@@ -86,12 +86,14 @@ void addSecondToTime();
 /*-----------------------------------------------------*/
 
 /*------------------SHADOWMAP------------------*/
+
 //Post Fx shader locations
 sgct::PostFX fx;
 GLint fxNearLoc = -1;
 GLint fxFarLoc = -1;
 GLint depthMVP_Loc = -1;
 GLint texID_Loc = -1;
+
 
 void updatePassShadow()
 {
@@ -105,7 +107,7 @@ void updatePassShadow()
 
 }
 
-std::vector<shadow> buffers;
+std::vector<class shadow> buffers;
 
 sgct_core::OffScreenBuffer *myBuffer;
 /*---------------------------------------------*/
@@ -199,7 +201,7 @@ int main( int argc, char* argv[] ){
     /*------------------SPICE------------------*/
     //load kernels
     furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
-    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
+    furnsh_c( "kernels/de430.bsp" );    //Is a leapsecond kernel so that you get the accurate times
     furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
     /*-----------------------------------------*/
 
@@ -214,29 +216,25 @@ int main( int argc, char* argv[] ){
 
 
 #if __APPLE__
-    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 
-#elif __MSC_VER__
-    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+#elif (_MSC_VER >= 1500)
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 
 #elif __WIN32__
-    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 
 #elif __linux__
-    if( !gEngine->init( ) )
-    {
+    if( !gEngine->init( ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
@@ -259,7 +257,6 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
-
 
     /*----------------OBJECTS AND TEXTURES--------------*/
 
@@ -291,7 +288,7 @@ void myInitOGLFun(){
 	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
 	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
 	{
-		shadow tmpBuffer;
+		class shadow tmpBuffer;
 		buffers.push_back( tmpBuffer );
 	}
 	sgct::MessageHandler::instance()->print("Number of buffers: %d\n", buffers.size());
@@ -315,7 +312,7 @@ void myInitOGLFun(){
 
     depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "depthMVP" );
     texID_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "shadowMap" );
-    glUniform1i( texID_Loc, 0 );
+    glUniform1i( texID_Loc, 1 );
 
     fxNearLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "near" );
     fxFarLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "far" );
@@ -379,9 +376,9 @@ void myInitOGLFun(){
     glUniform1i( Glow_Loc_S, 2 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
     /*---------------------------------------------------------*/
 }
+
 
 void myPreSyncFun(){
     if( gEngine->isMaster() ){
@@ -404,7 +401,6 @@ void myPreSyncFun(){
 
         static float tiltRot = 0.0f;
         tiltRot += (static_cast<float>(mouseDy) * rotationSpeed * static_cast<float>(gEngine->getDt()));
-
 
         glm::mat4 ViewRotateX = glm::rotate(
                                             glm::mat4(1.0f),
@@ -470,7 +466,7 @@ void myPreSyncFun(){
 }
 
 void myPostSyncPreDrawFun(){
-    if( timeIsTicking.getVal() == true && oneSecondPassed.getVal() == true){
+    if( timeIsTicking.getVal() == true && oneSecondPassed.getVal() == true ){
         std::cout << "Time is ticking" << std::endl;
     }
 
@@ -500,7 +496,6 @@ void myPostSyncPreDrawFun(){
 
         sp.unbind();
 
-
         sgct::ShaderProgram skySp = sgct::ShaderManager::instance()->getShaderProgram( "sky" );
         skySp.reload();
 
@@ -524,6 +519,7 @@ void myPostSyncPreDrawFun(){
         reloadShader.setVal(false);
     }
 
+
     //Fisheye cubemaps are constant size
 	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
 	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
@@ -537,6 +533,7 @@ void myPostSyncPreDrawFun(){
             //winPtr->getDrawFBODimensions(fb_width, fb_height);
 			//myBuffer->resizeFBO(fb_width, fb_height);
 			break;
+
 		}
     }
 
@@ -547,17 +544,21 @@ void myDrawFun(){
     ////fuLhaxX
 
     oneSecondPassed.setVal(false);
-    if( timeIsTicking.getVal() ){
+
+    if( timeIsTicking.getVal() )
         timeCount++;
-        addSecondToTime();
-    }
 
     if( timeCount == 60 ){
         oneSecondPassed.setVal(true);
+        timeCount = 0;
+    }
+    if( oneSecondPassed.getVal() ){
 
         std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
 
-        timeCount = 0;
+        if( timeIsTicking.getVal() ){
+            addSecondToTime();
+        }
     }
     ///////////
 
@@ -607,7 +608,9 @@ void myDrawFun(){
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     //glDepthFunc(GL_ALWAYS);
+
     const int * coords = gEngine->getActiveViewportPixelCoords();
+
 
     for(unsigned int i=0; i < buffers.size(); i++)
 	{
@@ -620,16 +623,16 @@ void myDrawFun(){
         //CLear the screen, only depth buffer
         glClear(GL_DEPTH_BUFFER_BIT);
 
-
         sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
-//        glActiveTexture(GL_TEXTURE0);
+//        glActiveTexture(GL_TEXTURE1);
 //        glEnable(GL_TEXTURE_2D);
 //        //glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
 //        glBindTexture(GL_TEXTURE_2D, buffers[i].shadowTexture);
-//        glUniform1i( texID_Loc, 0 );
+//        glUniform1i( texID_Loc, 1 );
 //        glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
 //        glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
+
 
         std::vector<model>::iterator it;
         for(it = objects.begin(); it != objects.end(); ++it)
@@ -642,21 +645,7 @@ void myDrawFun(){
 
         }
 
-            //nyDepthMVP = depthMVP * landscape.transformations;
-//            nyDepthMVP = depthMVP;
-//            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-//            landscape.drawToDepthBuffer();
-//
-//            //nyDepthMVP = depthMVP * box.transformations;
-//            nyDepthMVP = depthMVP;
-//            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-//            box.drawToDepthBuffer();
-
-
         sgct::ShaderManager::instance()->unBindShaderProgram();
-
-        glDisable(GL_CULL_FACE);
-
 
     }
     //Unbind the framebuffer
@@ -670,7 +659,7 @@ void myDrawFun(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -694,8 +683,6 @@ void myDrawFun(){
     for(it = objects.begin(); it != objects.end(); ++it)
     {
 
-        //glViewport( coords[0], coords[1], coords[2], coords[3] );
-
         nyMVP = MVP * (*it).transformations;
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
 
@@ -712,35 +699,14 @@ void myDrawFun(){
         (*it).render();
     }
 
-//        glViewport( coords[0], coords[1], coords[2], coords[3] );
-//
-//        nyMVP = MVP * landscape.transformations;
-//        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(landscape.mTextureID));
-//        glUniform1i(Tex_Loc, 0);
-//        buffers[index].setShadowTex(index, shadowmap_Loc);
-//        landscape.render();
-//
-//
-//        glViewport( coords[0], coords[1], coords[2], coords[3] );
-//
-//        nyMVP = MVP * box.transformations;
-//        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(box.mTextureID));
-//        glUniform1i(Tex_Loc, 0);
-//        buffers[index].setShadowTex(index, shadowmap_Loc);
-//        //box.render();
-
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
+    //Render shadowMap-texturen
     buffers[index].printMap();
 
     /*----------------------------------------------*/
 
     /*------------------SKY SHADER------------------*/
-
     //Bind Shader sky
     sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
 
@@ -772,13 +738,9 @@ void myDrawFun(){
         skyDome.render();
 */
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
     /*----------------------------------------------*/
-
-
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
-
 }
 
 void myEncodeFun(){
@@ -818,8 +780,6 @@ void myCleanUpFun(){
     if(vertexArray)
         glDeleteVertexArrays(1, &vertexArray);
 
-    //glDeleteFramebuffers(1, &myFrameBuffer);
-    //glDeleteTextures(1, &depthTexture);
     for(unsigned int i=0; i < buffers.size(); i++)
 	{
         buffers[i].clearBuffers();
@@ -859,7 +819,7 @@ void mouseButtonCallback(int button, int action){
 void externalControlMessageCallback(const char * receivedChars, int size){
     if( gEngine->isMaster() ){
         //PAUSE TIME
-        if(size == 7 && strncmp(receivedChars, "pause", 5) == 0){
+        if( strncmp(receivedChars, "pause", 5) == 0 ){
             if( strncmp(receivedChars, "pause=0", 7) == 0 ){
                 timeIsTicking.setVal( true );
                 //std::cout << "CONTINUE TIME" << std::endl;
@@ -880,11 +840,9 @@ void externalControlMessageCallback(const char * receivedChars, int size){
 
         //SET SPEED OF TIME
         if( strncmp( receivedChars, "speed", 5 ) == 0 ){
-            //parse string to int
+            // Parse string to int
             int tmpVal = atoi(receivedChars + 6);
-
-            timeSpeed.setVal(static_cast<int>(tmpVal));
-
+            timeSpeed.setVal( static_cast<int>(tmpVal) );
             //std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
         }
 
@@ -900,12 +858,12 @@ void externalControlMessageCallback(const char * receivedChars, int size){
             std::string tempMinute = tempTime.substr(14,2);
             std::string tempSeconds = tempTime.substr(17,2);
 
-            currentTime[YEAR] = atoi(tempYear.c_str());
-            currentTime[MONTH] = atoi(tempMonth.c_str());
-            currentTime[DAY] = atoi(tempDay.c_str());
-            currentTime[HOUR] = atoi(tempHour.c_str());
-            currentTime[MINUTE] = atoi(tempMinute.c_str());
-            currentTime[SECOND] = atoi(tempSeconds.c_str());
+            currentTime[YEAR] = atoi( tempYear.c_str() );
+            currentTime[MONTH] = atoi( tempMonth.c_str() );
+            currentTime[DAY] = atoi( tempDay.c_str() );
+            currentTime[HOUR] = atoi( tempHour.c_str() );
+            currentTime[MINUTE] = atoi( tempMinute.c_str() );
+            currentTime[SECOND] = atoi( tempSeconds.c_str() );
         }
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
@@ -952,7 +910,6 @@ void resetToCurrentTime() {
 
 /*Function to calculate the suns illumination angle relative to the earth*/
 void calcSunPosition(){
-
     SpiceDouble r = 6371.0;         // Earth radius [km]
     SpiceDouble ourLon = 16.192421;    // Longitude of Nrkpg
     SpiceDouble ourLat = 58.587745;    // Latitude of Nrkpg
@@ -1004,7 +961,7 @@ void calcSunPosition(){
     abcorr = "LT+S";
     ref = "iau_earth";
 
-    //Calculate Zenit point on eart
+    //Calculate Zenit point on earth
     subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
 
     //Calculate suns emission angle
@@ -1026,8 +983,7 @@ void calcSunPosition(){
 void addSecondToTime(){
     for(int i = 0; i < timeSpeed.getVal(); i++){
         bool leapYear = false;
-        if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) )
-        {
+        if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) ){
             leapYear = true;
         }
 
@@ -1035,43 +991,43 @@ void addSecondToTime(){
         currentTime[SECOND] += 1;
 
         //Add Minute
-        if ( currentTime[SECOND] >= 60 ) {
+        if ( currentTime[SECOND] >= 60 ){
             currentTime[MINUTE] += 1;
             currentTime[SECOND] = 0;
         }
 
         //Add Hour
-        if ( currentTime[MINUTE] >= 60) {
+        if ( currentTime[MINUTE] >= 60 ){
             currentTime[HOUR] += 1;
             currentTime[MINUTE] = 0;
         }
 
         //Add Day
-        if ( currentTime[HOUR] >= 24 ) {
+        if ( currentTime[HOUR] >= 24 ){
             currentTime[DAY] += 1;
             currentTime[HOUR] = 0;
         }
 
         //Add Month
             //February and leap year
-            if (leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29) {
+            if ( leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29 ){
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
 
-            else if (currentTime[MONTH] == 2 && currentTime[DAY] > 28)
+            else if ( currentTime[MONTH] == 2 && currentTime[DAY] > 28 )
             {
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
 
             else if( (currentTime[MONTH] == 4 || currentTime[MONTH] == 6 || currentTime[MONTH] == 9 ||
-                      currentTime[MONTH] == 11) && currentTime[DAY] > 30  ){
+                      currentTime[MONTH] == 11) && currentTime[DAY] > 30 ){
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
 
-            else if(currentTime[DAY] > 31){
+            else if( currentTime[DAY] > 31 ){
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }

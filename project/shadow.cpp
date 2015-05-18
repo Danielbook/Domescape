@@ -27,6 +27,7 @@ void shadow::createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h)
 {
 
     mEngine = engine;
+
     fbo = -1;
     shadowTexture = -1;
     width = fb_w;
@@ -50,6 +51,7 @@ void shadow::createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h)
     {    sgct::MessageHandler::instance()->print("FrameBuffer in bad state!\n");   }
 
     //unbind
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
@@ -73,6 +75,7 @@ void shadow::createTexture()
 	//sgct::MessageHandler::instance()->print("%d target textures created.\n");
 
 	glDisable(GL_TEXTURE_2D);
+
 }
 
 
@@ -83,6 +86,7 @@ void shadow::resizeFBOs()
 
 	GLint W = width;
 	GLint H = height;
+
 	//Delete FBO
 	clearBuffers();
 
@@ -106,6 +110,7 @@ void shadow::clearBuffers()
 }
 
 
+
 void shadow::setShadowTex( GLint Loc)
 {
     glActiveTexture(GL_TEXTURE1);
@@ -116,6 +121,7 @@ void shadow::setShadowTex( GLint Loc)
 
 void shadow::shadowpass()
 {
+
     //glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glEnable(GL_CULL_FACE);
@@ -188,6 +194,5 @@ void shadow::printMap()
 		sgct::ShaderManager::instance()->unBindShaderProgram();
 
 }
-
 
 

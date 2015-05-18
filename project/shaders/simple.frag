@@ -37,7 +37,7 @@ float GetVisibility(sampler2D vShadowMap, vec4 vShadowCoord)
 
     return visibility;
 }
-
+git
 // Same as BiasMatrix
 float CalcShadowFactor(vec3 LightSpacePos)
 {
