@@ -61,8 +61,9 @@ float runningSpeed = 5.0f;
 /*--------------------------------------------*/
 
 /*------------------REGULAR FUNCTIONS------------------*/
-void calcSunPosition(); // Calculates the suns position
-void resetToCurrentTime(); // Used to calculate the time of the current computer
+void calcSunPosition();     // Calculates the suns position
+void resetToCurrentTime();  // Used to calculate the time of the current computer
+void addSecondToTime();     // Adds a second to the programs clock
 /*-----------------------------------------------------*/
 
 /*------------------HEIGHTMAP->SHADOWMAP?------------------*/
@@ -128,11 +129,6 @@ double mouseYPos[] = { 0.0, 0.0 };
 glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
-
-//Fullösning
-float sunX = 500.0f;
-float sunY = 100.f;
-glm::vec3 sunPosition(sunX, sunY, 0.0f);
 /*-----------------------------------------------*/
 
 /*------------------SHARED VARIABLES ACROSS THE CLUSTER------------------*/
@@ -150,8 +146,6 @@ sgct::SharedInt timeSpeed = 1;
 sgct::SharedString date;
 sgct::SharedBool oneSecondPassed(false);
 /*---------------------------------------*/
-
-void addSecondToTime();
 
 enum timeVariables{YEAR = 0, MONTH = 1, DAY = 2, HOUR = 3, MINUTE = 4, SECOND = 5};
 int currentTime[6];
@@ -189,52 +183,45 @@ int main( int argc, char* argv[] ){
     /*------------------SPICE------------------*/
     //load kernels
     furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
-    furnsh_c( "kernels/de430.bsp" ); //Is a leapsecond kernel so that you get the accurate times
+    furnsh_c( "kernels/de430.bsp" );    //Is a leapsecond kernel so that you get the accurate times
     furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
     /*-----------------------------------------*/
 
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-
 #if __APPLE__
-    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 
-#elif __MSC_VER__
-    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+#elif (_MSC_VER >= 1500)
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 
 #elif __WIN32__
-    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) )
-    {
+    if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 
 #elif __linux__
-    if( !gEngine->init( ) )
-    {
+    if( !gEngine->init( ) ){
         delete gEngine;
         return EXIT_FAILURE;
     }
 #endif
-    resetToCurrentTime();
+    
+    resetToCurrentTime();   // Starts with current date
 
-    // Main loop
-    gEngine->render();
+    gEngine->render();      // Main loop
 
-    // Clean up
-    delete gEngine;
+    delete gEngine;         // Clean up
 
-    // Exit program
-    exit( EXIT_SUCCESS );
+    exit( EXIT_SUCCESS );   // Exit program
 
     return( 0 );
 }
@@ -244,9 +231,7 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
 
-
     /*----------------OBJECTS AND TEXTURES--------------*/
-
     glEnable(GL_TEXTURE_2D);
     sgct::TextureManager::instance()->loadTexure("box", "texture/box.png", true);
     box.readOBJ("mesh/box.obj");
@@ -261,7 +246,7 @@ void myInitOGLFun(){
 
     /*-----------------------------------------------------*/
 
-        /*---------------------SHADOWMAP-------------*/
+    /*----------------------SHADOWMAP----------------------*/
     // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
      glGenFramebuffers(1, &FramebufferName);
      glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
@@ -284,16 +269,12 @@ void myInitOGLFun(){
      // Always check that our framebuffer is ok
      if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
      { std::cout << "Frame Buffer in bad state" << std::endl;  }
+    /*------------------------------------------------------*/
 
-    /*-----------------------------------------------------------*/
-
-
-    /*---------------------SHADERS-----------------------*/
-
+    /*----------------------SHADERS-------------------------*/
     //Initialize Shader scene (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
-
 
     MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "MVP" );
     NM_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "NM" );
@@ -308,7 +289,6 @@ void myInitOGLFun(){
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
-
     //Initialize Shader shadowmap (shadow)
     sgct::ShaderManager::instance()->addShaderProgram( "shadowmap", "shaders/shadow.vert", "shaders/shadow.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
@@ -317,11 +297,9 @@ void myInitOGLFun(){
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
-
     //Initialize Shader sky (sky)
     sgct::ShaderManager::instance()->addShaderProgram( "sky", "shaders/sky.vert", "shaders/sky.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
-
 
     MVP_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "MVP" );
     NM_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "NM" );
@@ -334,7 +312,6 @@ void myInitOGLFun(){
     glUniform1i( Tex_Loc_S, 0 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
     /*---------------------------------------------------------*/
 }
 
@@ -359,7 +336,6 @@ void myPreSyncFun(){
 
         static float tiltRot = 0.0f;
         tiltRot += (static_cast<float>(mouseDy) * rotationSpeed * static_cast<float>(gEngine->getDt()));
-
 
         glm::mat4 ViewRotateX = glm::rotate(
                                             glm::mat4(1.0f),
@@ -423,7 +399,7 @@ void myPreSyncFun(){
 }
 
 void myPostSyncPreDrawFun(){
-    if( timeIsTicking.getVal() == true && oneSecondPassed.getVal() == true){
+    if( timeIsTicking.getVal() == true && oneSecondPassed.getVal() == true ){
         std::cout << "Time is ticking" << std::endl;
     }
 
@@ -453,7 +429,6 @@ void myPostSyncPreDrawFun(){
         sp.unbind();
         reloadShader.setVal(false);
 
-
         sgct::ShaderProgram skySp = sgct::ShaderManager::instance()->getShaderProgram( "sky" );
         skySp.reload();
 
@@ -478,19 +453,21 @@ void myPostSyncPreDrawFun(){
 void myDrawFun(){
     ////fuLhaxX
     oneSecondPassed.setVal(false);
-    if( timeIsTicking.getVal() ){
+    
+    if( timeIsTicking.getVal() )
         timeCount++;
-        addSecondToTime();
-    }
     
     if( timeCount == 60 ){
         oneSecondPassed.setVal(true);
-        
-        
+        timeCount = 0;
+    }
+    if( oneSecondPassed.getVal() ){
         
         std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
         
-        timeCount = 0;
+        if( timeIsTicking.getVal() ){
+            addSecondToTime();
+        }
     }
     /////
     
@@ -513,11 +490,14 @@ void myDrawFun(){
     float fSunDis = 800;
 
     //float fSunAngleTheta = 90.0f * 3.1415/180.0; //Degrees Celsius to radians
-    calcSunPosition();
+    
+    calcSunPosition();      // Calculates the suns position and angle with current time
+    
     if( oneSecondPassed.getVal() ){
         std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
         std::cout<<"PHI: " << fSunAnglePhi << std::endl;
     }
+    
     float fSine = sin(fSunAngleTheta);
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
@@ -529,25 +509,20 @@ void myDrawFun(){
     float fAmb = 0.2f; //Initialize to low for debugging purposes
     glm::vec4 sColor = glm::vec4(0.5f, 0.5f, 0.5f, 0.5f); //Initialize to low for debugging purposes
     
-    if(fSunAngleTheta >= 30.0f*3.1415/180.0 && fSunAngleTheta <= 150.0f*3.1415/180.0) //DAY
-    {
+    if(fSunAngleTheta >= 30.0f*3.1415/180.0 && fSunAngleTheta <= 150.0f*3.1415/180.0){ //DAY
         sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         fAmb = 0.8f;
     }
-    else if(fSunAngleTheta <= 0.0f*3.1415/180.0 || fSunAngleTheta >= 180.0f*3.1415/180.0) //NIGHT
-    {
+    else if(fSunAngleTheta <= 0.0f*3.1415/180.0 || fSunAngleTheta >= 180.0f*3.1415/180.0){ //NIGHT
         sColor = glm::vec4(110.0f/256.0f, 40.0f/256.0f, 189.0f/256.0f, 1.0f);
         fAmb = 0.3f;
     }
-    else // DAWN/DUSK
-    {
+    else{ // DAWN/DUSK
         sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
         fAmb = 0.6f;
     }
 
     glm::vec3 lDir = glm::normalize(vSunPos);
-
-
 
     /*------------------SHADOW MAP------------------*/
 /*    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
@@ -594,7 +569,6 @@ void myDrawFun(){
     /*------------------------------------------------*/
 
     /*------------------SCENE SHADER------------------*/
-
     //Bind Shader scene
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
@@ -639,11 +613,9 @@ void myDrawFun(){
         box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
     /*----------------------------------------------*/
 
     /*------------------SKY SHADER------------------*/
-
     //Bind Shader sky
     sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
 
@@ -676,12 +648,9 @@ void myDrawFun(){
         skyDome.render();
 */
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
     /*----------------------------------------------*/
-
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
-
 }
 
 void myEncodeFun(){
@@ -767,7 +736,7 @@ void mouseButtonCallback(int button, int action){
 void externalControlMessageCallback(const char * receivedChars, int size){
     if( gEngine->isMaster() ){
         //PAUSE TIME
-        if(size == 7 && strncmp(receivedChars, "pause", 5) == 0){
+        if( strncmp(receivedChars, "pause", 5) == 0 ){
             if( strncmp(receivedChars, "pause=0", 7) == 0 ){
                 timeIsTicking.setVal( true );
                 //std::cout << "CONTINUE TIME" << std::endl;
@@ -788,11 +757,9 @@ void externalControlMessageCallback(const char * receivedChars, int size){
 
         //SET SPEED OF TIME
         if( strncmp( receivedChars, "speed", 5 ) == 0 ){
-            //parse string to int
+            // Parse string to int
             int tmpVal = atoi(receivedChars + 6);
-
-            timeSpeed.setVal(static_cast<int>(tmpVal));
-
+            timeSpeed.setVal( static_cast<int>(tmpVal) );
             //std::cout << "Speed of time: " << timeSpeed.getVal() << std::endl;
         }
 
@@ -808,12 +775,12 @@ void externalControlMessageCallback(const char * receivedChars, int size){
             std::string tempMinute = tempTime.substr(14,2);
             std::string tempSeconds = tempTime.substr(17,2);
 
-            currentTime[YEAR] = atoi(tempYear.c_str());
-            currentTime[MONTH] = atoi(tempMonth.c_str());
-            currentTime[DAY] = atoi(tempDay.c_str());
-            currentTime[HOUR] = atoi(tempHour.c_str());
-            currentTime[MINUTE] = atoi(tempMinute.c_str());
-            currentTime[SECOND] = atoi(tempSeconds.c_str());
+            currentTime[YEAR] = atoi( tempYear.c_str() );
+            currentTime[MONTH] = atoi( tempMonth.c_str() );
+            currentTime[DAY] = atoi( tempDay.c_str() );
+            currentTime[HOUR] = atoi( tempHour.c_str() );
+            currentTime[MINUTE] = atoi( tempMinute.c_str() );
+            currentTime[SECOND] = atoi( tempSeconds.c_str() );
         }
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
@@ -860,7 +827,6 @@ void resetToCurrentTime() {
 
 /*Function to calculate the suns illumination angle relative to the earth*/
 void calcSunPosition(){
-
     SpiceDouble r = 6371.0;         // Earth radius [km]
     SpiceDouble ourLon = 16.192421;    // Longitude of Nrkpg
     SpiceDouble ourLat = 58.587745;    // Latitude of Nrkpg
@@ -892,8 +858,10 @@ void calcSunPosition(){
     ourLon = ourLon * rpd_c();
     ourLat = ourLat * rpd_c();
     
+    //Convert our latitude and longitude coords to rectangular coords
     latrec_c( r, ourLon, ourLat, ourPosition );
     
+    //Creates a string from current date
     std::string tempDate = std::to_string( currentTime[YEAR] ) + " " + std::to_string( currentTime[MONTH] ) + " " + std::to_string( currentTime[DAY] ) + " " + std::to_string( currentTime[HOUR] )  + ":" + std::to_string( currentTime[MINUTE] ) + ":" + std::to_string( currentTime[SECOND] );
     
     char *cstr = new char[tempDate.length() + 1];
@@ -911,7 +879,7 @@ void calcSunPosition(){
     abcorr = "LT+S";
     ref = "iau_earth";
 
-    //Calculate Zenit point on eart
+    //Calculate Zenit point on earth
     subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
     
     //Calculate suns emission angle
@@ -922,9 +890,10 @@ void calcSunPosition(){
     SpiceDouble sunPointLon = 0;    // Longitude of zenit
     SpiceDouble sunPointLat = 0;    // Latitude of zenit
     
+    //Rectangular coords to latitudinal and longitudinal coords
     reclat_c(&sunPointOnEarth, &r, &sunPointLon, &sunPointLat);
 
-    fSunAnglePhi = 3.1415/2 - (ourLat-sunPointLat);
+    fSunAnglePhi = 3.1415/2 - (ourLat - sunPointLat);
     
     fSunAngleTheta = ourLon - sunPointLon;
     
@@ -934,8 +903,7 @@ void calcSunPosition(){
 void addSecondToTime(){
     for(int i = 0; i < timeSpeed.getVal(); i++){
         bool leapYear = false;
-        if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) )
-        {
+        if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) ){
             leapYear = true;
         }
 
@@ -943,43 +911,43 @@ void addSecondToTime(){
         currentTime[SECOND] += 1;
 
         //Add Minute
-        if ( currentTime[SECOND] >= 60 ) {
+        if ( currentTime[SECOND] >= 60 ){
             currentTime[MINUTE] += 1;
             currentTime[SECOND] = 0;
         }
 
         //Add Hour
-        if ( currentTime[MINUTE] >= 60) {
+        if ( currentTime[MINUTE] >= 60 ){
             currentTime[HOUR] += 1;
             currentTime[MINUTE] = 0;
         }
 
         //Add Day
-        if ( currentTime[HOUR] >= 24 ) {
+        if ( currentTime[HOUR] >= 24 ){
             currentTime[DAY] += 1;
             currentTime[HOUR] = 0;
         }
 
         //Add Month
             //February and leap year
-            if (leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29) {
+            if ( leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29 ){
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
 
-            else if (currentTime[MONTH] == 2 && currentTime[DAY] > 28)
+            else if ( currentTime[MONTH] == 2 && currentTime[DAY] > 28 )
             {
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
 
             else if( (currentTime[MONTH] == 4 || currentTime[MONTH] == 6 || currentTime[MONTH] == 9 ||
-                      currentTime[MONTH] == 11) && currentTime[DAY] > 30  ){
+                      currentTime[MONTH] == 11) && currentTime[DAY] > 30 ){
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
 
-            else if(currentTime[DAY] > 31){
+            else if( currentTime[DAY] > 31 ){
                 currentTime[MONTH] += 1;
                 currentTime[DAY] = 1;
             }
@@ -991,5 +959,3 @@ void addSecondToTime(){
         }
     }
 }
-
-
