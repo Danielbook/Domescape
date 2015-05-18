@@ -93,7 +93,7 @@ int fxFarLoc = -1;
 
 void updatePassShadow();
 
-std::vector<shadow> buffers;
+std::vector<class shadow> buffers;
 
 //Shader locations
 GLint depthMVP_Loc = -1;
@@ -278,7 +278,7 @@ void myInitOGLFun(){
 	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
 	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
 	{
-		shadow tmpBuffer;
+		class shadow tmpBuffer;
 		buffers.push_back( tmpBuffer );
 	}
 	sgct::MessageHandler::instance()->print("Number of buffers: %d\n", buffers.size());
@@ -301,7 +301,7 @@ void myInitOGLFun(){
 
     depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "depthMVP" );
     texID_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "shadowMap" );
-    glUniform1i( texID_Loc, 0 );
+    glUniform1i( texID_Loc, 1 );
 
     fxNearLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "near" );
     fxFarLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "far" );
@@ -602,8 +602,8 @@ void myDrawFun(){
     //glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * scene_mat;
 
     glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_LESS);
-    glDepthFunc(GL_ALWAYS);
+    glDepthFunc(GL_LESS);
+    //glDepthFunc(GL_ALWAYS);
 
     for(unsigned int i=0; i < buffers.size(); i++)
 	{
@@ -617,10 +617,11 @@ void myDrawFun(){
 
         sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE1);
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
-        glUniform1i( texID_Loc, 0 );
+        //glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
+        glBindTexture(GL_TEXTURE_2D, buffers[i].shadowTexture);
+        glUniform1i( texID_Loc, 1 );
         glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
         glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
 

@@ -55,12 +55,6 @@ void model::clean() {
     }
     indexbuffer = 0;
 
-    if(vertexarray) {
-        delete[] vertexarray;
-    }
-    if(indexarray) 	{
-        delete[] indexarray;
-    }
     nverts = 0;
     ntris = 0;
 }
@@ -221,7 +215,7 @@ void model::readOBJ(const char* filename, std::string texture) {
     delete[] verts;
     delete[] normals;
     delete[] texcoords;
-    delete[] objfile;
+    //delete[] objfile;
 
     if(readerror) { // Delete corrupt data and bail out if a read error occured
         printError("Mesh read error","No mesh data generated");

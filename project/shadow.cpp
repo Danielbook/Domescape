@@ -14,13 +14,12 @@
 // Constructor (används ej)
 shadow::shadow()
 {
-
+    
 }
 //Destructor
 shadow::~shadow()
 {
     clearBuffers();
-    delete mEngine;
 }
 
 //Initialize Framebuffers and shadowmap-texture
