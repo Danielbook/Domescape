@@ -6,10 +6,10 @@ layout(location = 1) in vec3 inNormals;
 layout(location = 2) in vec2 inCoords;
 
 
-uniform mat4 MVP; //Model View Projection Matrix
+uniform mat4 MVP; //Model View Projection Matrix = gWVP
 uniform mat3 NM; //Normal Matrix
-uniform vec3 lightDir; //Calculated light direction
-uniform mat4 depthBiasMVP;
+uniform vec3 lightDir; //Calculated light direction = gLightWVP
+uniform mat4 depthBiasMVP; // Used in shadowmap = gWorld
 
 out vec3 lDir;
 out vec2 UV;
@@ -19,12 +19,12 @@ out vec4 ShadowCoord;
 void main()
 {
     // Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(inPositions + vec3(0.0, 0.0, 0.0), 1.0);
-	ShadowCoord = depthBiasMVP * vec4(inPositions, 1.0);
+	gl_Position =  MVP * vec4(inPositions + vec3(0.0, 2.0, 0.0), 1.0);
+	ShadowCoord = depthBiasMVP * vec4(inPositions, 1.0); //WorldPos
 
 	UV = inCoords;
 
-	lDir = normalize(NM * lightDir);
+	lDir = normalize(NM * lightDir); //Ta bort NM? och lägg till * vec4(inPositions, 1.0) LightSpacePos
 
 	tnormals = normalize(NM * inNormals);
 

@@ -5,6 +5,8 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <string>
 #include <algorithm>
+#include <vector>
+#include <iterator>
 #include <cmath>
 #include <iostream>
 #include <iomanip>
@@ -20,8 +22,8 @@
 #include <SpiceZfc.h>
 
 #include "model.hpp"
-//#include "objloader.hpp"
-//#include "MVstack.hpp"
+#include "shadow.hpp"
+#include "shader.hpp"
 
 sgct::Engine * gEngine;
 
@@ -58,62 +60,7 @@ void mouseButtonCallback(int button, int action);//     |
 float rotationSpeed = 0.1f;
 float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
-/*--------------------------------------------*/
 
-/*------------------REGULAR FUNCTIONS------------------*/
-void calcSunPosition();     // Calculates the suns position
-void resetToCurrentTime();  // Used to calculate the time of the current computer
-void addSecondToTime();     // Adds a second to the programs clock
-/*-----------------------------------------------------*/
-
-/*------------------HEIGHTMAP->SHADOWMAP?------------------*/
-//Implementera i Shadowmap!?
-//opengl objects
-GLuint FramebufferName = 0;
-GLuint depthTexture;
-
-GLuint vertexArray = GL_FALSE;
-GLuint vertexPositionBuffer = GL_FALSE;
-GLuint texCoordBuffer = GL_FALSE;
-
-//variables to share across cluster
-sgct::SharedBool wireframe(false);
-sgct::SharedBool info(false);
-sgct::SharedBool stats(false);
-sgct::SharedBool takeScreenshot(false);
-sgct::SharedBool useTracking(false);
-sgct::SharedInt stereoMode(0);
-
-//geometry
-std::vector<float> mVertPos;
-std::vector<float> mTexCoord;
-GLsizei mNumberOfVerts = 0;
-/*---------------------------------------------*/
-
-/*------------------SHADERS------------------*/
-//Shader Shadowmap
-GLint depthMVP_Loc = -1;
-GLint depthBiasMVP_Loc = -1;
-GLint shadowmap_Loc = -1;
-
-//Shader Scene
-GLint MVP_Loc = -1;
-GLint NM_Loc = -1;
-GLint sColor_Loc = -1;
-GLint lDir_Loc = -1;
-GLint Amb_Loc = -1;
-GLint Tex_Loc = -1;
-
-//Shader Sky
-GLint MVP_Loc_S = -1;
-GLint NM_Loc_S = -1;
-GLint lDir_Loc_S = -1;
-GLint Tex_Loc_S = -1;
-GLint Glow_Loc_S = -1;
-GLint SunColor_Loc_S = -1;
-/*------------------------------------------*/
-
-//Oriantation variables
 bool dirButtons[6];
 enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 
@@ -129,7 +76,52 @@ double mouseYPos[] = { 0.0, 0.0 };
 glm::vec3 bView(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 pos(0.0f, 0.0f, 0.0f);
-/*-----------------------------------------------*/
+/*--------------------------------------------*/
+
+/*------------------REGULAR FUNCTIONS------------------*/
+void calcSunPosition(); // Calculates the suns position
+void calcSkyColor(float fSunAnglePhi, float &fAmb, glm::vec4 &sColor);
+void resetToCurrentTime(); // Used to calculate the time of the current computer
+void addSecondToTime();
+/*-----------------------------------------------------*/
+
+/*------------------SHADOWMAP------------------*/
+//Miros
+sgct::PostFX fx;
+int fxNearLoc = -1;
+int fxFarLoc = -1;
+
+void updatePassShadow();
+
+std::vector<shadow> buffers;
+
+//Shader locations
+GLint depthMVP_Loc = -1;
+GLint texID_Loc = -1;
+
+sgct_core::OffScreenBuffer *myBuffer;
+/*---------------------------------------------*/
+
+/*------------------SHADERS------------------*/
+//Shader Scene
+GLint MVP_Loc = -1;
+GLint NM_Loc = -1;
+GLint sColor_Loc = -1;
+GLint lDir_Loc = -1;
+GLint Amb_Loc = -1;
+GLint Tex_Loc = -1;
+
+GLint depthBiasMVP_Loc = -1;
+GLint shadowmap_Loc = -1;
+
+//Shader Sky
+GLint MVP_Loc_S = -1;
+GLint NM_Loc_S = -1;
+GLint lDir_Loc_S = -1;
+GLint Tex_Loc_S = -1;
+GLint Glow_Loc_S = -1;
+GLint SunColor_Loc_S = -1;
+/*------------------------------------------*/
 
 /*------------------SHARED VARIABLES ACROSS THE CLUSTER------------------*/
 sgct::SharedDouble curr_time(0.0);
@@ -147,20 +139,36 @@ sgct::SharedString date;
 sgct::SharedBool oneSecondPassed(false);
 /*---------------------------------------*/
 
+/*---------------OTHER VARIABLES--------------*/
+
+//Vad används dessa till?
+GLuint vertexArray = GL_FALSE;
+GLuint vertexPositionBuffer = GL_FALSE;
+GLuint texCoordBuffer = GL_FALSE;
+
+//SUN POSITION
+float fSunAnglePhi;
+float fSunAngleTheta;
+float fAmb = 0.2f; //Initialize to low for debugging purposes
+glm::vec4 sColor = glm::vec4(0.4f, 0.4f, 0.4f, 0.4f); //Initialize to low for debugging purposes
+
+//TIME
 enum timeVariables{YEAR = 0, MONTH = 1, DAY = 2, HOUR = 3, MINUTE = 4, SECOND = 5};
 int currentTime[6];
-
 int timeCount = 0;
 
-float sunAngle;
-
+//OBJECTS
 model landscape;
 model box;
 model sun;
 model skyDome;
 
-float fSunAnglePhi;
-float fSunAngleTheta;
+std::vector<model> objects;
+
+glm::mat4 transforms;
+glm::mat4 nyDepthMVP;
+glm::mat4 nyMVP;
+/*------------------------------------------------*/
 
 int main( int argc, char* argv[] ){
     gEngine = new sgct::Engine( argc, argv );
@@ -190,6 +198,13 @@ int main( int argc, char* argv[] ){
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
+
+    //SHADOWMAP
+    sgct::SGCTSettings::instance()->setUseDepthTexture(true);
+    sgct::SGCTSettings::instance()->setUseFBO(true);
+    myBuffer = new sgct_core::OffScreenBuffer;
+
+
 #if __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
         delete gEngine;
@@ -214,64 +229,109 @@ int main( int argc, char* argv[] ){
         return EXIT_FAILURE;
     }
 #endif
-    
-    resetToCurrentTime();   // Starts with current date
+    resetToCurrentTime();
 
-    gEngine->render();      // Main loop
+    // Main loop
+    gEngine->render();
 
-    delete gEngine;         // Clean up
+    // Clean up
+    delete gEngine;
 
-    exit( EXIT_SUCCESS );   // Exit program
+    // Exit program
+    exit( EXIT_SUCCESS );
 
     return( 0 );
 }
 
 void myInitOGLFun(){
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
-    sgct::TextureManager::instance()->setAnisotropicFilterSize(4.0f);
+    sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
 
     /*----------------OBJECTS AND TEXTURES--------------*/
-    glEnable(GL_TEXTURE_2D);
-    sgct::TextureManager::instance()->loadTexure("box", "texture/box.png", true);
-    box.readOBJ("mesh/box.obj");
 
+    // OBJECTS TO SKY
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(10.0f, 80);
 
-    sgct::TextureManager::instance()->loadTexure("landscape", "texture/landscape2.png", true);
-    landscape.readOBJ("mesh/landscape2.obj");
-
     skyDome.createSphere(5.0f, 100);
+    int x, y =0;
+    gEngine->getActiveViewportSize(x, y);
+    sgct_utils::SGCTDome* newDome = new sgct_utils::SGCTDome(500, x/y, 100, 20, 0.2f);
 
-    /*-----------------------------------------------------*/
+    // OBJECTS TO SCENE
+    //Transformations from origo. ORDER MATTERS!
+    landscape.readOBJ("mesh/landscape2.obj", "texture/landscape2.png");
+    landscape.translate(0.0f, -20.0f, 0.0f);
+    landscape.scale(1.0f, 1.0f, 1.0f);
+    objects.push_back(landscape);
 
-    /*----------------------SHADOWMAP----------------------*/
-    // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-     glGenFramebuffers(1, &FramebufferName);
-     glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    box.readOBJ("mesh/box.obj", "texture/box.png");
+    box.translate(0.0f, 0.0f, -5.0f);
+    box.scale(2.0f, 2.0f, 2.0f);
+    //objects.push_back(box);
 
-     // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-     glGenTextures(1, &depthTexture);
-     glBindTexture(GL_TEXTURE_2D, depthTexture);
-     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+    /*----------------------------------------------------------*/
 
-     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+    /*------------------------SHADOWMAP-------------------------*/
 
-     glDrawBuffer(GL_NONE); // No color buffer is drawn to.
+	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
+	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
+	{
+		shadow tmpBuffer;
+		buffers.push_back( tmpBuffer );
+	}
+	sgct::MessageHandler::instance()->print("Number of buffers: %d\n", buffers.size());
 
-     // Always check that our framebuffer is ok
-     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-     { std::cout << "Frame Buffer in bad state" << std::endl;  }
-    /*------------------------------------------------------*/
+	for(unsigned int i=0; i < buffers.size(); i++)
+	{
+        GLint fb_width, fb_height = 0;
+        sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(i);
+		winPtr->getDrawFBODimensions(fb_width, fb_height);
+        buffers[i].createFBOs(gEngine, fb_width, fb_height);
 
-    /*----------------------SHADERS-------------------------*/
+        //myBuffer->createFBO(fb_width, fb_height);
+        //myBuffer->attachDepthTexture(buffers[i].shadowTexture);
+        //winPtr->getFrameBufferTexture(i); //Använda denna istället?
+    }
+
+	//Initialize Shader depthShadowmap
+    sgct::ShaderManager::instance()->addShaderProgram( "depthShadowmap", "shaders/depthShadow.vert", "shaders/depthShadow.frag" );
+    sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
+
+    depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "depthMVP" );
+    texID_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "shadowMap" );
+    glUniform1i( texID_Loc, 0 );
+
+    fxNearLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "near" );
+    fxFarLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "far" );
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+//    sgct::ShaderProgram * sp;
+//
+//	fx.init("depthShadowmap", "shaders/depthShadow.vert", "shaders/depthShadow.frag");
+//	fx.setUpdateUniformsFunction( updatePassShadow );
+//	sp = fx.getShaderProgram();
+//	sp->bind();
+//        depthMVP_Loc = sp->getUniformLocation( "depthMVP ");
+//        texID_Loc = sp->getUniformLocation( "shadowMap" );
+//		fxCTexLoc = sp->getUniformLocation( "cTex" );
+//		fxDTexLoc = sp->getUniformLocation( "dTex" );
+//		fxNearLoc = sp->getUniformLocation( "near" );
+//		fxFarLoc = sp->getUniformLocation( "far" );
+//	sp->unbind();
+//	gEngine->addPostFX( fx );
+//
+//	//if( gEngine->getNumberOfWindows() > 1 )
+//	//	gEngine->getWindowPtr(1)->setUsePostFX( false );
+
+
+    /*-----------------------------------------------------------*/
+
+
+    /*---------------------SHADERS-----------------------*/
+
     //Initialize Shader scene (simple)
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
@@ -289,13 +349,6 @@ void myInitOGLFun(){
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
-    //Initialize Shader shadowmap (shadow)
-    sgct::ShaderManager::instance()->addShaderProgram( "shadowmap", "shaders/shadow.vert", "shaders/shadow.frag" );
-    sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
-
-    depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "shadowmap").getUniformLocation( "depthMVP" );
-
-    sgct::ShaderManager::instance()->unBindShaderProgram();
 
     //Initialize Shader sky (sky)
     sgct::ShaderManager::instance()->addShaderProgram( "sky", "shaders/sky.vert", "shaders/sky.frag" );
@@ -307,12 +360,25 @@ void myInitOGLFun(){
     Tex_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "Tex" );
     Glow_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "glow" );
     SunColor_Loc_S = sgct::ShaderManager::instance()->getShaderProgram( "sky").getUniformLocation( "colorSky" );
-    glUniform1i( Glow_Loc_S, 2 );
-    glUniform1i( SunColor_Loc_S, 1 );
     glUniform1i( Tex_Loc_S, 0 );
+    glUniform1i( SunColor_Loc_S, 1 );
+    glUniform1i( Glow_Loc_S, 2 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
     /*---------------------------------------------------------*/
+}
+
+void updatePassShadow()
+{
+//	glActiveTexture(GL_TEXTURE1);
+//	glEnable(GL_TEXTURE_2D);
+//	glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
+//	glUniform1i( fxCTexLoc, 0 );
+//	glUniform1i( fxDTexLoc, 1 );
+//	glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
+//	glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
+//	//glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP)); //Hur göra med matriserna (allt ej textur)
+
 }
 
 void myPreSyncFun(){
@@ -346,7 +412,7 @@ void myPreSyncFun(){
         bView = glm::inverse(glm::mat3(ViewRotateX)) * glm::vec3(0.0f, 0.0f, 1.0f);
 
         glm::vec3 right = glm::cross(bView, up);
-       
+
         glm::mat4 ViewRotateY = glm::rotate(
                                             glm::mat4(1.0f),
 											tiltRot,
@@ -393,8 +459,10 @@ void myPreSyncFun(){
 
         //0. Translate to eye height of a person
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
-        
+
         xform.setVal( result );
+
+        //sgct_core::ClusterManager::instance()->getDefaultUserPtr()->setTransform(result);
     }
 }
 
@@ -409,6 +477,7 @@ void myPostSyncPreDrawFun(){
 
     if( reloadShader.getVal() )
     {
+        //Call shader-reload senare
         sgct::ShaderProgram sp = sgct::ShaderManager::instance()->getShaderProgram( "scene" );
         sp.reload();
 
@@ -417,7 +486,7 @@ void myPostSyncPreDrawFun(){
 
         MVP_Loc = sp.getUniformLocation( "MVP" );
         NM_Loc = sp.getUniformLocation( "NM" );
-        depthMVP_Loc = sp.getUniformLocation( "depthMVP" );
+        depthBiasMVP_Loc = sp.getUniformLocation( "depthBiasMVP" );
         sColor_Loc = sp.getUniformLocation("sunColor");
         lDir_Loc = sp.getUniformLocation("lightDir");
         Amb_Loc = sp.getUniformLocation("fAmbInt");
@@ -427,7 +496,6 @@ void myPostSyncPreDrawFun(){
         glUniform1i( shadowmap_Loc, 1);
 
         sp.unbind();
-        reloadShader.setVal(false);
 
         sgct::ShaderProgram skySp = sgct::ShaderManager::instance()->getShaderProgram( "sky" );
         skySp.reload();
@@ -446,12 +514,30 @@ void myPostSyncPreDrawFun(){
         glUniform1i( Tex_Loc_S, 0 );
 
         skySp.unbind();
+
+        //fx.getShaderProgram()->reload();
+
         reloadShader.setVal(false);
     }
+
+    //Fisheye cubemaps are constant size
+	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
+	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
+		if( gEngine->getWindowPtr(i)->isWindowResized() && !gEngine->getWindowPtr(i)->isUsingFisheyeRendering() )
+		{
+			buffers[i].resizeFBOs();
+
+			GLint fb_width, fb_height = 0;
+            sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(i);
+            winPtr->getDrawFBODimensions(fb_width, fb_height);
+			//myBuffer->resizeFBO(fb_width, fb_height);
+			break;
+		}
 }
 
 void myDrawFun(){
     ////fuLhaxX
+
     oneSecondPassed.setVal(false);
     
     if( timeIsTicking.getVal() )
@@ -469,148 +555,177 @@ void myDrawFun(){
             addSecondToTime();
         }
     }
-    /////
-    
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    ///////////
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
+    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
-
-    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
+
+
+    /*------------------SUNPOSITION-----------------------*/
 
     // Set light properties
     float fSunDis = 800;
 
-    //float fSunAngleTheta = 90.0f * 3.1415/180.0; //Degrees Celsius to radians
-    
-    calcSunPosition();      // Calculates the suns position and angle with current time
-    
+    calcSunPosition();
+
     if( oneSecondPassed.getVal() ){
         std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
         std::cout<<"PHI: " << fSunAnglePhi << std::endl;
     }
-    
-    float fSine = sin(fSunAngleTheta);
+
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
-    // We'll change color of skies depending on sun's position
-    glClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //Calculate Sun color and Ambient light
-    float fAmb = 0.2f; //Initialize to low for debugging purposes
-    glm::vec4 sColor = glm::vec4(0.5f, 0.5f, 0.5f, 0.5f); //Initialize to low for debugging purposes
-    
-    if(fSunAngleTheta >= 30.0f*3.1415/180.0 && fSunAngleTheta <= 150.0f*3.1415/180.0){ //DAY
-        sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        fAmb = 0.8f;
-    }
-    else if(fSunAngleTheta <= 0.0f*3.1415/180.0 || fSunAngleTheta >= 180.0f*3.1415/180.0){ //NIGHT
-        sColor = glm::vec4(110.0f/256.0f, 40.0f/256.0f, 189.0f/256.0f, 1.0f);
-        fAmb = 0.3f;
-    }
-    else{ // DAWN/DUSK
-        sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
-        fAmb = 0.6f;
-    }
+    calcSkyColor(fSunAnglePhi, fAmb, sColor);
 
     glm::vec3 lDir = glm::normalize(vSunPos);
 
-    /*------------------SHADOW MAP------------------*/
-/*    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-    glViewport(0,0,1024,1024); // Render on the whole framebuffer
+    /*---------------------------------------------*/
 
-    glm::vec3 lightInvDir = lDir;
+    /*------------------SHADOW MAP------------------*/
+    //get a pointer to the current window
+	sgct::SGCTWindow * winPtr = gEngine->getActiveWindowPtr();
+	unsigned int index = winPtr->getId();
+	winPtr->getFBOPtr()->unBind();
+	//myBuffer->bind();
+
 
     // Compute the MVP matrix from the light's point of view
     glm::mat4 depthProjectionMatrix = glm::ortho<float>(-100,100,-100,100,-100,200);
-    glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+    glm::mat4 depthViewMatrix = glm::lookAt(lDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
     glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0,    0.0, 0.5, 0.0, 0.0,    0.0, 0.0, 0.5, 0.0,    0.5, 0.5, 0.5, 1.0);
-    glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+    //glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * scene_mat;
 
-    sgct::ShaderManager::instance()->bindShaderProgram( "shadowmap" );
+    glEnable(GL_DEPTH_TEST);
+    //glDepthFunc(GL_LESS);
+    glDepthFunc(GL_ALWAYS);
 
-    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, &depthMVP[0][0]);
+    for(unsigned int i=0; i < buffers.size(); i++)
+	{
+        //Bind current framebuffer
+        buffers[i].shadowpass();
 
-    // HA MED ALLA TRANSFORMATIONER? MÅSTE STÄMMA ÖVERENS MED SCENE-SHADER
-    glm::mat4 nyDepthMVP = depthMVP;
-    nyDepthMVP = glm::translate(nyDepthMVP, glm::vec3(0.0f, -20.0f, 0.0f));
-    nyDepthMVP = glm::scale(nyDepthMVP, glm::vec3(1.0f, 1.0f, 1.0f));
-    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-    landscape.render();
+        //get viewport data and set the viewport
+        const int * coords = gEngine->getActiveViewportPixelCoords();
+        glViewport( coords[0], coords[1], coords[2], coords[3] );
 
-    nyDepthMVP = depthMVP;
-    nyDepthMVP = glm::translate(nyDepthMVP, glm::vec3(0.0f, 0.0f, -5.0f));
-    nyDepthMVP = glm::scale(nyDepthMVP, glm::vec3(2.0f, 2.0f, 2.0f));
-    glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-    box.render();
 
-    sgct::ShaderManager::instance()->unBindShaderProgram();
+        sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
-    // Render to the screen
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
+        glUniform1i( texID_Loc, 0 );
+        glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
+        glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
+
+        std::vector<model>::iterator it;
+        for(it = objects.begin(); it != objects.end(); ++it)
+        {
+            nyDepthMVP = depthMVP * (*it).transformations;
+            //nyDepthMVP = depthMVP;
+
+            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+
+            (*it).drawToDepthBuffer();
+
+        }
+
+            //nyDepthMVP = depthMVP * landscape.transformations;
+//            nyDepthMVP = depthMVP;
+//            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+//            landscape.drawToDepthBuffer();
+//
+//            //nyDepthMVP = depthMVP * box.transformations;
+//            nyDepthMVP = depthMVP;
+//            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+//            box.drawToDepthBuffer();
+
+
+        sgct::ShaderManager::instance()->unBindShaderProgram();
+
+        glDisable(GL_CULL_FACE);
+
+
+    }
+    //Unbind the framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0,0,1024,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
+    //myBuffer->unBind();
+    winPtr->getFBOPtr()->bind();
+    /*------------------------------------------------*/
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    // Clear the screen
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-*/
-    /*------------------------------------------------*/
 
     /*------------------SCENE SHADER------------------*/
     //Bind Shader scene
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
+
+    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0,    0.0, 0.5, 0.0, 0.0,    0.0, 0.0, 0.5, 0.0,    0.5, 0.5, 0.5, 1.0);
+    glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
 
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &NM[0][0]);
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
     glUniform3fv(lDir_Loc, 1, &lDir[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
-    //glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
+    glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
+    const int * coords = gEngine->getActiveViewportPixelCoords();
 
-    //LANDSCAPE
-    glm::mat4 NyMVP = MVP;
-        //Transformations from origo. ORDER MATTERS!
-        NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, -20.0f, 0.0f));
-        NyMVP = glm::scale(NyMVP, glm::vec3(1.0f, 1.0f, 1.0f));
+    //Render objects
+    std::vector<model>::iterator it;
+    for(it = objects.begin(); it != objects.end(); ++it)
+    {
 
-        //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glViewport( coords[0], coords[1], coords[2], coords[3] );
+
+        nyMVP = MVP * (*it).transformations;
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
+
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("landscape"));
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId((*it).mTextureID));
         glUniform1i(Tex_Loc, 0);
-        //glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, depthTexture);
-		//glUniform1i(shadowmap_Loc, 1);
-        landscape.render();
 
-    //BOX
-    NyMVP = MVP;
-        //Transformations from origo. ORDER MATTERS!
-        NyMVP = glm::translate(NyMVP, glm::vec3(0.0f, 0.0f, -5.0f));
-        NyMVP = glm::scale(NyMVP, glm::vec3(2.0f, 2.0f, 2.0f));
+        buffers[index].setShadowTex(index, shadowmap_Loc);
 
-        //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(NyMVP));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("box"));
-        glUniform1i(Tex_Loc, 0);
-        //glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, depthTexture);
-		//glUniform1i(shadowmap_Loc, 1);
-        box.render();
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture());
+//        glUniform1i(shadowmap_Loc, 1);
+
+        (*it).render();
+    }
+
+//        glViewport( coords[0], coords[1], coords[2], coords[3] );
+//
+//        nyMVP = MVP * landscape.transformations;
+//        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(landscape.mTextureID));
+//        glUniform1i(Tex_Loc, 0);
+//        buffers[index].setShadowTex(index, shadowmap_Loc);
+//        landscape.render();
+//
+//
+//        glViewport( coords[0], coords[1], coords[2], coords[3] );
+//
+//        nyMVP = MVP * box.transformations;
+//        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(box.mTextureID));
+//        glUniform1i(Tex_Loc, 0);
+//        buffers[index].setShadowTex(index, shadowmap_Loc);
+//        //box.render();
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
     /*----------------------------------------------*/
@@ -624,13 +739,12 @@ void myDrawFun(){
     glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
 
     //SUN
-    NyMVP = MVP;
+    nyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
-        //NyMVP = glm::translate(NyMVP, sunPosition);
-        NyMVP = glm::translate(NyMVP, vSunPos);
+        nyMVP = glm::translate(nyMVP, vSunPos);
 
         //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
         glUniform1i(Tex_Loc, 0);
@@ -638,11 +752,11 @@ void myDrawFun(){
 
 /* SKIPPAR DENNA SÅ LÄNGE
     //SKYDOME
-    NyMVP = MVP;
+    nyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
 
         //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(NyMVP));
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
         //glBindTexture(GL_TEXTURE_2D, 0);
         //glUniform1i(Tex_Loc, 0);
         skyDome.render();
@@ -657,12 +771,6 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeObj( &xform );
     sgct::SharedData::instance()->writeDouble( &curr_time );
     sgct::SharedData::instance()->writeBool( &reloadShader );
-    sgct::SharedData::instance()->writeBool( &wireframe );
-    sgct::SharedData::instance()->writeBool( &info );
-    sgct::SharedData::instance()->writeBool( &stats );
-    sgct::SharedData::instance()->writeBool( &takeScreenshot );
-    sgct::SharedData::instance()->writeBool( &useTracking );
-    sgct::SharedData::instance()->writeInt( &stereoMode );
 
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
@@ -675,12 +783,6 @@ void myDecodeFun(){
     sgct::SharedData::instance()->readObj( &xform );
     sgct::SharedData::instance()->readDouble( &curr_time );
     sgct::SharedData::instance()->readBool( &reloadShader );
-    sgct::SharedData::instance()->readBool( &wireframe );
-    sgct::SharedData::instance()->readBool( &info );
-    sgct::SharedData::instance()->readBool( &stats );
-    sgct::SharedData::instance()->readBool( &takeScreenshot );
-    sgct::SharedData::instance()->readBool( &useTracking );
-    sgct::SharedData::instance()->readInt( &stereoMode );
 
     //GUI
     sgct::SharedData::instance()->readBool( &timeIsTicking );
@@ -702,8 +804,14 @@ void myCleanUpFun(){
     if(vertexArray)
         glDeleteVertexArrays(1, &vertexArray);
 
-    	glDeleteFramebuffers(1, &FramebufferName);
-    	glDeleteTextures(1, &depthTexture);
+    //glDeleteFramebuffers(1, &myFrameBuffer);
+    //glDeleteTextures(1, &depthTexture);
+    for(unsigned int i=0; i < buffers.size(); i++)
+	{
+        buffers[i].clearBuffers();
+    }
+    delete myBuffer;
+    myBuffer = NULL;
 }
 
 void keyCallback(int key, int action){
@@ -844,7 +952,7 @@ void calcSunPosition(){
     SpiceDouble srfvec[3];
     SpiceDouble trgepc;
     SpiceDouble angle;
-    
+
     SpiceDouble solar;
     SpiceDouble emissn;
     SpiceDouble sslemi;
@@ -855,15 +963,14 @@ void calcSunPosition(){
     SpiceDouble emission;
 
     //convert planetocentric r/lon/lat to Cartesian 3-vector
+
     ourLon = ourLon * rpd_c();
     ourLat = ourLat * rpd_c();
-    
-    //Convert our latitude and longitude coords to rectangular coords
+
     latrec_c( r, ourLon, ourLat, ourPosition );
-    
-    //Creates a string from current date
+
     std::string tempDate = std::to_string( currentTime[YEAR] ) + " " + std::to_string( currentTime[MONTH] ) + " " + std::to_string( currentTime[DAY] ) + " " + std::to_string( currentTime[HOUR] )  + ":" + std::to_string( currentTime[MINUTE] ) + ":" + std::to_string( currentTime[SECOND] );
-    
+
     char *cstr = new char[tempDate.length() + 1];
     strcpy(cstr, tempDate.c_str());
 
@@ -881,23 +988,21 @@ void calcSunPosition(){
 
     //Calculate Zenit point on earth
     subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
-    
+
     //Calculate suns emission angle
     ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
 
     //fSunAnglePhi = 3.1415/2 - emission;
-    
+
     SpiceDouble sunPointLon = 0;    // Longitude of zenit
     SpiceDouble sunPointLat = 0;    // Latitude of zenit
-    
-    //Rectangular coords to latitudinal and longitudinal coords
+
     reclat_c(&sunPointOnEarth, &r, &sunPointLon, &sunPointLat);
 
-    fSunAnglePhi = 3.1415/2 - (ourLat - sunPointLat);
-    
+    fSunAnglePhi = 3.1415/2 - (ourLat-sunPointLat);
+
     fSunAngleTheta = ourLon - sunPointLon;
-    
-    
+
 }
 
 void addSecondToTime(){
@@ -959,3 +1064,33 @@ void addSecondToTime(){
         }
     }
 }
+
+void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
+
+
+    float fSine = sin(fSunAnglePhi);
+
+    // We'll change color of skies depending on sun's position
+    gEngine->setClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if(fSunAnglePhi >= 30.0f*3.1415/180.0 && fSunAnglePhi <= 150.0f*3.1415/180.0) //DAY
+    {
+        sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        fAmb = 0.8f;
+    }
+    else if(fSunAnglePhi <= 0.0f*3.1415/180.0 || fSunAnglePhi >= 180.0f*3.1415/180.0) //NIGHT
+    {
+        sColor = glm::vec4(110.0f/256.0f, 40.0f/256.0f, 189.0f/256.0f, 1.0f);
+        fAmb = 0.3f;
+    }
+    else // DAWN/DUSK
+    {
+        sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        fAmb = 0.6f;
+    }
+
+}
+
+
+
