@@ -136,7 +136,7 @@ void externalControlStatusCallback(bool connected);
 sgct::SharedBool timeIsTicking(true);
 sgct::SharedInt timeSpeed = 1;
 sgct::SharedString date;
-sgct::SharedBool writeOut = false;
+sgct::SharedBool oneSecondPassed(false);
 /*---------------------------------------*/
 
 /*---------------OTHER VARIABLES--------------*/
@@ -402,7 +402,6 @@ void myPreSyncFun(){
             mouseDx = 0.0;
         }
 
-
         //MOUSE AND KEYBOARD INPUT
         static float panRot = 0.0f;
         panRot += (static_cast<float>(mouseDx) * rotationSpeed * static_cast<float>(gEngine->getDt()));
@@ -475,11 +474,11 @@ void myPreSyncFun(){
 }
 
 void myPostSyncPreDrawFun(){
-    if( timeIsTicking.getVal() == true && writeOut.getVal() == true){
+    if( timeIsTicking.getVal() == true && oneSecondPassed.getVal() == true){
         std::cout << "Time is ticking" << std::endl;
     }
 
-    else if( timeIsTicking.getVal() == false && writeOut.getVal() == true ){
+    else if( timeIsTicking.getVal() == false && oneSecondPassed.getVal() == true ){
         std::cout << "Time is paused" << std::endl;
     }
 
@@ -546,24 +545,19 @@ void myPostSyncPreDrawFun(){
 
 void myDrawFun(){
     ////fuLhaxX
-        writeOut = false;
-        if( timeIsTicking.getVal() == true ){
-            timeCount++;
-        }
 
-        if(timeCount == 60){
-            writeOut.setVal(true);
-            timeCount = 0;
-        }
-
-    if( timeIsTicking.getVal() && writeOut.getVal()){
-        for(int i = 0; i < timeSpeed.getVal(); i++){
-            addSecondToTime();
-        }
+    oneSecondPassed.setVal(false);
+    if( timeIsTicking.getVal() ){
+        timeCount++;
+        addSecondToTime();
     }
 
-    if(writeOut.getVal()){
-    std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+    if( timeCount == 60 ){
+        oneSecondPassed.setVal(true);
+
+        std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+
+        timeCount = 0;
     }
     ///////////
 
@@ -575,13 +569,19 @@ void myDrawFun(){
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
+
     /*------------------SUNPOSITION-----------------------*/
+
     // Set light properties
     float fSunDis = 800;
 
     calcSunPosition();
-    //std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
-    //std::cout<<"PHI: " << fSunAnglePhi << std::endl;
+
+    if( oneSecondPassed.getVal() ){
+        std::cout<<"THETA: "<< fSunAngleTheta << std::endl;
+        std::cout<<"PHI: " << fSunAnglePhi << std::endl;
+    }
+
     glm::vec3 vSunPos(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
     calcSkyColor(fSunAnglePhi, fAmb, sColor);
@@ -786,7 +786,7 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
     sgct::SharedData::instance()->writeInt( &timeSpeed );
-    sgct::SharedData::instance()->writeBool( &writeOut );
+    sgct::SharedData::instance()->writeBool( &oneSecondPassed );
 }
 
 void myDecodeFun(){
@@ -798,7 +798,7 @@ void myDecodeFun(){
     sgct::SharedData::instance()->readBool( &timeIsTicking );
     sgct::SharedData::instance()->readString( &date );
     sgct::SharedData::instance()->readInt( &timeSpeed );
-    sgct::SharedData::instance()->readBool( &writeOut );
+    sgct::SharedData::instance()->readBool( &oneSecondPassed );
 }
 
 /*!
@@ -949,8 +949,8 @@ void resetToCurrentTime() {
 void calcSunPosition(){
 
     SpiceDouble r = 6371.0;         // Earth radius [km]
-    SpiceDouble lon = 16.192421;    // Longitude of Nrkpg
-    SpiceDouble lat = 58.587745;    // Latitude of Nrkpg
+    SpiceDouble ourLon = 16.192421;    // Longitude of Nrkpg
+    SpiceDouble ourLat = 58.587745;    // Latitude of Nrkpg
 
     SpiceChar *abcorr;
     SpiceChar *obsrvr;
@@ -966,14 +966,21 @@ void calcSunPosition(){
     SpiceDouble trgepc;
     SpiceDouble angle;
 
-    //#define   STRLEN    32
-    //SpiceChar UTCDate[STRLEN];
-
-    //Prompts the user to input date in format YEAR MONTH DAY HOUR:MIN:SEC
-    //prompt_c("Date: ", STRLEN, UTCDate);
+    SpiceDouble solar;
+    SpiceDouble emissn;
+    SpiceDouble sslemi;
+    SpiceDouble sslphs;
+    SpiceDouble sslsol;
+    SpiceDouble ssolpt[3];
+    SpiceDouble phase;
+    SpiceDouble emission;
 
     //convert planetocentric r/lon/lat to Cartesian 3-vector
-    latrec_c( r, lon * rpd_c(), lat * rpd_c(), ourPosition );
+
+    ourLon = ourLon * rpd_c();
+    ourLat = ourLat * rpd_c();
+
+    latrec_c( r, ourLon, ourLat, ourPosition );
 
     std::string tempDate = std::to_string( currentTime[YEAR] ) + " " + std::to_string( currentTime[MONTH] ) + " " + std::to_string( currentTime[DAY] ) + " " + std::to_string( currentTime[HOUR] )  + ":" + std::to_string( currentTime[MINUTE] ) + ":" + std::to_string( currentTime[SECOND] );
 
@@ -992,141 +999,83 @@ void calcSunPosition(){
     abcorr = "LT+S";
     ref = "iau_earth";
 
-    /*
-     Provides you with the coordinates on the Earth where the Sun is directly above
-              |-----------------------INPUT------------------------|  |---------OUTPUT-----------|
-     subslr_c("method", "target", "et", "fixref", "abcorr", "obsrvr", "spoint", "trgepc", "srfvec");
-     method: Is the name of the computation method, use "Near point: ellipsoid"
-     target: Is the name of the target body
-     et:     Is the epoch, time stuff...
-     fixref: Is the name of the body-fixed, body-centered reference frame associated with the target body
-     abcorr: Is the aberration correction to be used, use "LT+S"
-     obsrvr: Is the name of the observing body.  This is typically a spacecraft, the earth, or a surface point on the earth.
-     spoint: Is a surface point on the target body, expressed in Cartesian coordinates
-     trgepc: Is the "sub-solar point epoch."
-     srfvec: Is the vector from the observer's position at `et' to the aberration-corrected (or optionally, geometric) position of `spoint'
-            -srfvec is given in km
-     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/subslr.html
-
-               |----------------------------INPUT---------------------| |-----------OUTPUT------------|    */
+    //Calculate Zenit point on eart
     subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
 
-    /*
-     Return the position of a target body relative to an observing
-     body, optionally corrected for light time (planetary aberration)
-     and stellar aberration.
-     ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkpos_c.html
+    //Calculate suns emission angle
+    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
 
-             |------------INPUT-------------| |----OUTPUT-----|    */
-    spkpos_c(target, et, ref, abcorr, obsrvr, sunPosition, &lt);
+    //fSunAnglePhi = 3.1415/2 - emission;
 
-  /*  std::cout << "Our position on earth: " << ourPosition[0] << ", " << ourPosition[1] << ", " << ourPosition[2] << std::endl;
-    std::cout << "Suns position relative to earth: " << sunPosition[0] << ", " << sunPosition[1] << ", " << sunPosition[2] << std::endl;
-    std::cout << "Suns point on earth (Zenit): " << sunPointOnEarth[0] << ", " << sunPointOnEarth[1] << ", " << sunPointOnEarth[2] << std::endl;
-*/
-    float a, b, xd1, yd1, zd1, xd2, yd2, zd2;
+    SpiceDouble sunPointLon = 0;    // Longitude of zenit
+    SpiceDouble sunPointLat = 0;    // Latitude of zenit
 
-    //Normalized vector from earth to sun (need to change sign?)
-    SpiceDouble sunVec[3];
-    SpiceDouble mag;
-    unorm_c(sunPosition, sunVec, &mag);
+    reclat_c(&sunPointOnEarth, &r, &sunPointLon, &sunPointLat);
 
-    //CALCULATE DISTANCE BETWEEN US AND THE ZENIT POINT
-    SpiceDouble posVecTemp[3];
-    posVecTemp[0] = ourPosition[0]-sunPointOnEarth[0];
-    posVecTemp[1] = ourPosition[1]-sunPointOnEarth[1];
-    posVecTemp[2] = ourPosition[2]-sunPointOnEarth[2];
+    fSunAnglePhi = 3.1415/2 - (ourLat-sunPointLat);
 
-    SpiceDouble posVec[3];
-    unorm_c(posVecTemp, posVec, &mag);
+    fSunAngleTheta = ourLon - sunPointLon;
 
-
-    //CALCULATE ANGLE
-    angle = acos(vdot_c(posVec, sunVec));
-
-    //std::cout << "Sun angle in radians: " << angle << std::endl;
-
-    //Convert the angles to degrees
-    //angle *= dpr_c();
-
-    target = "EARTH";
-    obsrvr = "SUN";
-    abcorr = "LT+S";
-    ref = "iau_earth";
-
-    SpiceDouble solar;
-    SpiceDouble emissn;
-    SpiceDouble sscpt[3];
-    SpiceDouble sscsol;
-    SpiceDouble sslemi;
-    SpiceDouble sslphs;
-    SpiceDouble sslsol;
-    SpiceDouble ssolpt[3];
-    SpiceDouble sscphs;
-    SpiceDouble sscemi;
-
-    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, sscpt, &trgepc, srfvec, &sscphs, &sscsol, &sscemi );
-
-    fSunAnglePhi = sscsol;
-    fSunAngleTheta = sscemi;
 }
 
 void addSecondToTime(){
-    bool leapYear = false;
-    if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) )
-    {
-        leapYear = true;
-    }
-
-    //Add Second
-    currentTime[SECOND] += 1;
-
-    //Add Minute
-    if ( currentTime[SECOND] >= 60 ) {
-        currentTime[MINUTE] += 1;
-        currentTime[SECOND] = 0;
-    }
-
-    //Add Hour
-    if ( currentTime[MINUTE] >= 60) {
-        currentTime[HOUR] += 1;
-        currentTime[MINUTE] = 0;
-    }
-
-    //Add Day
-    if ( currentTime[HOUR] >= 24 ) {
-        currentTime[DAY] += 1;
-        currentTime[HOUR] = 0;
-    }
-
-    //Add Month
-        //February and leap year
-        if (leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29) {
-            currentTime[MONTH] += 1;
-            currentTime[DAY] = 1;
-        }
-
-        else if (currentTime[MONTH] == 2 && currentTime[DAY] > 28)
+    for(int i = 0; i < timeSpeed.getVal(); i++){
+        bool leapYear = false;
+        if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) )
         {
-            currentTime[MONTH] += 1;
-            currentTime[DAY] = 1;
+            leapYear = true;
         }
 
-        else if( (currentTime[MONTH] == 4 || currentTime[MONTH] == 6 || currentTime[MONTH] == 9 ||
-                  currentTime[MONTH] == 11) && currentTime[DAY] > 30  ){
-            currentTime[MONTH] += 1;
-            currentTime[DAY] = 1;
+        //Add Second
+        currentTime[SECOND] += 1;
+
+        //Add Minute
+        if ( currentTime[SECOND] >= 60 ) {
+            currentTime[MINUTE] += 1;
+            currentTime[SECOND] = 0;
         }
 
-        else if(currentTime[DAY] > 31){
-            currentTime[MONTH] += 1;
-            currentTime[DAY] = 1;
+        //Add Hour
+        if ( currentTime[MINUTE] >= 60) {
+            currentTime[HOUR] += 1;
+            currentTime[MINUTE] = 0;
         }
 
-    //Add Year
-    if ( currentTime[MONTH] > 12 ) {
-        currentTime[YEAR] += 1;
-        currentTime[MONTH] = 1;
+        //Add Day
+        if ( currentTime[HOUR] >= 24 ) {
+            currentTime[DAY] += 1;
+            currentTime[HOUR] = 0;
+        }
+
+        //Add Month
+            //February and leap year
+            if (leapYear && currentTime[MONTH] == 2 && currentTime[DAY] > 29) {
+                currentTime[MONTH] += 1;
+                currentTime[DAY] = 1;
+            }
+
+            else if (currentTime[MONTH] == 2 && currentTime[DAY] > 28)
+            {
+                currentTime[MONTH] += 1;
+                currentTime[DAY] = 1;
+            }
+
+            else if( (currentTime[MONTH] == 4 || currentTime[MONTH] == 6 || currentTime[MONTH] == 9 ||
+                      currentTime[MONTH] == 11) && currentTime[DAY] > 30  ){
+                currentTime[MONTH] += 1;
+                currentTime[DAY] = 1;
+            }
+
+            else if(currentTime[DAY] > 31){
+                currentTime[MONTH] += 1;
+                currentTime[DAY] = 1;
+            }
+
+        //Add Year
+        if ( currentTime[MONTH] > 12 ) {
+            currentTime[YEAR] += 1;
+            currentTime[MONTH] = 1;
+        }
     }
 }
 
