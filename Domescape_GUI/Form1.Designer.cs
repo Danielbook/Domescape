@@ -178,7 +178,7 @@
             // 
             this.SpeedTrackBar.AutoSize = false;
             this.SpeedTrackBar.Location = new System.Drawing.Point(11, 213);
-            this.SpeedTrackBar.Maximum = 100000;
+            this.SpeedTrackBar.Maximum = 1000;
 			this.SpeedTrackBar.Minimum = 1;
 			this.SpeedTrackBar.Name = "SpeedTrackBar";
             this.SpeedTrackBar.Size = new System.Drawing.Size(600, 28);

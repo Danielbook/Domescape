@@ -3,15 +3,25 @@
 //  Domescape
 //
 //  Created by Daniel Böök on 2015-04-24.
+//  Modified by Adam Alsegård on 2015-05-14
 //  Heavily inspired by Stefan Gustavsons TNM061 TriangleSoup
 //
 
 #include "model.hpp"
 #include <string>
 #include "sgct.h"
+#include <iostream>
+#include <stdio.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+#include <algorithm>
+
 
 // Constructor: Create an object, init all to zero
 model::model() {
+
+	transformations = glm::mat4(1.0f);
+
     vao = 0;
     vertexbuffer = 0;
     indexbuffer = 0;
@@ -19,33 +29,13 @@ model::model() {
     indexarray = NULL;
     nverts = 0;
     ntris = 0;
+
 }
 
 // Destructor: Clean up after you
 model::~model() {
-    if(glIsVertexArray(vao)) {
-        glDeleteVertexArrays(1, &vao);
-    }
-    vao = 0;
 
-    if(glIsBuffer(vertexbuffer)) {
-        glDeleteBuffers(1, &vertexbuffer);
-    }
-    vertexbuffer = 0;
-
-    if(glIsBuffer(indexbuffer)) {
-        glDeleteBuffers(1, &indexbuffer);
-    }
-    indexbuffer = 0;
-
-    if(vertexarray) {
-        delete[] vertexarray;
-    }
-    if(indexarray) 	{
-        delete[] indexarray;
-    }
-    nverts = 0;
-    ntris = 0;
+    clean();
 };
 
 void model::clean() {
@@ -78,7 +68,7 @@ void model::clean() {
 /*
  * readObj(const char* filename)
  *
- * Load TriangleSoup geometry data from an OBJ file.
+ * Load model geometry data from an OBJ file.
  * The vertex array is on interleaved format. For each vertex, there
  * are 8 floats: three for the vertex coordinates (x, y, z), three
  * for the normal vector (n_x, n_y, n_z) and finally two for texture
@@ -89,7 +79,7 @@ void model::clean() {
  * Author: Stefan Gustavson (stegu@itn.liu.se) 2014.
  * This code is in the public domain.
  */
-void model::readOBJ(const char* filename) {
+void model::readOBJ(const char* filename, std::string texture) {
 
     FILE *objfile;
 
@@ -231,7 +221,7 @@ void model::readOBJ(const char* filename) {
     delete[] verts;
     delete[] normals;
     delete[] texcoords;
-//  delete[] objfile;
+    delete[] objfile;
 
     if(readerror) { // Delete corrupt data and bail out if a read error occured
         printError("Mesh read error","No mesh data generated");
@@ -284,7 +274,23 @@ void model::readOBJ(const char* filename) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    return;
+    /*------------------------NEW CODE-----------------------------*/
+
+	// Fix filename and texturename
+	std::string name = filename;
+	char chars[] = "/\-.";
+
+	for (unsigned int i = 0; i < strlen(chars); ++i)
+	{
+		// you need include <algorithm> to use general algorithms like std::remove()
+		name.erase (std::remove(name.begin(), name.end(), chars[i]), name.end());
+	}
+
+	mTextureID = name;
+
+	sgct::TextureManager::instance()->loadTexure(mTextureID, texture, true);
+
+	return;
 };
 
 /*
@@ -305,16 +311,16 @@ void model::readOBJ(const char* filename) {
  */
 
 void model::createSphere(float radius, int segments) {
-    
+
     int i, j, base, i0;
     float x, y, z, R;
     double theta, phi;
     int vsegs, hsegs;
     int stride = 8;
-    
+
     // Delete any previous content in the TriangleSoup object
     clean();
-    
+
     vsegs = segments;
     if (vsegs < 2) vsegs = 2;
     hsegs = vsegs * 2;
@@ -322,7 +328,7 @@ void model::createSphere(float radius, int segments) {
     ntris = hsegs + (vsegs-2) * hsegs * 2 + hsegs; // top + middle + bottom
     vertexarray = new float[nverts * 8];
     indexarray = new GLuint[ntris * 3];
-    
+
     // The vertex array: 3D xyz, 3D normal, 2D st (8 floats per vertex)
     // First vertex: top pole (+z is "up" in object local coords)
     vertexarray[0] = 0.0f;
@@ -368,7 +374,7 @@ void model::createSphere(float radius, int segments) {
             vertexarray[base+7] = 1.0f-(float)(j+1)/vsegs;
         }
     }
-    
+
     // The index array: triplets of integers, one for each triangle
     // Top cap
     for(i=0; i<hsegs; i++) {
@@ -396,15 +402,15 @@ void model::createSphere(float radius, int segments) {
         indexarray[base+3*i+1] = nverts-2-i;
         indexarray[base+3*i+2] = nverts-3-i;
     }
-    
+
     // Generate one vertex array object (VAO) and bind it
     glGenVertexArrays(1, &(vao));
     glBindVertexArray(vao);
-    
+
     // Generate two buffer IDs
     glGenBuffers(1, &vertexbuffer);
     glGenBuffers(1, &indexbuffer);
-    
+
     // Activate the vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Present our vertex coordinates to OpenGL
@@ -427,21 +433,42 @@ void model::createSphere(float radius, int segments) {
                           8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat))); // normals
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
                           8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat))); // texcoords
-    
+
     // Activate the index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
     // Present our vertex indices to OpenGL
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                  3*ntris*sizeof(GLuint), indexarray, GL_STATIC_DRAW);
-    
+
     // Deactivate (unbind) the VAO and the buffers again.
     // Do NOT unbind the buffers while the VAO is still bound.
     // The index buffer is an essential part of the VAO state.
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
+
 };
+
+
+void model::scale(float sx, float sy, float sz)
+{
+	glm::mat4 s = glm::scale(sx,sy,sz);
+	transformations = s * transformations;
+};
+
+void model::translate(float tx, float ty, float tz)
+{
+	glm::mat4 t = glm::translate(tx,ty,tz);
+	transformations = t * transformations;
+};
+
+void model::rotate(float ang, float rx, float ry, float rz)
+{
+	glm::vec3 v = glm::vec3(rx,ry,rz);
+	glm::mat4 r = glm::rotate(ang, v);
+	transformations = r * transformations;
+};
+
 
 /* Render the geometry in a TriangleSoup object */
 void model::render()
@@ -451,6 +478,44 @@ void model::render()
     //glDrawArrays(GL_TRIANGLES, 0, 3 * ntris );
     // (mode, vertex count, type, element array buffer offset)
     glBindVertexArray(0);
+
+};
+
+//It is what it sounds like!
+void model::drawToDepthBuffer()
+{
+
+    // Activate the vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    // Present our vertex coordinates to OpenGL
+    glBufferData(GL_ARRAY_BUFFER,
+                 8*nverts * sizeof(GLfloat), vertexarray, GL_STATIC_DRAW);
+
+    // Specify how many attribute arrays we have in our VAO
+    glEnableVertexAttribArray(0); // Vertex coordinates
+    glEnableVertexAttribArray(1); // Normals
+    glEnableVertexAttribArray(2); // Texture coordinates
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
+                          8*sizeof(GLfloat), (void*)0); // xyz coordinates
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
+                          8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat))); // normals
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
+                          8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat))); // texcoords
+
+	// Draw the triangles!
+	glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
+	//glDrawElements(GL_TRIANGLES, 3 * ntris, GL_UNSIGNED_INT, (void*)0);
+
+	//Unbind attributes and vertexbuffer
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+
 };
 
 /*

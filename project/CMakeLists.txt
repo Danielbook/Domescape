@@ -29,7 +29,11 @@ endif()
 add_executable(${APP_NAME}
 	main.cpp
 	model.cpp
-	model.hpp)
+	model.hpp
+	shadow.hpp
+	shadow.cpp
+	shader.cpp
+	shader.hpp)
 
 
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})
