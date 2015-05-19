@@ -150,12 +150,6 @@ sgct::SharedBool oneSecondPassed(false);
 /*---------------------------------------*/
 
 /*---------------OTHER VARIABLES--------------*/
-
-//Vad används dessa till?
-GLuint vertexArray = GL_FALSE;
-GLuint vertexPositionBuffer = GL_FALSE;
-GLuint texCoordBuffer = GL_FALSE;
-
 //SUN POSITION
 float fSunAnglePhi;
 float fSunAngleTheta;
@@ -198,8 +192,8 @@ int main( int argc, char* argv[] ){
     sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
     /*-----------------------------------------*/
 
-    /*------------------SPICE------------------*/
-    //load kernels
+    /*------------------SPICE-------------------*/
+    /*      Kernels needed for calculations     */
     furnsh_c( "kernels/naif0011.tls" ); //Is a generic kernel that you can use to get the positions of Earth and the Sun for various times
     furnsh_c( "kernels/de430.bsp" );    //Is a leapsecond kernel so that you get the accurate times
     furnsh_c( "kernels/pck00010.tpc" ); //Might also be needed
@@ -208,12 +202,10 @@ int main( int argc, char* argv[] ){
     for(int i=0; i<6; i++)
         dirButtons[i] = false;
 
-
     //SHADOWMAP
     sgct::SGCTSettings::instance()->setUseDepthTexture(true);
     sgct::SGCTSettings::instance()->setUseFBO(true);
     myBuffer = new sgct_core::OffScreenBuffer;
-
 
 #if __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
@@ -239,6 +231,7 @@ int main( int argc, char* argv[] ){
         return EXIT_FAILURE;
     }
 #endif
+    
     resetToCurrentTime();
 
     // Main loop
@@ -259,7 +252,6 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
 
     /*----------------OBJECTS AND TEXTURES--------------*/
-
     // OBJECTS TO SKY
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(10.0f, 80);
@@ -337,12 +329,10 @@ void myInitOGLFun(){
 //	//if( gEngine->getNumberOfWindows() > 1 )
 //	//	gEngine->getWindowPtr(1)->setUsePostFX( false );
 
-
     /*-----------------------------------------------------------*/
 
-
     /*---------------------SHADERS-----------------------*/
-
+    
     //Initialize Shader scene
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/scene.vert", "shaders/scene.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
@@ -376,6 +366,7 @@ void myInitOGLFun(){
     glUniform1i( Glow_Loc_S, 2 );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
+    
     /*---------------------------------------------------------*/
 }
 
@@ -466,11 +457,11 @@ void myPreSyncFun(){
 }
 
 void myPostSyncPreDrawFun(){
-    if( timeIsTicking.getVal() == true && oneSecondPassed.getVal() == true ){
+    if( timeIsTicking.getVal() && oneSecondPassed.getVal() ){
         std::cout << "Time is ticking" << std::endl;
     }
 
-    else if( timeIsTicking.getVal() == false && oneSecondPassed.getVal() == true ){
+    else if( !timeIsTicking.getVal() && oneSecondPassed.getVal() ){
         std::cout << "Time is paused" << std::endl;
     }
 
@@ -522,10 +513,8 @@ void myPostSyncPreDrawFun(){
 
     //Fisheye cubemaps are constant size
 	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
-	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
-	{
-		if( gEngine->getWindowPtr(i)->isWindowResized() && !gEngine->getWindowPtr(i)->isUsingFisheyeRendering() )
-		{
+	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++) {
+		if( gEngine->getWindowPtr(i)->isWindowResized() && !gEngine->getWindowPtr(i)->isUsingFisheyeRendering() ){
 			buffers[i].resizeFBOs();
 
 			//GLint fb_width, fb_height = 0;
@@ -533,26 +522,23 @@ void myPostSyncPreDrawFun(){
             //winPtr->getDrawFBODimensions(fb_width, fb_height);
 			//myBuffer->resizeFBO(fb_width, fb_height);
 			break;
-
 		}
     }
-
-
 }
 
 void myDrawFun(){
     ////fuLhaxX
 
-    oneSecondPassed.setVal(false);
+    oneSecondPassed.setVal(false);      // Assume this is false
 
-    if( timeIsTicking.getVal() )
+    if( timeIsTicking.getVal() )        // If time is ticking, add to timecounter
         timeCount++;
 
-    if( timeCount == 60 ){
+    if( timeCount == 60 ){              // 60Hz => this is true once every second
         oneSecondPassed.setVal(true);
         timeCount = 0;
     }
-    if( oneSecondPassed.getVal() ){
+    if( oneSecondPassed.getVal() ){     // If one second has passed
 
         std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
 
@@ -592,6 +578,7 @@ void myDrawFun(){
     /*---------------------------------------------*/
 
     /*------------------SHADOW MAP------------------*/
+    
     //get a pointer to the current window
 	sgct::SGCTWindow * winPtr = gEngine->getActiveWindowPtr();
 	unsigned int index = winPtr->getId();
@@ -649,6 +636,7 @@ void myDrawFun(){
 
     //myBuffer->unBind();
     winPtr->getFBOPtr()->bind();
+    
     /*------------------------------------------------*/
 
     glViewport( coords[0], coords[1], coords[2], coords[3] );
@@ -660,6 +648,7 @@ void myDrawFun(){
     glCullFace(GL_BACK);
 
     /*------------------SCENE SHADER------------------*/
+
     //Bind Shader scene
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
@@ -703,6 +692,7 @@ void myDrawFun(){
     /*----------------------------------------------*/
 
     /*------------------SKY SHADER------------------*/
+    
     //Bind Shader sky
     sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
 
@@ -734,7 +724,9 @@ void myDrawFun(){
         skyDome.render();
 */
     sgct::ShaderManager::instance()->unBindShaderProgram();
+   
     /*----------------------------------------------*/
+    
     glDisable( GL_CULL_FACE );
     glDisable( GL_DEPTH_TEST );
 }
@@ -769,13 +761,6 @@ void myDecodeFun(){
 	Shaders are deleted automatically when using shader manager
  */
 void myCleanUpFun(){
-    if(vertexPositionBuffer)
-        glDeleteBuffers(1, &vertexPositionBuffer);
-    if(texCoordBuffer)
-        glDeleteBuffers(1, &texCoordBuffer);
-    if(vertexArray)
-        glDeleteVertexArrays(1, &vertexArray);
-
     for(unsigned int i=0; i < buffers.size(); i++)
 	{
         buffers[i].clearBuffers();
@@ -1037,7 +1022,6 @@ void addSecondToTime(){
 }
 
 void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
-
 
     float fSine = sin(fSunAnglePhi);
 
