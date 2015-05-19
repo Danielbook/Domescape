@@ -343,8 +343,8 @@ void myInitOGLFun(){
 
     /*---------------------SHADERS-----------------------*/
 
-    //Initialize Shader scene (simple)
-    sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/simple.vert", "shaders/simple.frag" );
+    //Initialize Shader scene
+    sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/scene.vert", "shaders/scene.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
 
     MVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "scene").getUniformLocation( "MVP" );
