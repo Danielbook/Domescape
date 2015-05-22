@@ -27,7 +27,7 @@ public:
     void drawScene(glm::mat4 depthMVP, std::vector<model> objects);
 
     void clearBuffers();
-    void createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h);
+    void createFBOs(GLint fb_w, GLint fb_h);
     void resizeFBOs();
     void createTexture();
     void setShadowTex(GLint Loc);
@@ -40,8 +40,6 @@ public:
 
 
 private:
-
-    sgct::Engine* mEngine;
 
 	GLint width;
 	GLint height;

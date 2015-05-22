@@ -1,7 +1,7 @@
 #version 330 core
 
 uniform sampler2D Tex;
-uniform sampler2D shadowMap;
+uniform sampler2D shadowMap; //sampler2DShadow?
 uniform vec4 sunColor;
 uniform float fAmbInt;
 
@@ -13,11 +13,11 @@ in vec4 ShadowCoord;
 out vec4 color;
 
 
-float GetVisibility(sampler2D vShadowMap, vec4 vShadowCoord)
+float GetVisibility(vec4 vShadowCoord)
 {
     float visibility = 1.0;
 
-    if(texture( vShadowMap, vShadowCoord.xy ).z  <  vShadowCoord.z)
+    if(texture( shadowMap, vShadowCoord.xy ).z  <  vShadowCoord.z)
     {
 		visibility = 0.0;
 		float bias = 0.005;
@@ -25,7 +25,7 @@ float GetVisibility(sampler2D vShadowMap, vec4 vShadowCoord)
 
 		for(int i = 0; i < 16; i++)
 		{
-			float depth = texture(vShadowMap, vShadowCoord.st);
+			float depth = texture(shadowMap, vShadowCoord.st);
 
 			if(vShadowCoord.z - bias < depth)
 			{
@@ -57,9 +57,9 @@ void main()
 {
     float visibility = 0.0f;
 
-    visibility = GetVisibility(shadowMap, ShadowCoord);
-    //visibility = texture(shadowMap, (ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
-    //if(texture2D(shadowMap, ((shadowCoord.xy) / shadowCoord.w) + vec2(0, 0)).r >= shadowCoord.z / shadowCoord.w) visibility = 1;
+    visibility = GetVisibility(ShadowCoord);
+    //visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
+    //if(texture(shadowMap, ((shadowCoord.xy) / shadowCoord.w) + vec2(0, 0)).r >= shadowCoord.z / shadowCoord.w) visibility = 1;
     //visibility = CalcShadowFactor(lDir);
 
  //PHONG from TNM046

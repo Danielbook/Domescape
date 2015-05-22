@@ -23,10 +23,8 @@ shadow::~shadow()
 }
 
 //Initialize Framebuffers and shadowmap-texture
-void shadow::createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h)
+void shadow::createFBOs(GLint fb_w, GLint fb_h)
 {
-
-    mEngine = engine;
 
     fbo = -1;
     shadowTexture = -1;
@@ -44,7 +42,7 @@ void shadow::createFBOs(sgct::Engine* engine, GLint fb_w, GLint fb_h)
     // No color output in the bound framebuffer, only depth.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowTexture, 0);
     glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
+    //glReadBuffer(GL_NONE);
 
     //Does the GPU support current FBO configuration?
     if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE )
@@ -64,14 +62,14 @@ void shadow::createTexture()
     glGenTextures(1, &shadowTexture);
     glBindTexture(GL_TEXTURE_2D, shadowTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); //Sista -> GL_LINEAR?
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_LINEAR bra tsm med sampler2dShadow, inte Sampler2D -> GL_ NEAREST
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); //Behövs för Sampler2DShadow men inte debuggande :(
 
-	mEngine->checkForOGLErrors();
+	//mEngine->checkForOGLErrors();
 	//sgct::MessageHandler::instance()->print("%d target textures created.\n");
 
 	glDisable(GL_TEXTURE_2D);
@@ -91,7 +89,7 @@ void shadow::resizeFBOs()
 	clearBuffers();
 
 	//Create resized FBO
-	createFBOs(mEngine, W, H);
+	createFBOs(W, H);
 }
 
 
@@ -122,11 +120,11 @@ void shadow::setShadowTex( GLint Loc)
 void shadow::shadowpass()
 {
 
-    //glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT); // Stämmer detta?
-    //glEnable(GL_BACK);
+    //glCullFace(GL_FRONT); // Stämmer detta?
+    glCullFace(GL_BACK);
 
 }
 
