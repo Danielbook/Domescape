@@ -517,7 +517,7 @@ void model::drawToDepthBuffer()
 			3,                  // size
 			GL_FLOAT,           // type
 			GL_FALSE,           // normalized?
-			0,                  // stride
+			0,  // stride alt: 8*sizeof(GLfloat)
 			(void*)0            // array buffer offset
 		);
 
