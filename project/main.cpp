@@ -110,7 +110,7 @@ void updatePassShadow()
 //Flera object
 std::vector<class shadow> buffers;
 //Enkel lösning
-shadow myShadow;
+class shadow myShadow;
 //Sgct-lösning
 sgct_core::OffScreenBuffer *myBuffer;
 /*---------------------------------------------*/
