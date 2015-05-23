@@ -266,12 +266,12 @@ void myInitOGLFun(){
     landscape.readOBJ("mesh/landscape2.obj", "texture/landscape2.png");
     landscape.translate(0.0f, -20.0f, 0.0f);
     landscape.scale(1.0f, 1.0f, 1.0f);
-    objects.push_back(landscape);
+    objects.push_back( landscape );
 
     box.readOBJ("mesh/box.obj", "texture/box.png");
     box.translate(0.0f, 0.0f, -5.0f);
     box.scale(2.0f, 2.0f, 2.0f);
-    //objects.push_back(box);
+    //objects.push_back( box );
 
     /*----------------------------------------------------------*/
 
@@ -667,7 +667,6 @@ void myDrawFun(){
     std::vector<model>::iterator it;
     for(it = objects.begin(); it != objects.end(); ++it)
     {
-
         nyMVP = MVP * (*it).transformations;
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
 
