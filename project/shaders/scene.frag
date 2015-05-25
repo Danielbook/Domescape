@@ -41,30 +41,12 @@ float GetVisibility(vec4 vShadowCoord)
     return visibility;
 }
 
-// Same as BiasMatrix
-float CalcShadowFactor(vec3 LightSpacePos)
-{
-    vec3 ProjCoords = normalize(LightSpacePos);
-    vec2 UVCoords;
-    UVCoords.x = 0.5 * ProjCoords.x + 0.5;
-    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
-    float z = 0.5 * ProjCoords.z + 0.5;
-    float Depth = texture(shadowMap, UVCoords).x;
-    if (Depth < (z + 0.00001))
-        return 0.5;
-    else
-        return 1.0;
-}
-
 void main()
 {
     float visibility = 0.0f;
 
     visibility = GetVisibility(ShadowCoord);
     //visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
-    //if(texture(shadowMap, ((shadowCoord.xy) / shadowCoord.w) + vec2(0, 0)).r >= shadowCoord.z / shadowCoord.w) visibility = 1;
-    //visibility = CalcShadowFactor(lDir);
-
 
  //PHONG from TNM046
 
