@@ -100,7 +100,7 @@ glm::mat4 depthMVP;
 //For several windows
 std::vector<class shadow> buffers;
 //Singular shader
-shadow myShadow;
+class shadow myShadow;
 //SGCT - solution
 
 sgct_core::OffScreenBuffer *myBuffer;
