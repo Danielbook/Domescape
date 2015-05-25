@@ -491,10 +491,11 @@ void myPostSyncPreDrawFun(){
     if( timeIsTicking.getVal() )
         timeCount++;
     
-    if( timeCount == 60 ){
+    if( timeCount >= 60 ){
         oneSecondPassed.setVal(true);
         timeCount = 0;
     }
+    
     if( oneSecondPassed.getVal() ){
         
         std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
@@ -504,7 +505,6 @@ void myPostSyncPreDrawFun(){
         }
     }
     ///////////
-    
 
 
     if( reloadShader.getVal() )
@@ -682,8 +682,10 @@ void myPostSyncPreDrawFun(){
 }
 
 void myDrawFun(){
-       //create scene transform (animation)
+    
+    //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
+    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
@@ -874,7 +876,7 @@ void externalControlMessageCallback(const char * receivedChars, int size){
         if( strncmp(receivedChars, "pause", 5) == 0 ){
             if( strncmp(receivedChars, "pause=0", 7) == 0 ){
                 timeIsTicking.setVal( true );
-                //std::cout << "CONTINUE TIME" << std::endl;
+                std::cout << "CONTINUE TIME" << std::endl;
             }
             else if( strncmp(receivedChars, "pause=1", 7) == 0 ){
                 timeIsTicking.setVal( false );
@@ -1118,6 +1120,3 @@ void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
     }
 
 }
-
-
-
