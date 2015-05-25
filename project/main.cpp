@@ -184,6 +184,10 @@ model skyDome;
 //Funkar inte - objecten under försvinner!
 std::vector<model> objects;
 
+// Funkar - array med models
+const int numberOfObjects = 2;
+model listObj[numberOfObjects];
+
 glm::mat4 nyDepthMVP;
 glm::mat4 nyMVP;
 /*------------------------------------------------*/
@@ -283,11 +287,13 @@ void myInitOGLFun(){
     landscape.translate(0.0f, -20.0f, 0.0f);
     landscape.scale(1.0f, 1.0f, 1.0f);
     //objects.push_back(landscape);
+    listObj[0] = landscape; // sparar i array
 
     box.readOBJ("mesh/box.obj", "texture/box.png");
     box.translate(0.0f, 0.0f, -5.0f);
     box.scale(2.0f, 2.0f, 2.0f);
     //objects.push_back(box);
+    listObj[1] = box; // sparar i array
 
     /*----------------------------------------------------------*/
 
@@ -718,6 +724,26 @@ void myDrawFun(){
     glUniform1fv(Amb_Loc, 1, &fAmb);
     glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
+    
+    ////// Loopar igen alla objekt i arrayen
+    for( int i = 0; i < numberOfObjects; ++i)
+    {
+        nyMVP = MVP * listObj[i].transformations;
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(listObj[i].mTextureID));
+        glUniform1i(Tex_Loc, 0);
+        
+        // buffers[index].setShadowTex(shadowmap_Loc);
+        
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture());
+        glUniform1i(shadowmap_Loc, 1);
+        
+        listObj[i].render();
+        
+    }
 
     //Render objects
 //    std::vector<model>::iterator it;
@@ -739,8 +765,8 @@ void myDrawFun(){
 //
 //        (*it).render();
 //    }
-
-
+    
+/*
         nyMVP = MVP * landscape.transformations;
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
         glActiveTexture(GL_TEXTURE0);
@@ -760,8 +786,8 @@ void myDrawFun(){
         glBindTexture(GL_TEXTURE_2D, myShadow.shadowTexture);
         glUniform1i(shadowmap_Loc, 1);
         box.render();
-
-
+*/
+    
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     //Render shadowMap-texturen
