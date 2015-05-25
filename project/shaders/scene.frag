@@ -41,6 +41,7 @@ float GetVisibility(vec4 vShadowCoord)
     return visibility;
 }
 
+
 void main()
 {
     float visibility = 0.0f;

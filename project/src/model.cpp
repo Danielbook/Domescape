@@ -7,7 +7,7 @@
 //  Heavily inspired by Stefan Gustavsons TNM061 TriangleSoup
 //
 
-#include "model.hpp"
+#include "../include/model.hpp"
 #include <string>
 #include "sgct.h"
 #include <iostream>
@@ -21,6 +21,7 @@
 model::model() {
 
 	transformations = glm::mat4(1.0f);
+	mTextureID = "";
 
     vao = 0;
     vertexbuffer = 0;
@@ -478,36 +479,6 @@ void model::render()
 //It is what it sounds like!
 void model::drawToDepthBuffer()
 {
-//
-//    // Activate the vertex buffer
-//    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-//    // Present our vertex coordinates to OpenGL
-//    glBufferData(GL_ARRAY_BUFFER,
-//                 8*nverts * sizeof(GLfloat), vertexarray, GL_STATIC_DRAW);
-//
-//    // Specify how many attribute arrays we have in our VAO
-//    glEnableVertexAttribArray(0); // Vertex coordinates
-//    glEnableVertexAttribArray(1); // Normals
-//    glEnableVertexAttribArray(2); // Texture coordinates
-//
-//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-//                          8*sizeof(GLfloat), (void*)0); // xyz coordinates
-//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
-//                          8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat))); // normals
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
-//                          8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat))); // texcoords
-//
-//	// Draw the triangles!
-//	glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
-//	//glDrawElements(GL_TRIANGLES, 3 * ntris, GL_UNSIGNED_INT, (void*)0);
-//
-//	//Unbind attributes and vertexbuffer
-//	glDisableVertexAttribArray(0);
-//	glDisableVertexAttribArray(1);
-//	glDisableVertexAttribArray(2);
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
         // 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -522,20 +493,16 @@ void model::drawToDepthBuffer()
 		);
 
 		// Index buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
 
 		// Draw the triangles !
-		glDrawElements(
-			GL_TRIANGLES,      // mode
-			3 * ntris,    // count
-			GL_UNSIGNED_INT, // type
-			(void*)0           // element array buffer offset
-		);
+		//glDrawElements(GL_TRIANGLES, 3 * ntris,	GL_UNSIGNED_INT, (void*)0);
+		glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
+
 
 		glDisableVertexAttribArray(0);
 
-
-
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 };
 
 /*
