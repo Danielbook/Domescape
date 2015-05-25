@@ -33,11 +33,17 @@ void myInitOGLFun();
 void myPreSyncFun();//<---------------------------------┐
 //      |                                               |
 //      V                                               |
-void myPostSyncPreDrawFun(); //                         |
+//////SYNC//////////                                    |
 //      |                                               |
 //      V                                               |
-void myDrawFun();//                                     |
+void myPostSyncPreDrawFun(); //                         |
 //      |                                               |
+//      V<-------------|                                |
+//////CLEAR BUFFERS/   |                                |
+//      |              |                                |
+//      V              |                                |
+void myDrawFun();//    |                                |
+//      |--------------|                                |
 //      V                                               |
 void myEncodeFun();//                                   |
 //      |                                               |
@@ -62,7 +68,7 @@ float walkingSpeed = 2.5f;
 float runningSpeed = 5.0f;
 
 bool dirButtons[6];
-enum directions { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
+enum directions { FORWARD = 0, BACKWARD = 1, LEFT = 2, RIGHT = 3, UP = 4, DOWN = 5 };
 
 bool runningButton = false;
 bool mouseLeftButton = false;
@@ -86,32 +92,16 @@ void addSecondToTime();
 /*-----------------------------------------------------*/
 
 /*------------------SHADOWMAP------------------*/
-
-//Post Fx shader locations
-sgct::PostFX fx;
-GLint fxNearLoc = -1;
-GLint fxFarLoc = -1;
+//Shader Locations
 GLint depthMVP_Loc = -1;
-GLint texID_Loc = -1;
 
 glm::mat4 depthMVP;
 
-void updatePassShadow()
-{
-//	glActiveTexture(GL_TEXTURE1);
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture() );
-//	glUniform1i( texID_Loc, 1 );
-//	glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
-//	glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
-//	glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP)); //Hur göra med matriserna (allt ej textur)
-
-}
-//Flera object
+//For several windows
 std::vector<class shadow> buffers;
-//Enkel lösning
+//Singular shader
 shadow myShadow;
-//Sgct-lösning
+//SGCT - solution
 sgct_core::OffScreenBuffer *myBuffer;
 /*---------------------------------------------*/
 
@@ -208,9 +198,9 @@ int main( int argc, char* argv[] ){
         dirButtons[i] = false;
 
     //SHADOWMAP
-    sgct::SGCTSettings::instance()->setUseDepthTexture(true);
-    sgct::SGCTSettings::instance()->setUseFBO(true);
-    myBuffer = new sgct_core::OffScreenBuffer;
+    //sgct::SGCTSettings::instance()->setUseDepthTexture(true);
+    //sgct::SGCTSettings::instance()->setUseFBO(true);
+    //myBuffer = new sgct_core::OffScreenBuffer;
 
 #if __APPLE__
     if( !gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile ) ){
@@ -255,6 +245,7 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
+    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     /*----------------OBJECTS AND TEXTURES--------------*/
     // OBJECTS TO SKY
@@ -282,33 +273,29 @@ void myInitOGLFun(){
 
     /*------------------------SHADOWMAP-------------------------*/
 
-//	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
-//	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
-//	{
-//		class shadow tmpBuffer;
-//		buffers.push_back( tmpBuffer );
-//	}
-//	sgct::MessageHandler::instance()->print("Number of buffers: %d\n", buffers.size());
-//
-//	for(unsigned int i=0; i < buffers.size(); i++)
-//	{
-//        GLint fb_width, fb_height = 0;
-//        sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(i);
-//		winPtr->getDrawFBODimensions(fb_width, fb_height);
-//        buffers[i].createFBOs(gEngine, fb_width, fb_height);
-//
-//        //myBuffer->createFBO(fb_width, fb_height);
-//        //myBuffer->attachDepthTexture(buffers[i].shadowTexture);
-//        //winPtr->getFrameBufferTexture(i); //Använda denna istället?
-//        buffers[i].initPrintMap();
-//    }
-    //Ensam shadowmap
-    GLint fb_width, fb_height = 0;
-    sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(0);
-    winPtr->getDrawFBODimensions(fb_width, fb_height);
-    myShadow.createFBOs(fb_width, fb_height);
-    gEngine->checkForOGLErrors();
-    myShadow.initPrintMap();
+	sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
+	for(unsigned int i=0; i < thisNode->getNumberOfWindows(); i++)
+	{
+		class shadow tmpBuffer;
+		buffers.push_back( tmpBuffer );
+	}
+	sgct::MessageHandler::instance()->print("Number of buffers: %d\n", buffers.size());
+
+	for(unsigned int i=0; i < buffers.size(); i++)
+	{
+        GLint fb_width, fb_height = 0;
+        sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(i);
+		winPtr->getDrawFBODimensions(fb_width, fb_height);
+        buffers[i].createFBOs( fb_width, fb_height);
+        gEngine->checkForOGLErrors();
+
+        buffers[i].initPrintMap();
+
+
+        //myBuffer->createFBO(fb_width, fb_height);
+        //myBuffer->attachDepthTexture(buffers[i].shadowTexture);
+        //winPtr->getFrameBufferTexture(i); //Använda denna istället?
+    }
 
 
 	//Initialize Shader depthShadowmap
@@ -316,31 +303,8 @@ void myInitOGLFun(){
     sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
     depthMVP_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "depthMVP" );
-    //texID_Loc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "shadowMap" );
-    //glUniform1i( texID_Loc, 0 );
-
-    //fxNearLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "near" );
-    //fxFarLoc = sgct::ShaderManager::instance()->getShaderProgram( "depthShadowmap").getUniformLocation( "far" );
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
-//    sgct::ShaderProgram * sp;
-//
-//	fx.init("depthShadowmap", "shaders/depthShadow.vert", "shaders/depthShadow.frag");
-//	fx.setUpdateUniformsFunction( updatePassShadow );
-//	sp = fx.getShaderProgram();
-//	sp->bind();
-//        depthMVP_Loc = sp->getUniformLocation( "depthMVP ");
-//        texID_Loc = sp->getUniformLocation( "shadowMap" );
-//		fxCTexLoc = sp->getUniformLocation( "cTex" );
-//		fxDTexLoc = sp->getUniformLocation( "dTex" );
-//		fxNearLoc = sp->getUniformLocation( "near" );
-//		fxFarLoc = sp->getUniformLocation( "far" );
-//	sp->unbind();
-//	gEngine->addPostFX( fx );
-//
-//	//if( gEngine->getNumberOfWindows() > 1 )
-//	//	gEngine->getWindowPtr(1)->setUsePostFX( false );
 
     /*-----------------------------------------------------------*/
 
@@ -386,7 +350,7 @@ void myInitOGLFun(){
 
 void myPreSyncFun(){
     if( gEngine->isMaster() ){
-        curr_time.setVal( sgct::Engine::getTime() ); //Används ej för tillfället?
+        curr_time.setVal( sgct::Engine::getTime() );
 
         if( mouseLeftButton ){
             //get the mouse pos from first window
@@ -464,8 +428,6 @@ void myPreSyncFun(){
         result *= glm::translate( glm::mat4(1.0f), glm::vec3( 0.0f, -1.6f, 0.0f ) );
 
         xform.setVal( result );
-
-        //sgct_core::ClusterManager::instance()->getDefaultUserPtr()->setTransform(result);
     }
 }
 
@@ -531,15 +493,18 @@ void myPostSyncPreDrawFun(){
 	{
 		if( gEngine->getWindowPtr(i)->isWindowResized() && !gEngine->getWindowPtr(i)->isUsingFisheyeRendering() )
 		{
-			//buffers[i].resizeFBOs();
-			 myShadow.resizeFBOs();
+			buffers[i].resizeFBOs();
+            //myShadow.resizeFBOs();
 
+//            GLint fb_width, fb_height = 0;
+//            sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(i);
+//            winPtr->getDrawFBODimensions(fb_width, fb_height);
+//            myBuffer->resizeFBO(fb_width, fb_height);
 			break;
-
 		}
     }
 
-    //Kallas endast 1gång/s till skillnad från draw...
+    //Kallas endast 1gång/frame till skillnad från draw...
     /*------------------SUNPOSITION-----------------------*/
 
     // Set light properties
@@ -566,68 +531,39 @@ void myPostSyncPreDrawFun(){
 	sgct::SGCTWindow * winPtr = gEngine->getActiveWindowPtr();
 	unsigned int index = winPtr->getId();
 	winPtr->getFBOPtr()->unBind();
-	//myBuffer->bind();
 
     // Compute the MVP matrix from the light's point of view
-    glm::mat4 scene_mat = xform.getVal();
-    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-30,30,-30,30,-30,600);
+    //glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,-10,20);
+    glm::mat4 depthProjectionMatrix = gEngine->getActiveProjectionMatrix();
     glm::mat4 depthViewMatrix = glm::lookAt(lDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
     depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-    //depthMVP = depthProjectionMatrix * depthViewMatrix * scene_mat;
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     //glDepthFunc(GL_ALWAYS);
 
 
-//    for(unsigned int i=0; i < buffers.size(); i++)
-//	{
-//        //Bind current framebuffer
-//        buffers[i].shadowpass();
-//
-//        //CLear the screen, only depth buffer
-//        glClear(GL_DEPTH_BUFFER_BIT);
-//
-//        sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
-//
-//
-//        glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
-//        glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
-//
-//
+    for(unsigned int i=0; i < buffers.size(); i++)
+	{
+        //Bind current framebuffer
+        buffers[i].shadowpass();
+        //myBuffer->bind();
+
+        //CLear the screen, only depth buffer
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
+
 //        std::vector<model>::iterator it;
 //        for(it = objects.begin(); it != objects.end(); ++it)
 //        {
 //            nyDepthMVP = depthMVP * (*it).transformations;
-//            //nyDepthMVP = depthMVP;
-//
 //            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
 //
 //            (*it).drawToDepthBuffer();
-//
 //        }
-//
-//        sgct::ShaderManager::instance()->unBindShaderProgram();
-//
-//    }
-/////////////////////7
-//Bind current framebuffer
-        myShadow.shadowpass();
-
-
-        //CLear the screen, only depth buffer
-        //glClear(GL_DEPTH_BUFFER_BIT);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
-
-
-        //glUniform1f( fxNearLoc, gEngine->getNearClippingPlane() );
-        //glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
-
-
-        nyDepthMVP = depthMVP * landscape.transformations;
+            nyDepthMVP = depthMVP * landscape.transformations;
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
             landscape.drawToDepthBuffer();
 
@@ -635,12 +571,9 @@ void myPostSyncPreDrawFun(){
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
             box.drawToDepthBuffer();
 
-
-
         sgct::ShaderManager::instance()->unBindShaderProgram();
 
-
-/////////////
+    }
 
     //Unbind the framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -676,12 +609,10 @@ void myDrawFun(){
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
-    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
-
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -691,6 +622,8 @@ void myDrawFun(){
     glCullFace(GL_BACK);
 
     /*------------------SCENE SHADER------------------*/
+    for(unsigned int i=0; i < buffers.size(); i++)
+	{
 
     //Bind Shader scene
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
@@ -711,21 +644,22 @@ void myDrawFun(){
 //    for(it = objects.begin(); it != objects.end(); ++it)
 //    {
 //
-//        nyMVP = MVP * (*it).transformations;
+//        nyMVP = MVP * it->transformations;
 //        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
 //
 //        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId((*it).mTextureID));
+//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(it->mTextureID));
 //        glUniform1i(Tex_Loc, 0);
 //
-//       // buffers[index].setShadowTex(shadowmap_Loc);
+//        buffers[index].setShadowTex(shadowmap_Loc);
 //
 //        glActiveTexture(GL_TEXTURE1);
 //        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture());
 //        glUniform1i(shadowmap_Loc, 1);
 //
-//        (*it).render();
+//        it->render();
 //    }
+
 
 
         nyMVP = MVP * landscape.transformations;
@@ -733,9 +667,7 @@ void myDrawFun(){
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(landscape.mTextureID));
         glUniform1i(Tex_Loc, 0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, myShadow.shadowTexture);
-        glUniform1i(shadowmap_Loc, 1);
+        buffers[i].setShadowTex(shadowmap_Loc);
         landscape.render();
 
         nyMVP = MVP * box.transformations;
@@ -743,16 +675,14 @@ void myDrawFun(){
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(box.mTextureID));
         glUniform1i(Tex_Loc, 0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, myShadow.shadowTexture);
-        glUniform1i(shadowmap_Loc, 1);
+        buffers[i].setShadowTex(shadowmap_Loc);
         box.render();
 
+        sgct::ShaderManager::instance()->unBindShaderProgram();
 
-    sgct::ShaderManager::instance()->unBindShaderProgram();
-
-    //Render shadowMap-texturen
-    myShadow.printMap();
+        //Render shadowMap-texturen
+        buffers[i].printMap();
+    }
 
     /*----------------------------------------------*/
 
@@ -831,8 +761,7 @@ void myCleanUpFun(){
         buffers[i].clearBuffers();
     }
     buffers.clear();
-    delete myBuffer;
-    myBuffer = NULL;
+    //myBuffer->destroy();
 }
 
 void keyCallback(int key, int action){

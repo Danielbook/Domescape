@@ -21,6 +21,7 @@
 model::model() {
 
 	transformations = glm::mat4(1.0f);
+	mTextureID = "";
 
     vao = 0;
     vertexbuffer = 0;
@@ -522,18 +523,15 @@ void model::drawToDepthBuffer()
 		);
 
 		// Index buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
 
 		// Draw the triangles !
-		glDrawElements(
-			GL_TRIANGLES,      // mode
-			3 * ntris,    // count
-			GL_UNSIGNED_INT, // type
-			(void*)0           // element array buffer offset
-		);
+		//glDrawElements(GL_TRIANGLES, 3 * ntris,	GL_UNSIGNED_INT, (void*)0);
+		glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
 
 		glDisableVertexAttribArray(0);
 
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 };
