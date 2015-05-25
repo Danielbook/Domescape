@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <iterator>
-#include "shadow.hpp"
+#include "../include/shadow.hpp"
 #include "sgct.h"
 
 // Constructor (används ej)

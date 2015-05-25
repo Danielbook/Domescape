@@ -31,7 +31,7 @@ add_executable(${APP_NAME}
 	src/model.cpp include/model.hpp
 	src/shadow.cpp include/shadow.hpp
 	src/shader.cpp include/shader.hpp
-	include/Texture.h)
+	)
 
 
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})

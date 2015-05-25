@@ -25,9 +25,13 @@
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
 
-#include "model.hpp"
-#include "shadow.hpp"
-#include "shader.hpp"
+#include "include/model.hpp"
+#include "include/shadow.hpp" //Har även ändrat include i shadow.cpp
+#include "include/shader.hpp"
+
+//#include "model.hpp"
+//#include "shadow.hpp" 
+//#include "shader.hpp"
 
 sgct::Engine * gEngine;
 
