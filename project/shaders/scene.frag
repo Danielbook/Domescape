@@ -1,7 +1,8 @@
 #version 330 core
 
 uniform sampler2D Tex;
-uniform sampler2D shadowMap;
+uniform sampler2D shadowMap; //sampler2DShadow?
+
 uniform vec4 sunColor;
 uniform float fAmbInt;
 
@@ -13,11 +14,12 @@ in vec4 ShadowCoord;
 out vec4 color;
 
 
-float GetVisibility(sampler2D vShadowMap, vec4 vShadowCoord)
+float GetVisibility(vec4 vShadowCoord)
 {
     float visibility = 1.0;
 
-    if( texture( vShadowMap, vShadowCoord.xy ).z  <  vShadowCoord.z)
+    if(texture( shadowMap, vShadowCoord.xy ).z  <  vShadowCoord.z)
+
     {
 		visibility = 0.0;
 		float bias = 0.005;
@@ -25,9 +27,10 @@ float GetVisibility(sampler2D vShadowMap, vec4 vShadowCoord)
 
 		for(int i = 0; i < 16; i++)
 		{
-            float depth = texture(vShadowMap, vShadowCoord.st).z;   // Added .z in the end, texture generates a vec4
-			
-            if( vShadowCoord.z - bias < depth )
+			float depth = texture(shadowMap, vShadowCoord.st).z;
+
+			if(vShadowCoord.z - bias < depth)
+
 			{
 				visibility += 1.0;
 			}
@@ -38,29 +41,12 @@ float GetVisibility(sampler2D vShadowMap, vec4 vShadowCoord)
     return visibility;
 }
 
-// Same as BiasMatrix
-float CalcShadowFactor(vec3 LightSpacePos)
-{
-    vec3 ProjCoords = normalize(LightSpacePos);
-    vec2 UVCoords;
-    UVCoords.x = 0.5 * ProjCoords.x + 0.5;
-    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
-    float z = 0.5 * ProjCoords.z + 0.5;
-    float Depth = texture(shadowMap, UVCoords).x;
-    if (Depth < (z + 0.00001))
-        return 0.5;
-    else
-        return 1.0;
-}
-
 void main()
 {
     float visibility = 0.0f;
 
-    visibility = GetVisibility(shadowMap, ShadowCoord);
-    //visibility = texture(shadowMap, (ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
-    //if(texture2D(shadowMap, ((shadowCoord.xy) / shadowCoord.w) + vec2(0, 0)).r >= shadowCoord.z / shadowCoord.w) visibility = 1;
-    //visibility = CalcShadowFactor(lDir);
+    visibility = GetVisibility(ShadowCoord);
+    //visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
 
  //PHONG from TNM046
 
