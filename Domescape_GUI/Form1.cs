@@ -71,7 +71,7 @@ namespace Domescape
                 this.toolStripStatusLabel1.Text = "Connected";
                 
                 //send defaults
-                c.connection.Send("pause=0\r\nreset=0\r\nspeed=1.0");
+                c.connection.Send("pause=0\r\nreset=0\r\nspeed=1");
             }
             else
             {

@@ -85,7 +85,7 @@ glm::vec3 pos(0.0f, 0.0f, 0.0f);
 void calcSunPosition(); // Calculates the suns position
 void calcSkyColor(float fSunAnglePhi, float &fAmb, glm::vec4 &sColor);
 void resetToCurrentTime(); // Used to calculate the time of the current computer
-void addSecondToTime();
+void checkTime();
 /*-----------------------------------------------------*/
 
 /*------------------SHADOWMAP------------------*/
@@ -141,7 +141,7 @@ GLint SunColor_Loc_S = -1;
 /*------------------------------------------*/
 
 /*------------------SHARED VARIABLES ACROSS THE CLUSTER------------------*/
-sgct::SharedDouble curr_time(0.0);
+sgct::SharedInt curr_time(0);
 sgct::SharedBool reloadShader(false);
 sgct::SharedObject<glm::mat4> xform;
 /*-----------------------------------------------------------------------*/
@@ -389,11 +389,26 @@ void myInitOGLFun(){
     /*---------------------------------------------------------*/
 }
 
+int lastSecond = 0;
 
 void myPreSyncFun(){
     if( gEngine->isMaster() ){
-        curr_time.setVal( sgct::Engine::getTime() ); //Används ej för tillfället?
-
+        
+        curr_time.setVal( sgct::Engine::getTime() );
+        
+        if( lastSecond < curr_time.getVal() ){
+            
+            if( timeIsTicking.getVal() ){
+                std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+                std::cout << "Time is ticking" << std::endl;
+                lastSecond = curr_time.getVal();
+                currentTime[SECOND]+=timeSpeed.getVal();
+            }
+            
+            checkTime();
+        }
+        
+    
         if( mouseLeftButton ){
             //get the mouse pos from first window
             sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &mouseYPos[0] );
@@ -476,36 +491,20 @@ void myPreSyncFun(){
 }
 
 void myPostSyncPreDrawFun(){
-    if( timeIsTicking.getVal() && oneSecondPassed.getVal() ){
-        std::cout << "Time is ticking" << std::endl;
-    }
 
-    else if( !timeIsTicking.getVal() && oneSecondPassed.getVal() ){
-        std::cout << "Time is paused" << std::endl;
-    }
     
-    ////fuLhaxX
-    
-    oneSecondPassed.setVal(false);
-    
-    if( timeIsTicking.getVal() )
-        timeCount++;
-    
-    if( timeCount >= 60 ){
-        oneSecondPassed.setVal(true);
-        timeCount = 0;
-    }
-    
-    if( oneSecondPassed.getVal() ){
-        
-        std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
-        
-        if( timeIsTicking.getVal() ){
-            addSecondToTime();
-        }
-    }
-    ///////////
-
+//    ////fuLhaxX
+//    
+//    oneSecondPassed.setVal(false);
+//    
+//    if( oneSecondPassed.getVal() ){
+//        
+//        if( timeIsTicking.getVal() ){
+//            checkTime();
+//        }
+//    }
+//    
+//    ///////////
 
     if( reloadShader.getVal() )
     {
@@ -806,7 +805,7 @@ void myDrawFun(){
 
 void myEncodeFun(){
     sgct::SharedData::instance()->writeObj( &xform );
-    sgct::SharedData::instance()->writeDouble( &curr_time );
+    sgct::SharedData::instance()->writeInt( &curr_time );
     sgct::SharedData::instance()->writeBool( &reloadShader );
 
     //GUI
@@ -818,7 +817,7 @@ void myEncodeFun(){
 
 void myDecodeFun(){
     sgct::SharedData::instance()->readObj( &xform );
-    sgct::SharedData::instance()->readDouble( &curr_time );
+    sgct::SharedData::instance()->readInt( &curr_time );
     sgct::SharedData::instance()->readBool( &reloadShader );
 
     //GUI
@@ -905,19 +904,19 @@ void externalControlMessageCallback(const char * receivedChars, int size){
             //std::cout << "SET DATE MANUALLY" << std::endl;
             std::string tempTime = ( receivedChars + 5 );
 
-            std::string tempYear = tempTime.substr(0,4);
-            std::string tempMonth = tempTime.substr(5,2);
-            std::string tempDay = tempTime.substr(8,2);
-            std::string tempHour = tempTime.substr(11,2);
-            std::string tempMinute = tempTime.substr(14,2);
+            std::string tempYear    = tempTime.substr(0,4);
+            std::string tempMonth   = tempTime.substr(5,2);
+            std::string tempDay     = tempTime.substr(8,2);
+            std::string tempHour    = tempTime.substr(11,2);
+            std::string tempMinute  = tempTime.substr(14,2);
             std::string tempSeconds = tempTime.substr(17,2);
-
-            currentTime[YEAR] = atoi( tempYear.c_str() );
-            currentTime[MONTH] = atoi( tempMonth.c_str() );
-            currentTime[DAY] = atoi( tempDay.c_str() );
-            currentTime[HOUR] = atoi( tempHour.c_str() );
-            currentTime[MINUTE] = atoi( tempMinute.c_str() );
-            currentTime[SECOND] = atoi( tempSeconds.c_str() );
+            
+            currentTime[YEAR]   = atoi(tempYear.c_str());
+            currentTime[MONTH]  = atoi(tempMonth.c_str());
+            currentTime[DAY]    = atoi(tempDay.c_str());
+            currentTime[HOUR]   = atoi(tempHour.c_str());
+            currentTime[MINUTE] = atoi(tempMinute.c_str());
+            currentTime[SECOND] = atoi(tempSeconds.c_str());
         }
         sgct::MessageHandler::instance()->print("Message: '%s', size: %d\n", receivedChars, size);
     }
@@ -929,7 +928,6 @@ void externalControlStatusCallback( bool connected ){
     else
         sgct::MessageHandler::instance()->print("External control disconnected.\n");
 }
-
 
 /*
  http://en.cppreference.com/w/cpp/chrono/c/strftime
@@ -946,17 +944,17 @@ void resetToCurrentTime() {
 
     std::string tempTime(&buffer[0]);
 
-    std::string tempYear = tempTime.substr(0,4);
-    std::string tempMonth= tempTime.substr(5,2);
-    std::string tempDay = tempTime.substr(8,2);
-    std::string tempHour= tempTime.substr(11,2);
-    std::string tempMinute= tempTime.substr(14,2);
-    std::string tempSeconds= tempTime.substr(17,2);
+    std::string tempYear    = tempTime.substr(0,4);
+    std::string tempMonth   = tempTime.substr(5,2);
+    std::string tempDay     = tempTime.substr(8,2);
+    std::string tempHour    = tempTime.substr(11,2);
+    std::string tempMinute  = tempTime.substr(14,2);
+    std::string tempSeconds = tempTime.substr(17,2);
 
-    currentTime[YEAR] = atoi(tempYear.c_str());
-    currentTime[MONTH] = atoi(tempMonth.c_str());
-    currentTime[DAY] = atoi(tempDay.c_str());
-    currentTime[HOUR] = atoi(tempHour.c_str());
+    currentTime[YEAR]   = atoi(tempYear.c_str());
+    currentTime[MONTH]  = atoi(tempMonth.c_str());
+    currentTime[DAY]    = atoi(tempDay.c_str());
+    currentTime[HOUR]   = atoi(tempHour.c_str());
     currentTime[MINUTE] = atoi(tempMinute.c_str());
     currentTime[SECOND] = atoi(tempSeconds.c_str());
 
@@ -1031,29 +1029,27 @@ void calcSunPosition(){
     fSunAnglePhi = 3.1415/2 - (ourLat-sunPointLat);
 
     fSunAngleTheta = ourLon - sunPointLon;
-
 }
 
-void addSecondToTime(){
-    for(int i = 0; i < timeSpeed.getVal(); i++){
+void checkTime(){
         bool leapYear = false;
         if ( ( (currentTime[YEAR] % 4 == 0) && (currentTime[YEAR] % 100 != 0) ) || (currentTime[YEAR] % 400 == 0) ){
             leapYear = true;
         }
 
-        //Add Second
-        currentTime[SECOND] += 1;
-
         //Add Minute
         if ( currentTime[SECOND] >= 60 ){
-            currentTime[MINUTE] += 1;
-            currentTime[SECOND] = 0;
+            while(currentTime[SECOND] >= 60){
+                currentTime[MINUTE] += 1;
+                currentTime[SECOND] -= 60;
+            }
         }
-
         //Add Hour
         if ( currentTime[MINUTE] >= 60 ){
-            currentTime[HOUR] += 1;
-            currentTime[MINUTE] = 0;
+            while(currentTime[MINUTE] >= 60){
+                currentTime[HOUR] += 1;
+                currentTime[MINUTE] -= 60;
+            }
         }
 
         //Add Day
@@ -1091,7 +1087,6 @@ void addSecondToTime(){
             currentTime[YEAR] += 1;
             currentTime[MONTH] = 1;
         }
-    }
 }
 
 //Ska skrivas om...
