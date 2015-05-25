@@ -18,6 +18,9 @@
 //For the time function
 #include <time.h>
 
+//#include "../cspice/include/SpiceUsr.h"
+//#include "../cspice/include/SpiceZfc.h"
+
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
 
@@ -107,6 +110,7 @@ void updatePassShadow()
 //	glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP)); //Hur göra med matriserna (allt ej textur)
 
 }
+
 //Flera object
 std::vector<class shadow> buffers;
 //Enkel lösning
@@ -255,6 +259,8 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
+    
+    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     /*----------------OBJECTS AND TEXTURES--------------*/
     // OBJECTS TO SKY
@@ -301,7 +307,7 @@ void myInitOGLFun(){
 //        //myBuffer->attachDepthTexture(buffers[i].shadowTexture);
 //        //winPtr->getFrameBufferTexture(i); //Använda denna istället?
 //        buffers[i].initPrintMap();
-//    }
+//   }
     //Ensam shadowmap
     GLint fb_width, fb_height = 0;
     sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(0);
@@ -477,6 +483,29 @@ void myPostSyncPreDrawFun(){
     else if( !timeIsTicking.getVal() && oneSecondPassed.getVal() ){
         std::cout << "Time is paused" << std::endl;
     }
+    
+    ////fuLhaxX
+    
+    oneSecondPassed.setVal(false);
+    
+    if( timeIsTicking.getVal() )
+        timeCount++;
+    
+    if( timeCount == 60 ){
+        oneSecondPassed.setVal(true);
+        timeCount = 0;
+    }
+    if( oneSecondPassed.getVal() ){
+        
+        std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+        
+        if( timeIsTicking.getVal() ){
+            addSecondToTime();
+        }
+    }
+    ///////////
+    
+
 
     if( reloadShader.getVal() )
     {
@@ -611,7 +640,7 @@ void myPostSyncPreDrawFun(){
 //        sgct::ShaderManager::instance()->unBindShaderProgram();
 //
 //    }
-/////////////////////7
+/////////////////////
 //Bind current framebuffer
         myShadow.shadowpass();
 
@@ -653,35 +682,12 @@ void myPostSyncPreDrawFun(){
 }
 
 void myDrawFun(){
-    ////fuLhaxX
-
-    oneSecondPassed.setVal(false);
-
-    if( timeIsTicking.getVal() )
-        timeCount++;
-
-    if( timeCount == 60 ){
-        oneSecondPassed.setVal(true);
-        timeCount = 0;
-    }
-    if( oneSecondPassed.getVal() ){
-
-        std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
-
-        if( timeIsTicking.getVal() ){
-            addSecondToTime();
-        }
-    }
-    ///////////
-
-    //create scene transform (animation)
+       //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
-    gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     glm::mat4 MV = gEngine->getActiveModelViewMatrix() * scene_mat;
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
-
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1011,7 +1017,7 @@ void calcSunPosition(){
     subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
 
     //Calculate suns emission angle
-    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
+    //ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
 
     //fSunAnglePhi = 3.1415/2 - emission;
 
@@ -1086,6 +1092,7 @@ void addSecondToTime(){
     }
 }
 
+//Ska skrivas om...
 void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
 
     float fSine = sin(fSunAnglePhi);
