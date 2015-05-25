@@ -26,12 +26,10 @@ endif()
 
 add_executable(${APP_NAME}
 	main.cpp
-	model.cpp
-	model.hpp
-	shadow.hpp
-	shadow.cpp
-	shader.cpp
-	shader.hpp)
+	src/model.cpp include/model.hpp
+	src/shadow.cpp include/shadow.hpp
+	src/shader.cpp include/shader.hpp
+	include/Texture.h)
 
 
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})

@@ -14,7 +14,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "sgct.h"
-#include "../GLFW/glfw3.h"
+#include "../../GLFW/glfw3.h"
 
 class model
 {
