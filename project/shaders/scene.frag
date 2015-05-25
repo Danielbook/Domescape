@@ -49,7 +49,6 @@ void main()
     visibility = GetVisibility(ShadowCoord);
     //visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
 
-
  //PHONG from TNM046
 
 // vec3 L is the light direction

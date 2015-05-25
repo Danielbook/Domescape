@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <chrono>
 #include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,9 +22,10 @@
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
 
-#include "model.hpp"
-#include "shadow.hpp"
-#include "shader.hpp"
+#include "include/model.hpp"
+#include "include/shadow.hpp" //Har även ändrat include i shadow.cpp
+#include "include/shader.hpp"
+
 
 sgct::Engine * gEngine;
 
@@ -102,6 +104,7 @@ std::vector<class shadow> buffers;
 //Singular shader
 shadow myShadow;
 //SGCT - solution
+
 sgct_core::OffScreenBuffer *myBuffer;
 /*---------------------------------------------*/
 
@@ -162,8 +165,9 @@ model box;
 model sun;
 model skyDome;
 
-//Funkar inte - objecten under försvinner!
-std::vector<model> objects;
+// Funkar - array med models
+const int numberOfObjects = 2;
+model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
 glm::mat4 nyMVP;
@@ -245,6 +249,7 @@ void myInitOGLFun(){
     sgct::TextureManager::instance()->setWarpingMode(GL_REPEAT, GL_REPEAT);
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
+
     gEngine->setNearAndFarClippingPlanes(0.1f, 2000.0f);
 
     /*----------------OBJECTS AND TEXTURES--------------*/
@@ -262,12 +267,12 @@ void myInitOGLFun(){
     landscape.readOBJ("mesh/landscape2.obj", "texture/landscape2.png");
     landscape.translate(0.0f, -20.0f, 0.0f);
     landscape.scale(1.0f, 1.0f, 1.0f);
-    //objects.push_back(landscape);
+    listObj[0] = landscape; // sparar i array
 
     box.readOBJ("mesh/box.obj", "texture/box.png");
     box.translate(0.0f, 0.0f, -5.0f);
     box.scale(2.0f, 2.0f, 2.0f);
-    //objects.push_back(box);
+    listObj[1] = box; // sparar i array
 
     /*----------------------------------------------------------*/
 
@@ -291,12 +296,10 @@ void myInitOGLFun(){
 
         buffers[i].initPrintMap();
 
-
         //myBuffer->createFBO(fb_width, fb_height);
         //myBuffer->attachDepthTexture(buffers[i].shadowTexture);
         //winPtr->getFrameBufferTexture(i); //Använda denna istället?
     }
-
 
 	//Initialize Shader depthShadowmap
     sgct::ShaderManager::instance()->addShaderProgram( "depthShadowmap", "shaders/depthShadow.vert", "shaders/depthShadow.frag" );
@@ -440,6 +443,29 @@ void myPostSyncPreDrawFun(){
         std::cout << "Time is paused" << std::endl;
     }
 
+    ////fuLhaxX
+
+    oneSecondPassed.setVal(false);
+
+    if( timeIsTicking.getVal() )
+        timeCount++;
+
+    if( timeCount >= 60 ){
+        oneSecondPassed.setVal(true);
+        timeCount = 0;
+    }
+
+    if( oneSecondPassed.getVal() ){
+
+        std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
+
+        if( timeIsTicking.getVal() ){
+            addSecondToTime();
+        }
+    }
+    ///////////
+
+
     if( reloadShader.getVal() )
     {
         //Call shader-reload senare
@@ -544,10 +570,10 @@ void myPostSyncPreDrawFun(){
     //glDepthFunc(GL_ALWAYS);
 
 
-    for(unsigned int i=0; i < buffers.size(); i++)
+    for(unsigned int win=0; win < buffers.size(); win++)
 	{
         //Bind current framebuffer
-        buffers[i].shadowpass();
+        buffers[win].shadowpass();
         //myBuffer->bind();
 
         //CLear the screen, only depth buffer
@@ -555,21 +581,14 @@ void myPostSyncPreDrawFun(){
 
         sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
-//        std::vector<model>::iterator it;
-//        for(it = objects.begin(); it != objects.end(); ++it)
-//        {
-//            nyDepthMVP = depthMVP * (*it).transformations;
-//            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-//
-//            (*it).drawToDepthBuffer();
-//        }
-            nyDepthMVP = depthMVP * landscape.transformations;
-            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            landscape.drawToDepthBuffer();
 
-            nyDepthMVP = depthMVP * box.transformations;
+        // Loopar igenom alla objekt i arrayen
+        for( int i = 0; i < numberOfObjects; ++i)
+        {
+            nyDepthMVP = depthMVP * listObj[i].transformations;
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            box.drawToDepthBuffer();
+            listObj[i].drawToDepthBuffer();
+        }
 
         sgct::ShaderManager::instance()->unBindShaderProgram();
 
@@ -586,26 +605,6 @@ void myPostSyncPreDrawFun(){
 }
 
 void myDrawFun(){
-    ////fuLhaxX
-
-    oneSecondPassed.setVal(false);
-
-    if( timeIsTicking.getVal() )
-        timeCount++;
-
-    if( timeCount == 60 ){
-        oneSecondPassed.setVal(true);
-        timeCount = 0;
-    }
-    if( oneSecondPassed.getVal() ){
-
-        std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
-
-        if( timeIsTicking.getVal() ){
-            addSecondToTime();
-        }
-    }
-    ///////////
 
     //create scene transform (animation)
     glm::mat4 scene_mat = xform.getVal();
@@ -622,7 +621,7 @@ void myDrawFun(){
     glCullFace(GL_BACK);
 
     /*------------------SCENE SHADER------------------*/
-    for(unsigned int i=0; i < buffers.size(); i++)
+    for(unsigned int win=0; win < buffers.size(); win++)
 	{
 
     //Bind Shader scene
@@ -639,50 +638,32 @@ void myDrawFun(){
     glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
 
-    //Render objects
-//    std::vector<model>::iterator it;
-//    for(it = objects.begin(); it != objects.end(); ++it)
-//    {
-//
-//        nyMVP = MVP * it->transformations;
-//        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
-//
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(it->mTextureID));
-//        glUniform1i(Tex_Loc, 0);
-//
-//        buffers[index].setShadowTex(shadowmap_Loc);
-//
+    // Loopar igenom alla objekt i arrayen
+    for( int i = 0; i < numberOfObjects; ++i)
+    {
+        nyMVP = MVP * listObj[i].transformations;
+        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(listObj[i].mTextureID));
+        glUniform1i(Tex_Loc, 0);
+
+        buffers[win].setShadowTex(shadowmap_Loc);
+
 //        glActiveTexture(GL_TEXTURE1);
 //        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture());
 //        glUniform1i(shadowmap_Loc, 1);
-//
-//        it->render();
-//    }
 
+        listObj[i].render();
 
-
-        nyMVP = MVP * landscape.transformations;
-        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(landscape.mTextureID));
-        glUniform1i(Tex_Loc, 0);
-        buffers[i].setShadowTex(shadowmap_Loc);
-        landscape.render();
-
-        nyMVP = MVP * box.transformations;
-        glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(box.mTextureID));
-        glUniform1i(Tex_Loc, 0);
-        buffers[i].setShadowTex(shadowmap_Loc);
-        box.render();
-
-        sgct::ShaderManager::instance()->unBindShaderProgram();
-
-        //Render shadowMap-texturen
-        buffers[i].printMap();
     }
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    //Render shadowMap-texturen
+    buffers[win].printMap();
+    }
+
 
     /*----------------------------------------------*/
 
@@ -797,7 +778,7 @@ void externalControlMessageCallback(const char * receivedChars, int size){
         if( strncmp(receivedChars, "pause", 5) == 0 ){
             if( strncmp(receivedChars, "pause=0", 7) == 0 ){
                 timeIsTicking.setVal( true );
-                //std::cout << "CONTINUE TIME" << std::endl;
+                std::cout << "CONTINUE TIME" << std::endl;
             }
             else if( strncmp(receivedChars, "pause=1", 7) == 0 ){
                 timeIsTicking.setVal( false );
@@ -865,6 +846,14 @@ void resetToCurrentTime() {
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
 
+/*
+	auto now = std::chrono::system_clock::now();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
+	std::string tempTime = ss.str();
+*/
     std::string tempTime(&buffer[0]);
 
     std::string tempYear = tempTime.substr(0,4);
@@ -940,7 +929,7 @@ void calcSunPosition(){
     subslr_c ( "Near point: ellipsoid", target, et, ref, abcorr, obsrvr, sunPointOnEarth, &trgepc, srfvec );
 
     //Calculate suns emission angle
-    ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
+    //ilumin_c ( "Ellipsoid", target, et, ref, abcorr, obsrvr, ourPosition, &trgepc, srfvec, &phase, &solar, &emission );
 
     //fSunAnglePhi = 3.1415/2 - emission;
 
@@ -1015,6 +1004,7 @@ void addSecondToTime(){
     }
 }
 
+//Ska skrivas om...
 void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
 
     float fSine = sin(fSunAnglePhi);
@@ -1040,6 +1030,3 @@ void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
     }
 
 }
-
-
-

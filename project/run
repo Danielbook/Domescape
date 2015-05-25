@@ -1,19 +1,19 @@
 #!/bin/sh
 case "$1" in
         -f )
-                optirun ./Domescape -config single_fisheye.xml
+                optirun ./Domescape -config config/single_fisheye.xml
         ;;
 	-r )
-                optirun ./Domescape -config single_remote.xml
+                optirun ./Domescape -config config/single_remote.xml
         ;;
         -m )
-                optirun ./Domescape -config dome_sim.xml
+                optirun ./Domescape -config config/dome_sim.xml
         ;;
         -test )
-                optirun ./Domescape -config test_cluster_dome.xml -local 0 &
-                optirun ./Domescape -config test_cluster_dome.xml -local 1 --slave
+                optirun ./Domescape -config config/test_cluster_dome.xml -local 0 &
+                optirun ./Domescape -config config/test_cluster_dome.xml -local 1 --slave
         ;;
         *)
-                optirun ./Domescape -config single.xml
+                optirun ./Domescape -config config/single.xml
         ;;
 esac

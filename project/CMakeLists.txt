@@ -16,22 +16,21 @@ endmacro (set_xcode_property)
 
 if( APPLE )
 	include_directories ( "/usr/include" )
+endif()
 
-elseif(WIN32)
-include_directories ( "C:/Users/Matthias/Documents/Medieteknik/cspice/include" )
+if(WIN32)
+	include_directories ( "C:/Users/Matthias/Documents/Medieteknik/spice_w32/cspice/include" )
 
-else () #linux
-	include_directories("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
+else() #linux
+	include_directories ("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
 endif()
 
 add_executable(${APP_NAME}
 	main.cpp
-	model.cpp
-	model.hpp
-	shadow.hpp
-	shadow.cpp
-	shader.cpp
-	shader.hpp)
+	src/model.cpp include/model.hpp
+	src/shadow.cpp include/shadow.hpp
+	src/shader.cpp include/shader.hpp
+	)
 
 
 set(EXAMPE_TARGET_PATH ${PROJECT_SOURCE_DIR})
@@ -134,6 +133,7 @@ endif()
 if( MSVC )
 	#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
 
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT " )
 		if( "${MSVC_VERSION}" LESS 1600 ) #less than visual studio 2010
 		STRING(REPLACE "INCREMENTAL:YES" "INCREMENTAL:NO" replacementFlags
 			${CMAKE_EXE_LINKER_FLAGS_DEBUG})
@@ -187,15 +187,13 @@ endif()
 #CSPICE
 if( APPLE )
 	target_link_libraries(${APP_NAME} /usr/lib/cspice.a)
-elseif (MSVC)
+endif()
 
-elseif (WIN32)
-	target_link_libraries (${APP_NAME} C:/Users/Matthias/Documents/Medieteknik/spice/lib/cspice.lib)
+if(WIN32)
+	target_link_libraries (${APP_NAME} C:/Users/Matthias/Documents/Medieteknik/spice_w32/cspice/lib/cspice.lib)
 
-
-else () #linux
+else() #linux
 	target_link_libraries(${APP_NAME} /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a)
-
 endif()
 
 
