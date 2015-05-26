@@ -18,12 +18,17 @@
 //For the time function
 #include <time.h>
 
-#include <SpiceUsr.h>
-#include <SpiceZfc.h>
+#include "../cspice/include/SpiceUsr.h"
+#include "../cspice/include/SpiceZfc.h"
+
+//#include <SpiceUsr.h>
+//#include <SpiceZfc.h>
 
 #include "include/model.hpp"
 #include "include/shadow.hpp"
 #include "include/shader.hpp"
+#include "include/Texture.hpp"
+
 
 sgct::Engine * gEngine;
 
@@ -158,14 +163,21 @@ int lastSecond = 0;
 
 //OBJECTS
 model landscape;
-model tree1;
-model box;
+model tree;
+model bush1;
 model sun;
 model skyDome;
 sgct_utils::SGCTDome* newDome;
 
+// används ej till tga textur
+//Texture texure_tree1;
+
+//Funkar inte - objecten under försvinner!
+std::vector<model> objects;
+
+
 // Array with all models
-const int numberOfObjects = 3;
+const int numberOfObjects = 4;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -273,15 +285,19 @@ void myInitOGLFun(){
     landscape.scale(1.0f, 1.0f, 1.0f);
     listObj[0] = landscape; // sparar i array
 
-    box.readOBJ("mesh/box.obj", "texture/box.png");
-    box.translate(0.0f, 0.0f, -5.0f);
-    box.scale(2.0f, 2.0f, 2.0f);
-    listObj[1] = box; // sparar i array
+    // träd 1
+    tree.readOBJ("mesh/tree.obj", "texture/tree_getto.jpeg");
+    tree.scale(1.0f, 1.0f,1.0f);
+    tree.translate(5.0f, -17.0f, -40.0f);
+    listObj[1] = tree; // sparar i array
 
-    tree1.readOBJ("mesh/tree1.obj", "texture/box.png");
-    tree1.translate(-5.0f, 0.0f, -5.0f);
-    tree1.scale(0.01f, 0.01f, 0.01f);
-    listObj[2] = tree1; // sparar i array
+    // träd 2
+    tree.translate(-8.0f, 1.0f, 20.0f);
+    listObj[2] = tree; // sparar i array
+
+    //träd 3
+    tree.translate(-15.0f, 1.0f, -10.0f);
+    listObj[3] = tree; // sparar i array
 
     /*----------------------------------------------------------*/
 
@@ -581,7 +597,16 @@ void myPostSyncPreDrawFun(){
     //CLear the screen, only depth buffer
     glClear(GL_DEPTH_BUFFER_BIT);
 
+            nyDepthMVP = depthMVP * landscape.transformations;
+            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+            landscape.drawToDepthBuffer();
+
+            nyDepthMVP = depthMVP * tree.transformations;
+            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+            tree.drawToDepthBuffer();
+
     sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
+
 
 
     // Loopar igenom alla objekt i arrayen
@@ -615,6 +640,7 @@ void myDrawFun(){
     glm::mat4 MVP = gEngine->getActiveModelViewProjectionMatrix() * scene_mat;
     glm::mat3 NM = glm::inverseTranspose(glm::mat3( MV ));
 
+    //Clear buffers and set drawing mode
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -697,7 +723,6 @@ void myDrawFun(){
     glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
 
-    // Loopar igenom alla objekt i arrayen
     for( int i = 0; i < numberOfObjects; ++i)
     {
         nyMVP = MVP * listObj[i].transformations;
@@ -716,10 +741,12 @@ void myDrawFun(){
         listObj[i].render();
     }
 
+
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     //Render shadowMap-texturen
     //buffers[index].printMap();
+    //}
 
     //reset the viewport
 //	const int * coords;
@@ -1054,3 +1081,5 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
         fAmb = 0.5f;
     }
 }
+
+

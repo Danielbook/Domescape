@@ -26,6 +26,7 @@ void main()
 
 	lDir = normalize(NM * lightDir);
 
+
 	tnormals = normalize(NM * inNormals);
 
 }

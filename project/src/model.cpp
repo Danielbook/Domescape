@@ -270,7 +270,7 @@ void model::readOBJ(const char* filename, std::string texture) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     /*------------------------NEW CODE-----------------------------*/
-
+    
 	// Fix filename and texturename
 	std::string name = filename;
 	char chars[] = "/\-.";
@@ -282,7 +282,7 @@ void model::readOBJ(const char* filename, std::string texture) {
 	}
 
 	mTextureID = name;
-
+    
 	sgct::TextureManager::instance()->loadTexure(mTextureID, texture, true);
 
 	return;
@@ -479,6 +479,30 @@ void model::render()
 //It is what it sounds like!
 void model::drawToDepthBuffer()
 {
+        // 1rst attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(
+			0,  // The attribute we want to configure
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,  // stride alt: 8*sizeof(GLfloat)
+			(void*)0            // array buffer offset
+		);
+
+		// Index buffer
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
+
+		// Draw the triangles !
+		glDrawElements(
+			GL_TRIANGLES,      // mode
+			3 * ntris,    // count
+			GL_UNSIGNED_INT, // type
+			(void*)0           // element array buffer offset
+		);
+
+		glDisableVertexAttribArray(0);
 
         // 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);

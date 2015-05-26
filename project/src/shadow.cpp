@@ -26,8 +26,9 @@ shadow::~shadow()
 void shadow::createFBOs(GLint fb_w, GLint fb_h)
 {
 
-    fbo = 0;
-    shadowTexture = 0;
+
+    fbo = -1;
+    shadowTexture = -1;
     width = fb_w;
     height = fb_h;
     quad_vertexbuffer = 0;
@@ -42,8 +43,9 @@ void shadow::createFBOs(GLint fb_w, GLint fb_h)
     // No color output in the bound framebuffer, only depth.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowTexture, 0);
     glDrawBuffer(GL_NONE);
+    //glReadBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
-
+    
     //Does the GPU support current FBO configuration?
     if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE )
     {    sgct::MessageHandler::instance()->print("FrameBuffer in bad state!\n");   }
@@ -60,7 +62,7 @@ void shadow::createTexture()
 
     glGenTextures(1, &shadowTexture);
     glBindTexture(GL_TEXTURE_2D, shadowTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_LINEAR bra tsm med sampler2dShadow, inte Sampler2D -> GL_ NEAREST
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
