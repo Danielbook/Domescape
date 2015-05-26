@@ -162,20 +162,21 @@ int timeCount = 0;
 
 //OBJECTS
 model landscape;
-model tree1, tree2;
+model tree;
 model bush1;
 model sun;
 model skyDome;
 sgct_utils::SGCTDome* newDome;
 
-Texture texure_tree1;
+// används ej till tga textur
+//Texture texure_tree1;
 
 //Funkar inte - objecten under försvinner!
 std::vector<model> objects;
 
 
 // Array with all models
-const int numberOfObjects = 3;
+const int numberOfObjects = 4;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -278,17 +279,19 @@ void myInitOGLFun(){
     landscape.scale(1.0f, 1.0f, 1.0f);
     listObj[0] = landscape; // sparar i array
 
-    tree1.readOBJ("mesh/tree3.obj", "texture/tree_getto.jpeg");
-    tree1.scale(1.0f, 1.0f, 1.0f);
-    tree1.translate(-150.0f, -200.0f, -550.0f);
-    //objects.push_back(box);
-    listObj[1] = tree1; // sparar i array
+    // träd 1
+    tree.readOBJ("mesh/tree.obj", "texture/tree_getto.jpeg");
+    tree.scale(1.0f, 1.0f,1.0f);
+    tree.translate(5.0f, -17.0f, -40.0f);
+    listObj[1] = tree; // sparar i array
     
-    tree2.readOBJ("mesh/tree3.obj", "texture/tree_getto.jpeg");
-    tree2.scale(1.0f, 1.0f, 1.0f);
-    tree2.translate(-300.0f, -200.0f, -400.0f);
-    //objects.push_back(box);
-    listObj[2] = tree2; // sparar i array
+    // träd 2
+    tree.translate(-8.0f, 1.0f, 20.0f);
+    listObj[2] = tree; // sparar i array
+    
+    //träd 3
+    tree.translate(-15.0f, 1.0f, -10.0f);
+    listObj[3] = tree; // sparar i array
     
     
     /*----------------------------------------------------------*/
@@ -593,9 +596,9 @@ void myPostSyncPreDrawFun(){
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
             landscape.drawToDepthBuffer();
 
-            nyDepthMVP = depthMVP * tree1.transformations;
+            nyDepthMVP = depthMVP * tree.transformations;
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            tree1.drawToDepthBuffer();
+            tree.drawToDepthBuffer();
 
     sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
