@@ -21,9 +21,9 @@
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
 
-#include "model.hpp"
-#include "shadow.hpp"
-#include "shader.hpp"
+#include "include/model.hpp"
+#include "include/shadow.hpp"
+#include "include/shader.hpp"
 
 sgct::Engine * gEngine;
 
@@ -39,7 +39,7 @@ void myPreSyncFun();//<---------------------------------┐
 void myPostSyncPreDrawFun(); //                         |
 //      |                                               |
 //      V<-------------|                                |
-//////CLEAR BUFFERS/   |                                |
+//////CLEAR BUFFERS/// |                                |
 //      |              |                                |
 //      V              |                                |
 void myDrawFun();//    |                                |
@@ -86,7 +86,7 @@ glm::vec3 pos(0.0f, 0.0f, 0.0f);
 
 /*------------------REGULAR FUNCTIONS------------------*/
 void calcSunPosition(); // Calculates the suns position
-void calcSkyColor(float fSunAnglePhi, float &fAmb, glm::vec4 &sColor);
+void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor);
 void resetToCurrentTime(); // Used to calculate the time of the current computer
 void checkTime();
 /*-----------------------------------------------------*/
@@ -154,16 +154,18 @@ glm::vec3 vSunPos;
 enum timeVariables{YEAR = 0, MONTH = 1, DAY = 2, HOUR = 3, MINUTE = 4, SECOND = 5};
 int currentTime[6];
 int timeCount = 0;
+int lastSecond = 0;
 
 //OBJECTS
 model landscape;
+model tree1;
 model box;
 model sun;
 model skyDome;
 sgct_utils::SGCTDome* newDome;
 
 // Array with all models
-const int numberOfObjects = 2;
+const int numberOfObjects = 3;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -251,13 +253,18 @@ void myInitOGLFun(){
 
     /*----------------OBJECTS AND TEXTURES--------------*/
     // OBJECTS TO SKY
+    //sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sun.createSphere(10.0f, 80);
 
-    //skyDome.createSphere(5.0f, 100);
-    //int x, y = 0;
-    //gEngine->getActiveViewportSize(x, y);
-    //newDome = new sgct_utils::SGCTDome(500, x/y, 100, 20, 0.2f);
+    skyDome.createSphere(600.0f, 100);
+
+
+    int x, y = 0.0f;
+    gEngine->getActiveViewportSize(x, y);
+    newDome = new sgct_utils::SGCTDome(5.0f, 500.0f, 50, 50, 0.2f);
+    sgct::TextureManager::instance()->loadTexure("sky", "texture/skycolor.png", true);
+    sgct::TextureManager::instance()->loadTexure("glow", "texture/glow.png", true);
 
     // OBJECTS TO SCENE
     //Transformations from origo. ORDER MATTERS!
@@ -270,6 +277,11 @@ void myInitOGLFun(){
     box.translate(0.0f, 0.0f, -5.0f);
     box.scale(2.0f, 2.0f, 2.0f);
     listObj[1] = box; // sparar i array
+
+    tree1.readOBJ("mesh/tree1.obj", "texture/box.png");
+    tree1.translate(-5.0f, 0.0f, -5.0f);
+    tree1.scale(0.01f, 0.01f, 0.01f);
+    listObj[2] = tree1; // sparar i array
 
     /*----------------------------------------------------------*/
 
@@ -346,26 +358,26 @@ void myInitOGLFun(){
     /*---------------------------------------------------------*/
 }
 
-int lastSecond = 0;
+
 
 void myPreSyncFun(){
     if( gEngine->isMaster() ){
-        
+
         curr_time.setVal( sgct::Engine::getTime() );
-        
+
         if( lastSecond < curr_time.getVal() ){
-            
+
             if( timeIsTicking.getVal() ){
                 std::cout << currentTime[YEAR] << " " << currentTime[MONTH] << " " << currentTime[DAY] << " " << currentTime[HOUR] << ":" << currentTime[MINUTE] << ":" << currentTime[SECOND] << std::endl;
                 std::cout << "Time is ticking" << std::endl;
                 lastSecond = curr_time.getVal();
                 currentTime[SECOND]+=timeSpeed.getVal();
             }
-            
+
             checkTime();
         }
-        
-    
+
+
         if( mouseLeftButton ){
             //get the mouse pos from first window
             sgct::Engine::getMousePos( gEngine->getFocusedWindowIndex(), &mouseXPos[0], &mouseYPos[0] );
@@ -447,19 +459,19 @@ void myPreSyncFun(){
 
 void myPostSyncPreDrawFun(){
 
-    
-//    ////fuLhaxX
-//    
-//    oneSecondPassed.setVal(false);
-//    
-//    if( oneSecondPassed.getVal() ){
-//        
-//        if( timeIsTicking.getVal() ){
-//            checkTime();
-//        }
-//    }
-//    
-//    ///////////
+
+    ///////////TIME////////////////////
+
+    oneSecondPassed.setVal(false);
+
+    if( oneSecondPassed.getVal() ){
+
+        if( timeIsTicking.getVal() ){
+            checkTime();
+        }
+    }
+
+    ///////////////////////////////////
 
     if( reloadShader.getVal() )
     {
@@ -538,7 +550,7 @@ void myPostSyncPreDrawFun(){
 
     vSunPos = glm::vec3(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
 
-    calcSkyColor(fSunAnglePhi, fAmb, sColor);
+    calcSkyColor(fSunAnglePhi, fSunAngleTheta, fAmb, sColor);
 
     lDir = glm::normalize(vSunPos);
 
@@ -552,7 +564,7 @@ void myPostSyncPreDrawFun(){
 	winPtr->getFBOPtr()->unBind();
 
     // Compute the MVP matrix from the light's point of view
-    //glm::mat4 depthProjectionMatrix = glm::ortho<float>( -100, 100, -100, 100, 0.1, 150);
+    //glm::mat4 depthProjectionMatrix = glm::ortho<float>( -100, 100, -100, 100, 0.1, 150); //Denna ska användas sen!
     glm::mat4 depthProjectionMatrix = gEngine->getActiveProjectionMatrix();
     glm::mat4 depthViewMatrix = glm::lookAt(vSunPos, glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
@@ -610,6 +622,61 @@ void myDrawFun(){
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
+
+    /*------------------SKY SHADER------------------*/
+    //Needs to be first so the skydome doesn't overwrite any of the other objects!
+    //Bind Shader sky
+    sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
+
+    glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix3fv(NM_Loc_S, 1, GL_FALSE, &NM[0][0]);
+    glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
+
+    //SKYDOME
+    glCullFace(GL_FRONT);
+    //glFrontFace(GL_CW);
+
+        nyMVP = MVP * skyDome.transformations;
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glUniform1i(Tex_Loc, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sky"));
+        glUniform1i( SunColor_Loc_S, 1 );
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("glow"));
+        glUniform1i( Glow_Loc_S, 2 );
+
+        //SGCT-DOME - only grid
+        //newDome->draw();
+        //Simple Sphere
+        //skyDome.render();
+
+    //glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+
+        //SUN
+    nyMVP = MVP;
+        //Transformations from origo. ORDER MATTERS!
+        nyMVP = glm::translate(nyMVP, vSunPos);
+
+        //Send the transformations, texture and render
+        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
+        glUniform1i(Tex_Loc, 0);
+        sun.render();
+
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
+    /*----------------------------------------------*/
+
+
     /*------------------SCENE SHADER------------------*/
     sgct::SGCTWindow * winPtr = gEngine->getActiveWindowPtr();
 	unsigned int index = winPtr->getId();
@@ -653,46 +720,12 @@ void myDrawFun(){
 
     //Render shadowMap-texturen
     //buffers[index].printMap();
+
+    //reset the viewport
+//	const int * coords;
+//	coords = gEngine->getActiveViewportPixelCoords();
+//	glViewport( coords[0], coords[1], coords[2], coords[3] );
     //}
-    /*----------------------------------------------*/
-
-    /*------------------SKY SHADER------------------*/
-
-    //get viewport data and set the viewport
-	const int * coords;
-	coords = gEngine->getActiveViewportPixelCoords();
-	glViewport( coords[0], coords[1], coords[2], coords[3] );
-
-    //Bind Shader sky
-    sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
-
-    glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix3fv(NM_Loc_S, 1, GL_FALSE, &NM[0][0]);
-    glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
-
-    //SUN
-    nyMVP = MVP;
-        //Transformations from origo. ORDER MATTERS!
-        nyMVP = glm::translate(nyMVP, vSunPos);
-
-        //Send the transformations, texture and render
-        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("sun"));
-        glUniform1i(Tex_Loc, 0);
-        sun.render();
-
-
-    //SKYDOME
-    nyMVP = MVP;
-        //Transformations from origo. ORDER MATTERS!
-
-        glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
-        //newDome->draw();
-
-
-    sgct::ShaderManager::instance()->unBindShaderProgram();
-
     /*----------------------------------------------*/
 
     glDisable( GL_CULL_FACE );
@@ -805,7 +838,7 @@ void externalControlMessageCallback(const char * receivedChars, int size){
             std::string tempHour    = tempTime.substr(11,2);
             std::string tempMinute  = tempTime.substr(14,2);
             std::string tempSeconds = tempTime.substr(17,2);
-            
+
             currentTime[YEAR]   = atoi(tempYear.c_str());
             currentTime[MONTH]  = atoi(tempMonth.c_str());
             currentTime[DAY]    = atoi(tempDay.c_str());
@@ -984,29 +1017,40 @@ void checkTime(){
         }
 }
 
-//Ska skrivas om...
-void calcSkyColor(float fSunAnglePhi,float &fAmb, glm::vec4 &sColor){
+// We'll change color of skies depending on sun's position
+void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor)
+{
 
-    float fSine = sin(fSunAnglePhi);
-
-    // We'll change color of skies depending on sun's position
-    gEngine->setClearColor(std::max(0.0f, 0.3f*fSine), std::max(0.0f, 0.9f*fSine), std::max(0.0f, 0.9f*fSine), 1.0f);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if(fSunAnglePhi >= 30.0f*3.1415/180.0 && fSunAnglePhi <= 150.0f*3.1415/180.0) //DAY
+    //Daylight
+    if(fSunPhi >= 55.0f*3.1415/180.0 && fSunPhi <= 125.0f*3.1415/180.0)
     {
+        gEngine->setClearColor(std::max(0.0f, 0.0f*fSunPhi), std::max(0.0f, 0.7f*fSunPhi), std::max(0.0f, 1.0f*fSunPhi), 1.0f);
+        //gEngine->setClearColor(0.0f/256.0f, 191.0f/256.0f, 255.0f/256.0f, 1.0f);
         sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         fAmb = 0.8f;
     }
-    else if(fSunAnglePhi <= 0.0f*3.1415/180.0 || fSunAnglePhi >= 180.0f*3.1415/180.0) //NIGHT
+    //Nightsky
+    else if(fSunPhi <= 0.0f*3.1415/180.0 || fSunPhi >= 180.0f*3.1415/180.0)
     {
-        sColor = glm::vec4(110.0f/256.0f, 40.0f/256.0f, 189.0f/256.0f, 1.0f);
+        sColor = glm::vec4(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
+        gEngine->setClearColor(std::max(0.0f, 0.2f*fSunPhi), std::max(0.0f, 0.2f*fSunPhi), std::max(0.0f, 0.5f*fSunPhi), 1.0f);
+        //gEngine->setClearColor(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
         fAmb = 0.3f;
     }
-    else // DAWN/DUSK
+    //Dawn
+    else if((fSunPhi < 55.0f*3.1415/180.0 && fSunTheta <= 30.0f*3.1415/180.0) || (fSunPhi > 125.0f*3.1415/180.0 && fSunTheta >= 150.0f*3.1415/180.0))
     {
-        sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        sColor = glm::vec4(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
+        gEngine->setClearColor(std::max(0.0f, 0.5f*fSunPhi), std::max(0.0f, 0.8f*fSunPhi), std::max(0.0f, 0.9f*fSunPhi), 1.0f);
+        //gEngine->setClearColor(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
         fAmb = 0.6f;
     }
-
+    //Dusk
+    else
+    {
+        sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        gEngine->setClearColor(std::max(0.0f, 0.9f*fSunPhi), std::max(0.0f, 0.2f*fSunPhi), std::max(0.0f, 0.2f*fSunPhi), 1.0f);
+        //gEngine->setClearColor(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        fAmb = 0.5f;
+    }
 }
