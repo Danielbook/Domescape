@@ -16,9 +16,8 @@ endmacro (set_xcode_property)
 
 if( APPLE )
 	include_directories ( "/usr/include" )
-endif()
 
-if(WIN32)
+elseif(WIN32)
 	include_directories ( "C:/Users/Matthias/Documents/Medieteknik/spice_w32/cspice/include" )
 
 else() #linux
@@ -187,9 +186,8 @@ endif()
 #CSPICE
 if( APPLE )
 	target_link_libraries(${APP_NAME} /usr/lib/cspice.a)
-endif()
 
-if(WIN32)
+elseif(WIN32)
 	target_link_libraries (${APP_NAME} C:/Users/Matthias/Documents/Medieteknik/spice_w32/cspice/lib/cspice.lib)
 
 else() #linux
