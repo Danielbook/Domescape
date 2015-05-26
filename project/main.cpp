@@ -96,7 +96,6 @@ void addSecondToTime();
 /*------------------SHADOWMAP------------------*/
 //Shader Locations
 GLint depthMVP_Loc = -1;
-
 glm::mat4 depthMVP;
 
 //For several windows
@@ -104,7 +103,6 @@ std::vector<class shadow> buffers;
 //Singular shader
 shadow myShadow;
 //SGCT - solution
-
 sgct_core::OffScreenBuffer *myBuffer;
 /*---------------------------------------------*/
 
@@ -164,8 +162,9 @@ model landscape;
 model box;
 model sun;
 model skyDome;
+sgct_utils::SGCTDome* newDome;
 
-// Funkar - array med models
+// Array with all models
 const int numberOfObjects = 2;
 model listObj[numberOfObjects];
 
@@ -258,9 +257,9 @@ void myInitOGLFun(){
     sun.createSphere(10.0f, 80);
 
     //skyDome.createSphere(5.0f, 100);
-    //int x, y =0;
+    //int x, y = 0;
     //gEngine->getActiveViewportSize(x, y);
-    //sgct_utils::SGCTDome* newDome = new sgct_utils::SGCTDome(500, x/y, 100, 20, 0.2f);
+    //newDome = new sgct_utils::SGCTDome(500, x/y, 100, 20, 0.2f);
 
     // OBJECTS TO SCENE
     //Transformations from origo. ORDER MATTERS!
@@ -294,7 +293,7 @@ void myInitOGLFun(){
         buffers[i].createFBOs( fb_width, fb_height);
         gEngine->checkForOGLErrors();
 
-        buffers[i].initPrintMap();
+        //buffers[i].initPrintMap();
 
         //myBuffer->createFBO(fb_width, fb_height);
         //myBuffer->attachDepthTexture(buffers[i].shadowTexture);
@@ -312,7 +311,6 @@ void myInitOGLFun(){
     /*-----------------------------------------------------------*/
 
     /*---------------------SHADERS-----------------------*/
-
     //Initialize Shader scene
     sgct::ShaderManager::instance()->addShaderProgram( "scene", "shaders/scene.vert", "shaders/scene.frag" );
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
@@ -506,8 +504,6 @@ void myPostSyncPreDrawFun(){
 
         skySp.unbind();
 
-        //fx.getShaderProgram()->reload();
-
         reloadShader.setVal(false);
     }
 
@@ -559,40 +555,37 @@ void myPostSyncPreDrawFun(){
 	winPtr->getFBOPtr()->unBind();
 
     // Compute the MVP matrix from the light's point of view
-    //glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,-10,20);
+    //glm::mat4 depthProjectionMatrix = glm::ortho<float>( -100, 100, -100, 100, 0.1, 150);
     glm::mat4 depthProjectionMatrix = gEngine->getActiveProjectionMatrix();
-    glm::mat4 depthViewMatrix = glm::lookAt(lDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+    glm::mat4 depthViewMatrix = glm::lookAt(vSunPos, glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
     depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    //glDepthFunc(GL_ALWAYS);
+    //glDepthFunc(GL_LESS);
+    glDepthFunc(GL_ALWAYS);
+
+    //Bind current framebuffer
+    buffers[index].shadowpass();
+    //myBuffer->bind();
+
+    //CLear the screen, only depth buffer
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
 
 
-    for(unsigned int win=0; win < buffers.size(); win++)
-	{
-        //Bind current framebuffer
-        buffers[win].shadowpass();
-        //myBuffer->bind();
-
-        //CLear the screen, only depth buffer
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
-
-
-        // Loopar igenom alla objekt i arrayen
-        for( int i = 0; i < numberOfObjects; ++i)
-        {
-            nyDepthMVP = depthMVP * listObj[i].transformations;
-            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            listObj[i].drawToDepthBuffer();
-        }
-
-        sgct::ShaderManager::instance()->unBindShaderProgram();
-
+    // Loopar igenom alla objekt i arrayen
+    for( int i = 0; i < numberOfObjects; ++i)
+    {
+        nyDepthMVP = depthMVP * listObj[i].transformations;
+        glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
+        //listObj[i].drawToDepthBuffer();
+        listObj[i].render();
     }
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
+
 
     //Unbind the framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -621,8 +614,10 @@ void myDrawFun(){
     glCullFace(GL_BACK);
 
     /*------------------SCENE SHADER------------------*/
-    for(unsigned int win=0; win < buffers.size(); win++)
-	{
+    sgct::SGCTWindow * winPtr = gEngine->getActiveWindowPtr();
+	unsigned int index = winPtr->getId();
+    //for(unsigned int win=0; win < buffers.size(); win++)
+	//{
 
     //Bind Shader scene
     sgct::ShaderManager::instance()->bindShaderProgram( "scene" );
@@ -648,26 +643,28 @@ void myDrawFun(){
         glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(listObj[i].mTextureID));
         glUniform1i(Tex_Loc, 0);
 
-        buffers[win].setShadowTex(shadowmap_Loc);
+        //buffers[index].setShadowTex(shadowmap_Loc);
 
-//        glActiveTexture(GL_TEXTURE1);
-//        glBindTexture(GL_TEXTURE_2D, gEngine->getActiveDepthTexture());
-//        glUniform1i(shadowmap_Loc, 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, buffers[index].shadowTexture);
+        glUniform1i(shadowmap_Loc, 1);
 
         listObj[i].render();
-
     }
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     //Render shadowMap-texturen
-    buffers[win].printMap();
-    }
-
-
+    //buffers[index].printMap();
+    //}
     /*----------------------------------------------*/
 
     /*------------------SKY SHADER------------------*/
+
+    //get viewport data and set the viewport
+	const int * coords;
+	coords = gEngine->getActiveViewportPixelCoords();
+	glViewport( coords[0], coords[1], coords[2], coords[3] );
 
     //Bind Shader sky
     sgct::ShaderManager::instance()->bindShaderProgram( "sky" );
@@ -688,17 +685,15 @@ void myDrawFun(){
         glUniform1i(Tex_Loc, 0);
         sun.render();
 
-/* SKIPPAR DENNA SÅ LÄNGE
+
     //SKYDOME
     nyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
 
-        //Send the transformations, texture and render
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
-        //glBindTexture(GL_TEXTURE_2D, 0);
-        //glUniform1i(Tex_Loc, 0);
-        skyDome.render();
-*/
+        //newDome->draw();
+
+
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     /*----------------------------------------------*/

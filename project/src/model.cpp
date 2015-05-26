@@ -493,12 +493,11 @@ void model::drawToDepthBuffer()
 		);
 
 		// Index buffer
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
 
 		// Draw the triangles !
-		//glDrawElements(GL_TRIANGLES, 3 * ntris,	GL_UNSIGNED_INT, (void*)0);
-		glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
-
+		glDrawElements(GL_TRIANGLES, 3 * ntris,	GL_UNSIGNED_INT, (void*)0);
+		//glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
 
 		glDisableVertexAttribArray(0);
 

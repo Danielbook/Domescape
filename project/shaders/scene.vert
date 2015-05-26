@@ -20,7 +20,7 @@ void main()
 {
     // Output position of the vertex, in clip space : MVP * position
 	gl_Position =  MVP * vec4(inPositions + vec3(0.0, 2.0, 0.0), 1.0);
-	ShadowCoord = depthBiasMVP * vec4(inPositions, 1.0); //WorldPos
+	ShadowCoord = depthBiasMVP * vec4(inPositions, 1.0);
 
 	UV = inCoords;
 
