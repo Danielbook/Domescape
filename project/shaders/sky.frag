@@ -15,7 +15,7 @@ void main()
 {
     vec3 V = position;
     vec3 L = lDir;
-    vec3 N = normals;
+    vec3 N = -normals;
 
     // Compute the proximity of this fragment to the sun.
     float dotVL = dot(V, L);
@@ -30,8 +30,8 @@ void main()
     //vec3 shadedcolor = Kc.rgb * dotNL + Kg.rgb * Kg.a / 2.0;
     //color =  vec4( shadedcolor , Kc.a);
 
-    vec3 A = vec3(0.3f, 0.4f, 0.8f);
-    vec3 D = vec3(0.8f, 0.8f, 1.0f);
+    vec3 A = vec3(1.0f, 1.0f, 1.0f);
+    vec3 D = vec3(1.0f, 1.0f, 1.0f);
     vec3 S = vec3(1.0f, 1.0f, 1.0f);
 
     vec3 R = 2.0* dot (N ,L) *L - L; // Could also have used the function reflect ()
