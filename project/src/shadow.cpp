@@ -26,11 +26,12 @@ shadow::~shadow()
 void shadow::createFBOs(GLint fb_w, GLint fb_h)
 {
 
+
     fbo = -1;
     shadowTexture = -1;
     width = fb_w;
     height = fb_h;
-    quad_vertexbuffer = -1;
+    quad_vertexbuffer = 0;
 	passThroughTex_Loc = -1;
 
     glGenFramebuffers(1, &fbo);
@@ -43,13 +44,13 @@ void shadow::createFBOs(GLint fb_w, GLint fb_h)
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowTexture, 0);
     glDrawBuffer(GL_NONE);
     //glReadBuffer(GL_NONE);
-
+    glReadBuffer(GL_NONE);
+    
     //Does the GPU support current FBO configuration?
     if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE )
     {    sgct::MessageHandler::instance()->print("FrameBuffer in bad state!\n");   }
 
     //unbind
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
@@ -120,11 +121,11 @@ void shadow::setShadowTex( GLint Loc)
 void shadow::shadowpass()
 {
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT); // Stämmer detta?
-    glCullFace(GL_BACK);
+    glCullFace(GL_FRONT); // Stämmer detta?
+    //glCullFace(GL_BACK);
 
 }
 

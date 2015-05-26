@@ -8,10 +8,10 @@ case "$1" in
 	-g)	g++ -g main.cpp objloader.cpp -o Domescape -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
         ;;
 
-	-c1)	g++ -DNON_UNIX_STDIO -O3 -s main.cpp model.cpp shadow.cpp shader.cpp -I/home/adam/Dokument/GitHub/CSPICE/cspice/include -o Domescape  /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
+	-c1)	g++ -DNON_UNIX_STDIO -O3 -s main.cpp src/model.cpp src/shadow.cpp src/shader.cpp -I/home/adam/Dokument/GitHub/CSPICE/cspice/include -o Domescape  /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
         ;;
 
-	-c2)	g++ -DNON_UNIX_STDIO -g main.cpp model.cpp shadow.cpp shader.cpp -I/home/adam/Dokument/GitHub/CSPICE/cspice/include -o Domescape  /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
+	-c2)	g++ -DNON_UNIX_STDIO -g main.cpp src/model.cpp src/shadow.cpp src/shader.cpp -I/home/adam/Dokument/GitHub/CSPICE/cspice/include -o Domescape  /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a -lsgct -lGL -lX11 -lXrandr -lXi -lXcursor -lXinerama -lXxf86vm -lpthread -std=c++11
         ;;
 
 	

@@ -16,14 +16,12 @@ endmacro (set_xcode_property)
 
 if( APPLE )
 	include_directories ( "/usr/include" )
-endif()
 
-if(WIN32)
+elseif(WIN32)
 	include_directories ( "C:/Users/Matthias/Documents/Medieteknik/spice_w32/cspice/include" )
-endif()
 
-if(linux) #linux
-	include_directories("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
+else() #linux
+	include_directories ("/home/adam/Dokument/GitHub/CSPICE/cspice/include/")
 endif()
 
 add_executable(${APP_NAME}
@@ -31,6 +29,7 @@ add_executable(${APP_NAME}
 	src/model.cpp include/model.hpp
 	src/shadow.cpp include/shadow.hpp
 	src/shader.cpp include/shader.hpp
+	src/Texture.cpp include/Texture.hpp )
 	)
 
 
@@ -188,13 +187,11 @@ endif()
 #CSPICE
 if( APPLE )
 	target_link_libraries(${APP_NAME} /usr/lib/cspice.a)
-endif()
 
-if(WIN32)
+elseif(WIN32)
 	target_link_libraries (${APP_NAME} C:/Users/Matthias/Documents/Medieteknik/spice_w32/cspice/lib/cspice.lib)
-endif()
 
-if(linux) #linux
+else() #linux
 	target_link_libraries(${APP_NAME} /home/adam/Dokument/GitHub/CSPICE/cspice/lib/cspice.a)
 endif()
 
