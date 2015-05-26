@@ -24,7 +24,7 @@ void main()
 
 	UV = inCoords;
 
-	lDir = normalize(NM * lightDir); //Ta bort NM? och lägg till * vec4(inPositions, 1.0) LightSpacePos
+	lDir = normalize(lightDir); //Ta bort NM? och lägg till * vec4(inPositions, 1.0) LightSpacePos
 
 	tnormals = normalize(NM * inNormals);
 

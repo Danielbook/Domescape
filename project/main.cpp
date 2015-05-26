@@ -18,15 +18,17 @@
 //For the time function
 #include <time.h>
 
-//#include "../cspice/include/SpiceUsr.h"
-//#include "../cspice/include/SpiceZfc.h"
 
-#include <SpiceUsr.h>
-#include <SpiceZfc.h>
+#include "../cspice/include/SpiceUsr.h"
+#include "../cspice/include/SpiceZfc.h"
+
+//#include <SpiceUsr.h>
+//#include <SpiceZfc.h>
 
 #include "model.hpp"
 #include "shadow.hpp"
 #include "shader.hpp"
+#include "Texture.hpp"
 
 sgct::Engine * gEngine;
 
@@ -172,15 +174,18 @@ int timeCount = 0;
 
 //OBJECTS
 model landscape;
-model box;
+model tree1, tree2;
+model bush1;
 model sun;
 model skyDome;
+
+Texture texure_tree1;
 
 //Funkar inte - objecten under försvinner!
 std::vector<model> objects;
 
 // Funkar - array med models
-const int numberOfObjects = 2;
+const int numberOfObjects = 3;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -284,12 +289,19 @@ void myInitOGLFun(){
     //objects.push_back(landscape);
     listObj[0] = landscape; // sparar i array
 
-    box.readOBJ("mesh/box.obj", "texture/box.png");
-    box.translate(0.0f, 0.0f, -5.0f);
-    box.scale(2.0f, 2.0f, 2.0f);
+    tree1.readOBJ("mesh/tree3.obj", "texture/tree_getto.jpeg");
+    tree1.scale(1.0f, 1.0f, 1.0f);
+    tree1.translate(-150.0f, -200.0f, -550.0f);
     //objects.push_back(box);
-    listObj[1] = box; // sparar i array
+    listObj[1] = tree1; // sparar i array
+    
+    tree2.readOBJ("mesh/tree3.obj", "texture/tree_getto.jpeg");
+    tree2.scale(1.0f, 1.0f, 1.0f);
+    tree2.translate(-300.0f, -200.0f, -400.0f);
+    //objects.push_back(box);
+    listObj[2] = tree2; // sparar i array
 
+    
     /*----------------------------------------------------------*/
 
     /*------------------------SHADOWMAP-------------------------*/
@@ -662,13 +674,13 @@ void myPostSyncPreDrawFun(){
         //glUniform1f( fxFarLoc, gEngine->getFarClippingPlane() );
 
 
-        nyDepthMVP = depthMVP * landscape.transformations;
+            nyDepthMVP = depthMVP * landscape.transformations;
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
             landscape.drawToDepthBuffer();
 
-            nyDepthMVP = depthMVP * box.transformations;
+            nyDepthMVP = depthMVP * tree1.transformations;
             glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            box.drawToDepthBuffer();
+            tree1.drawToDepthBuffer();
 
 
 
@@ -720,7 +732,7 @@ void myDrawFun(){
     glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
     
-    ////// Loopar igen alla objekt i arrayen
+    ////// Loopar igen alla objekt i arrayen ////////
     for( int i = 0; i < numberOfObjects; ++i)
     {
         nyMVP = MVP * listObj[i].transformations;
@@ -739,6 +751,7 @@ void myDrawFun(){
         listObj[i].render();
         
     }
+    //////////
 
     //Render objects
 //    std::vector<model>::iterator it;
@@ -760,29 +773,30 @@ void myDrawFun(){
 //
 //        (*it).render();
 //    }
+    /*
+
     
-/*
         nyMVP = MVP * landscape.transformations;
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(landscape.mTextureID));
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("landscape"));
         glUniform1i(Tex_Loc, 0);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, myShadow.shadowTexture);
         glUniform1i(shadowmap_Loc, 1);
         landscape.render();
 
-        nyMVP = MVP * box.transformations;
+        nyMVP = MVP * tree1.transformations;
         glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, glm::value_ptr(nyMVP));
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId(box.mTextureID));
+        glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureId("tree1") ); //sgct::TextureManager::instance()->getTextureId(texure_tree1.texID) texure_tree1.texID
         glUniform1i(Tex_Loc, 0);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, myShadow.shadowTexture);
         glUniform1i(shadowmap_Loc, 1);
-        box.render();
-*/
-    
+        tree1.render();
+
+    */
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
     //Render shadowMap-texturen

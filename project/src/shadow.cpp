@@ -120,11 +120,11 @@ void shadow::setShadowTex( GLint Loc)
 void shadow::shadowpass()
 {
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT); // Stämmer detta?
-    glCullFace(GL_BACK);
+    glCullFace(GL_FRONT); // Stämmer detta?
+    //glCullFace(GL_BACK);
 
 }
 

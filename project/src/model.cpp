@@ -269,7 +269,7 @@ void model::readOBJ(const char* filename, std::string texture) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     /*------------------------NEW CODE-----------------------------*/
-
+    
 	// Fix filename and texturename
 	std::string name = filename;
 	char chars[] = "/\-.";
@@ -281,7 +281,7 @@ void model::readOBJ(const char* filename, std::string texture) {
 	}
 
 	mTextureID = name;
-
+    
 	sgct::TextureManager::instance()->loadTexure(mTextureID, texture, true);
 
 	return;

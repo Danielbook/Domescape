@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Form1.Designer.cs">
     <Files>
-      <File FileName="Form1.Designer.cs" Line="181" Column="46" />
+      <File FileName="Form1.Designer.cs" Line="165" Column="7" />
       <File FileName="Form1.cs" Line="1" Column="1" />
       <File FileName="NetworkManager.cs" Line="1" Column="1" />
     </Files>
