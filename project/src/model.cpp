@@ -7,7 +7,7 @@
 //  Heavily inspired by Stefan Gustavsons TNM061 TriangleSoup
 //
 
-#include "model.hpp"
+#include "../include/model.hpp"
 #include <string>
 #include "sgct.h"
 #include <iostream>
