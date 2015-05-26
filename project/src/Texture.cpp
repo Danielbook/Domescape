@@ -3,7 +3,7 @@
 /* Modified, stripped-down and cleaned-up version of TGA loader from NeHe tutorial 33 */
 /* Stefan Gustavson (stefan.gustavson@liu.se 2014-02-28 */
 
-#include "Texture.hpp"
+#include "../include/Texture.hpp"
 
 /* Constructor */
 Texture::Texture() {

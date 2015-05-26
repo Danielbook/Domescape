@@ -29,7 +29,7 @@ add_executable(${APP_NAME}
 	src/model.cpp include/model.hpp
 	src/shadow.cpp include/shadow.hpp
 	src/shader.cpp include/shader.hpp
-	src/Texture.cpp include/Texture.hpp )
+	src/Texture.cpp include/Texture.hpp 
 	)
 
 
