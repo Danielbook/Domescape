@@ -25,10 +25,10 @@
 //#include <SpiceZfc.h>
 
 
-#include "model.hpp"
-#include "shadow.hpp"
-#include "shader.hpp"
-#include "Texture.hpp"
+#include "include/model.hpp"
+#include "include/shadow.hpp"
+#include "include/shader.hpp"
+#include "include/Texture.hpp"
 
 sgct::Engine * gEngine;
 
