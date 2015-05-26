@@ -479,8 +479,6 @@ void model::render()
 //It is what it sounds like!
 void model::drawToDepthBuffer()
 {
-
-<<<<<<< HEAD
         // 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -506,7 +504,6 @@ void model::drawToDepthBuffer()
 
 		glDisableVertexAttribArray(0);
 
-=======
         // 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -525,7 +522,6 @@ void model::drawToDepthBuffer()
 		// Draw the triangles !
 		glDrawElements(GL_TRIANGLES, 3 * ntris,	GL_UNSIGNED_INT, (void*)0);
 		//glDrawArrays(GL_TRIANGLES, 0, 3*ntris);
->>>>>>> 6a2bcfc268b4a02f4e911ba842c98e7afe0bd69f
 
 		glDisableVertexAttribArray(0);
 
