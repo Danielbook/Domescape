@@ -13,3 +13,5 @@ Fortsättning
   1. Gå omkring i landskapet ◼
   2. "Rörelse när man går" ◻
   3. Valfritt stereo och mono? ◻
+  4. 
+  GUI-IP: 130.236.243.50
