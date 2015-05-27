@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdlib.h>
+#include <chrono>
 #include <stdio.h>
 
 //For the time function
@@ -890,7 +891,7 @@ void externalControlStatusCallback( bool connected ){
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
 void resetToCurrentTime() {
-
+	/*
    time_t now = time(0);
 
     struct tm tstruct;
@@ -899,17 +900,14 @@ void resetToCurrentTime() {
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
-/*
+	std::string tempTime(&buffer[0]);
+	*/
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
 	std::stringstream ss;
 	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
 	std::string tempTime = ss.str();
-*/
-
-
-    std::string tempTime(&buffer[0]);
 
     std::string tempYear    = tempTime.substr(0,4);
     std::string tempMonth   = tempTime.substr(5,2);
