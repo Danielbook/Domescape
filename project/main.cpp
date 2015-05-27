@@ -286,27 +286,27 @@ void myInitOGLFun(){
     listObj[0] = landscape; // sparar i array
 
     // tree 1
-    tree.readOBJ("mesh/tree_4.obj", "texture/tree_getto.jpeg");
+    tree.readOBJ("mesh/Tree_4.obj", "texture/tree_getto.jpeg");
     tree.scale(1.0f, 1.0f,1.0f);
     tree.translate(5.0f, -17.0f, -40.0f);
     listObj[1] = tree; // sparar i array
-    
+
     // tree 2
     tree.translate(15.0f, 1.0f, 10.0f);
     listObj[2] = tree; // sparar i array
-    
+
     //tree 3
     tree.translate(20.0f, 1.0f, -20.0f);
     listObj[3] = tree; // sparar i array
-    
+
     //tree 4
     tree.translate(-40.0f, 1.0f, 2.0f);
     listObj[4] = tree; // sparar i array
-    
+
     //tree 5
     tree.translate(-20.0f, 1.0f, -10.0f);
     listObj[5] = tree; // sparar i array
-    
+
     //tree 5
     tree.translate(-20.0f, 1.0f, 4.0f);
     listObj[6] = tree; // sparar i array
@@ -592,17 +592,7 @@ void myPostSyncPreDrawFun(){
     //CLear the screen, only depth buffer
     glClear(GL_DEPTH_BUFFER_BIT);
 
-            nyDepthMVP = depthMVP * landscape.transformations;
-            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            landscape.drawToDepthBuffer();
-
-            nyDepthMVP = depthMVP * tree.transformations;
-            glUniformMatrix4fv(depthMVP_Loc, 1, GL_FALSE, glm::value_ptr(nyDepthMVP));
-            tree.drawToDepthBuffer();
-
     sgct::ShaderManager::instance()->bindShaderProgram( "depthShadowmap" );
-
-
 
     // Loopar igenom alla objekt i arrayen
     for( int i = 0; i < numberOfObjects; ++i)
