@@ -1036,8 +1036,8 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     //Daylight
     if(fSunTheta >= 25.0f*3.1415/180.0 && fSunTheta <= 155.0f*3.1415/180.0)
     {
-        gEngine->setClearColor(std::max(0.0f, 0.3f* abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 1.3f*abs(fSunTheta)), 1.0f);
-        //gEngine->setClearColor(0.0f/256.0f, 191.0f/256.0f, 255.0f/256.0f, 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.3f* abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 1.3f*abs(fSunTheta)), 1.0f);
+        gEngine->setClearColor(0.0f/256.0f, 191.0f/256.0f, 255.0f/256.0f, 1.0f);
         sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         fAmb = 0.8f;
     }
@@ -1045,24 +1045,24 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     else if(fSunTheta <= -10.0f*3.1415/180.0 || fSunTheta >= 190.0f*3.1415/180.0)
     {
         sColor = glm::vec4(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
-        gEngine->setClearColor(std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.3f*abs(fSunTheta)), 1.0f);
-        //gEngine->setClearColor(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.3f*abs(fSunTheta)), 1.0f);
+        gEngine->setClearColor(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
         fAmb = 0.3f;
     }
     //Dawn
     else if(fSunTheta < 25.0f*3.1415/180.0)
     {
         sColor = glm::vec4(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
-        gEngine->setClearColor(std::max(0.0f, 0.4f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), 1.0f);
-        //gEngine->setClearColor(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.4f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), 1.0f);
+        gEngine->setClearColor(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
         fAmb = 0.6f;
     }
     //Dusk
     else // (fSunTheta > 155.0f*3.1415/180.0)
     {
         sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
-        gEngine->setClearColor(std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), 1.0f);
-        //gEngine->setClearColor(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), 1.0f);
+        gEngine->setClearColor(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
         fAmb = 0.5f;
     }
 }
