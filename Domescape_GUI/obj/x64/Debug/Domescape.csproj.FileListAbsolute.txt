@@ -1,0 +1,8 @@
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\obj\x64\Debug\SGCTRemote.exe
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\bin\x64\Debug\SGCTRemote.exe
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\bin\x64\Debug\SGCTRemote.pdb
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\obj\x64\Debug\Domescape.csprojResolveAssemblyReference.cache
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\obj\x64\Debug\Domescape.Form1.resources
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\obj\x64\Debug\Domescape.Properties.Resources.resources
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\obj\x64\Debug\Domescape.csproj.GenerateResource.Cache
+C:\Users\Matthias\Documents\Medieteknik\3D_Projekt\Domescape_GUI\obj\x64\Debug\SGCTRemote.pdb

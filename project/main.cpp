@@ -13,13 +13,14 @@
 #include <fstream>
 #include <sstream>
 #include <stdlib.h>
+#include <chrono>
 #include <stdio.h>
 
 //For the time function
 #include <time.h>
 
-#include "../cspice/include/SpiceUsr.h"
-#include "../cspice/include/SpiceZfc.h"
+//#include "../cspice/include/SpiceUsr.h"
+//#include "../cspice/include/SpiceZfc.h"
 
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
@@ -148,12 +149,15 @@ sgct::SharedBool oneSecondPassed(false);
 
 /*---------------OTHER VARIABLES--------------*/
 //SUN POSITION
-float fSunAnglePhi;
-float fSunAngleTheta;
+sgct::SharedFloat fSunAnglePhi = 0.0f;
+sgct::SharedFloat fSunAngleTheta = 0.0f;
+sgct::SharedObject<glm::vec3> vSunPos;
+sgct::SharedObject<glm::vec3> lDir;
+
 float fAmb = 0.2f; //Initialize to low for debugging purposes
 glm::vec4 sColor = glm::vec4(0.4f, 0.4f, 0.4f, 0.4f); //Initialize to low for debugging purposes
-glm::vec3 lDir;
-glm::vec3 vSunPos;
+//glm::vec3 lDir;
+//glm::vec3 vSunPos;
 
 //TIME
 enum timeVariables{YEAR = 0, MONTH = 1, DAY = 2, HOUR = 3, MINUTE = 4, SECOND = 5};
@@ -552,19 +556,22 @@ void myPostSyncPreDrawFun(){
     //Kallas endast 1gång/frame till skillnad från draw...
     /*------------------SUNPOSITION-----------------------*/
 
+    if( gEngine->isMaster() ) {
+    calcSunPosition();
+    
     // Set light properties
     float fSunDis = 800;
-
-    calcSunPosition();
-
-    fSunAngleTheta += 40.0f*3.1415f/180.0f;
-
-    vSunPos = glm::vec3(fSunDis*sin(fSunAngleTheta)*cos(fSunAnglePhi),fSunDis*sin(fSunAngleTheta)*sin(fSunAnglePhi),fSunDis*cos(fSunAngleTheta));
-
-    calcSkyColor(fSunAnglePhi, fSunAngleTheta, fAmb, sColor);
-
-    lDir = glm::normalize(vSunPos);
-
+    
+    fSunAngleTheta.setVal( fSunAngleTheta.getVal() + 40.0f*3.1415f/180.0f );
+    
+    vSunPos.setVal(glm::vec3( fSunDis*sin(fSunAngleTheta.getVal())*cos(fSunAnglePhi.getVal()),fSunDis*sin(fSunAngleTheta.getVal())*sin(fSunAnglePhi.getVal()),fSunDis*cos(fSunAngleTheta.getVal())) );
+    
+    lDir.setVal( glm::normalize(vSunPos.getVal()) );
+    
+    }
+    
+    calcSkyColor(fSunAnglePhi.getVal(), fSunAngleTheta.getVal(), fAmb, sColor);
+    
     /*---------------------------------------------*/
 
     /*------------------SHADOW MAP------------------*/
@@ -577,7 +584,7 @@ void myPostSyncPreDrawFun(){
     // Compute the MVP matrix from the light's point of view
     //glm::mat4 depthProjectionMatrix = glm::ortho<float>( -100, 100, -100, 100, 0.1, 150); //Denna ska användas sen!
     glm::mat4 depthProjectionMatrix = gEngine->getActiveProjectionMatrix();
-    glm::mat4 depthViewMatrix = glm::lookAt(vSunPos, glm::vec3(0,0,0), glm::vec3(0,1,0));
+    glm::mat4 depthViewMatrix = glm::lookAt(vSunPos.getVal(), glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
     depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
@@ -641,7 +648,7 @@ void myDrawFun(){
 
     glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc_S, 1, GL_FALSE, &NM[0][0]);
-    glUniform3fv(lDir_Loc_S, 1, &lDir[0]);
+    glUniform3fv(lDir_Loc_S, 1, &lDir.getVal()[0]);
 
     //SKYDOME
     glCullFace(GL_FRONT);
@@ -670,10 +677,9 @@ void myDrawFun(){
     //glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
 
-        //SUN
     nyMVP = MVP;
         //Transformations from origo. ORDER MATTERS!
-        nyMVP = glm::translate(nyMVP, vSunPos);
+        nyMVP = glm::translate(nyMVP, vSunPos.getVal());
 
         //Send the transformations, texture and render
         glUniformMatrix4fv(MVP_Loc_S, 1, GL_FALSE, glm::value_ptr(nyMVP));
@@ -703,7 +709,7 @@ void myDrawFun(){
     glUniformMatrix4fv(MVP_Loc, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix3fv(NM_Loc, 1, GL_FALSE, &NM[0][0]);
     glUniform4fv(sColor_Loc, 1, &sColor[0]);
-    glUniform3fv(lDir_Loc, 1, &lDir[0]);
+    glUniform3fv(lDir_Loc, 1, &lDir.getVal()[0]);
     glUniform1fv(Amb_Loc, 1, &fAmb);
     glUniformMatrix4fv(depthBiasMVP_Loc, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
@@ -748,7 +754,13 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeObj( &xform );
     sgct::SharedData::instance()->writeInt( &curr_time );
     sgct::SharedData::instance()->writeBool( &reloadShader );
-
+    sgct::SharedData::instance()->writeFloat( &fSunAnglePhi );
+    sgct::SharedData::instance()->writeFloat( &fSunAngleTheta );
+    
+    sgct::SharedData::instance()->writeObj( &vSunPos );
+    sgct::SharedData::instance()->writeObj( &lDir );
+    
+    
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
@@ -760,7 +772,12 @@ void myDecodeFun(){
     sgct::SharedData::instance()->readObj( &xform );
     sgct::SharedData::instance()->readInt( &curr_time );
     sgct::SharedData::instance()->readBool( &reloadShader );
-
+    sgct::SharedData::instance()->readFloat( &fSunAnglePhi );
+    sgct::SharedData::instance()->readFloat( &fSunAngleTheta );
+    
+    sgct::SharedData::instance()->readObj( &vSunPos );
+    sgct::SharedData::instance()->readObj( &lDir );
+    
     //GUI
     sgct::SharedData::instance()->readBool( &timeIsTicking );
     sgct::SharedData::instance()->readString( &date );
@@ -874,15 +891,23 @@ void externalControlStatusCallback( bool connected ){
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
 void resetToCurrentTime() {
-    time_t now = time(0);
+	/*
+   time_t now = time(0);
+
     struct tm tstruct;
     char buffer[80];
     tstruct = *localtime(&now);
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
+	std::string tempTime(&buffer[0]);
+	*/
+	auto now = std::chrono::system_clock::now();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
-    std::string tempTime(&buffer[0]);
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
+	std::string tempTime = ss.str();
 
     std::string tempYear    = tempTime.substr(0,4);
     std::string tempMonth   = tempTime.substr(5,2);
@@ -966,9 +991,9 @@ void calcSunPosition(){
 
     reclat_c(&sunPointOnEarth, &r, &sunPointLon, &sunPointLat);
 
-    fSunAnglePhi = 3.1415/2 - (ourLat-sunPointLat);
+    fSunAnglePhi.setVal( 3.1415/2 - (ourLat-sunPointLat) );
 
-    fSunAngleTheta = ourLon - sunPointLon;
+    fSunAngleTheta.setVal( ourLon - sunPointLon );
 }
 
 void checkTime(){
