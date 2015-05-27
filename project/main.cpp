@@ -18,8 +18,8 @@
 //For the time function
 #include <time.h>
 
-//#include "../cspice/include/SpiceUsr.h"
-//#include "../cspice/include/SpiceZfc.h"
+#include "../cspice/include/SpiceUsr.h"
+#include "../cspice/include/SpiceZfc.h"
 
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
@@ -286,9 +286,9 @@ void myInitOGLFun(){
     listObj[0] = landscape; // sparar i array
 
     // tree 1
-    tree.readOBJ("mesh/tree.obj", "texture/tree_getto.jpeg");
-    tree.scale(1.0f, 1.0f,1.0f);
-    tree.translate(5.0f, -17.0f, -40.0f);
+    tree.readOBJ("mesh/tree.obj", "texture/tree.jpeg");
+    tree.scale(3.0f, 3.0f, 3.0f);
+    tree.translate(5.0f, -20.0f, -40.0f);
     listObj[1] = tree; // sparar i array
 
     // tree 2
