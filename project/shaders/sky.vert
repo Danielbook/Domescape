@@ -19,9 +19,10 @@ void main()
 {
     // Output position of the vertex, in clip space : MVP * position
 	gl_Position =  MVP * vec4(inPositions, 1.0);
-    position = vec3(vec4(inPositions, 1.0));
+    position = inPositions;
 
-    lDir = normalize(NM * lightDir);
+    //lDir = normalize(NM * lightDir);
+    lDir = lightDir;
 
     normals = normalize(NM * inNormals);
 
