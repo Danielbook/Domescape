@@ -286,7 +286,7 @@ void myInitOGLFun(){
     listObj[0] = landscape; // sparar i array
 
     // tree 1
-    tree.readOBJ("mesh/Tree_4.obj", "texture/tree_getto.jpeg");
+    tree.readOBJ("mesh/tree.obj", "texture/tree_getto.jpeg");
     tree.scale(1.0f, 1.0f,1.0f);
     tree.translate(5.0f, -17.0f, -40.0f);
     listObj[1] = tree; // sparar i array
@@ -582,8 +582,8 @@ void myPostSyncPreDrawFun(){
     depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
     glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_LESS);
-    glDepthFunc(GL_ALWAYS);
+    glDepthFunc(GL_LESS);
+    //glDepthFunc(GL_ALWAYS);
 
     //Bind current framebuffer
     buffers[index].shadowpass();
@@ -629,7 +629,7 @@ void myDrawFun(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -1047,7 +1047,7 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     //Daylight
     if(fSunTheta >= 25.0f*3.1415/180.0 && fSunTheta <= 155.0f*3.1415/180.0)
     {
-        //gEngine->setClearColor(std::max(0.0f, 0.0f*fSunTheta), std::max(0.0f, 0.7f*fSunTheta), std::max(0.0f, 1.0f*fSunTheta), 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.3f* abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 1.3f*abs(fSunTheta)), 1.0f);
         gEngine->setClearColor(0.0f/256.0f, 191.0f/256.0f, 255.0f/256.0f, 1.0f);
         sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         fAmb = 0.8f;
@@ -1056,7 +1056,7 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     else if(fSunTheta <= -10.0f*3.1415/180.0 || fSunTheta >= 190.0f*3.1415/180.0)
     {
         sColor = glm::vec4(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
-        //gEngine->setClearColor(std::max(0.0f, 0.2f*fSunTheta), std::max(0.0f, 0.2f*fSunTheta), std::max(0.0f, 0.5f*fSunTheta), 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.3f*abs(fSunTheta)), 1.0f);
         gEngine->setClearColor(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
         fAmb = 0.3f;
     }
@@ -1064,7 +1064,7 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     else if(fSunTheta < 25.0f*3.1415/180.0)
     {
         sColor = glm::vec4(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
-        //gEngine->setClearColor(std::max(0.0f, 0.5f*fSunTheta), std::max(0.0f, 0.8f*fSunTheta), std::max(0.0f, 0.9f*fSunTheta), 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.4f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), 1.0f);
         gEngine->setClearColor(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
         fAmb = 0.6f;
     }
@@ -1072,7 +1072,7 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     else // (fSunTheta > 155.0f*3.1415/180.0)
     {
         sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
-        //gEngine->setClearColor(std::max(0.0f, 0.9f*fSunTheta), std::max(0.0f, 0.2f*fSunTheta), std::max(0.0f, 0.2f*fSunTheta), 1.0f);
+        //gEngine->setClearColor(std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), 1.0f);
         gEngine->setClearColor(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
         fAmb = 0.5f;
     }
