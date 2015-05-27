@@ -18,11 +18,11 @@
 //For the time function
 #include <time.h>
 
-#include "../cspice/include/SpiceUsr.h"
-#include "../cspice/include/SpiceZfc.h"
+//#include "../cspice/include/SpiceUsr.h"
+//#include "../cspice/include/SpiceZfc.h"
 
-//#include <SpiceUsr.h>
-//#include <SpiceZfc.h>
+#include <SpiceUsr.h>
+#include <SpiceZfc.h>
 
 #include "include/model.hpp"
 #include "include/shadow.hpp"
@@ -44,7 +44,7 @@ void myPreSyncFun();//<---------------------------------┐
 void myPostSyncPreDrawFun(); //                         |
 //      |                                               |
 //      V<-------------|                                |
-//////CLEAR BUFFERS/// |                                |
+//////CLEAR BUFFERS/   |                                |
 //      |              |                                |
 //      V              |                                |
 void myDrawFun();//    |                                |
@@ -177,7 +177,7 @@ std::vector<model> objects;
 
 
 // Array with all models
-const int numberOfObjects = 4;
+const int numberOfObjects = 7;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -285,20 +285,31 @@ void myInitOGLFun(){
     landscape.scale(1.0f, 1.0f, 1.0f);
     listObj[0] = landscape; // sparar i array
 
-    // träd 1
-    tree.readOBJ("mesh/tree.obj", "texture/tree_getto.jpeg");
+    // tree 1
+    tree.readOBJ("mesh/tree_4.obj", "texture/tree_getto.jpeg");
     tree.scale(1.0f, 1.0f,1.0f);
     tree.translate(5.0f, -17.0f, -40.0f);
     listObj[1] = tree; // sparar i array
-
-    // träd 2
-    tree.translate(-8.0f, 1.0f, 20.0f);
+    
+    // tree 2
+    tree.translate(15.0f, 1.0f, 10.0f);
     listObj[2] = tree; // sparar i array
-
-    //träd 3
-    tree.translate(-15.0f, 1.0f, -10.0f);
+    
+    //tree 3
+    tree.translate(20.0f, 1.0f, -20.0f);
     listObj[3] = tree; // sparar i array
-
+    
+    //tree 4
+    tree.translate(-40.0f, 1.0f, 2.0f);
+    listObj[4] = tree; // sparar i array
+    
+    //tree 5
+    tree.translate(-20.0f, 1.0f, -10.0f);
+    listObj[5] = tree; // sparar i array
+    
+    //tree 5
+    tree.translate(-20.0f, 1.0f, 4.0f);
+    listObj[6] = tree; // sparar i array
     /*----------------------------------------------------------*/
 
     /*------------------------SHADOWMAP-------------------------*/
@@ -475,19 +486,6 @@ void myPreSyncFun(){
 
 void myPostSyncPreDrawFun(){
 
-
-    ///////////TIME////////////////////
-
-    oneSecondPassed.setVal(false);
-
-    if( oneSecondPassed.getVal() ){
-
-        if( timeIsTicking.getVal() ){
-            checkTime();
-        }
-    }
-
-    ///////////////////////////////////
 
     if( reloadShader.getVal() )
     {
