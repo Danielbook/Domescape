@@ -19,6 +19,9 @@
 //For the time function
 #include <time.h>
 
+//#include "../cspice/include/SpiceUsr.h"
+//#include "../cspice/include/SpiceZfc.h"
+
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
 
@@ -167,15 +170,17 @@ model house;
 model bench;
 model tree;
 model bush1;
+model stump;
 model sun;
 model skyDome;
+
 sgct_utils::SGCTDome* newDome;
 
 // används ej till tga textur
 //Texture texure_tree1;
 
 // Array with all models
-const int numberOfObjects = 11;
+const int numberOfObjects = 13;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -293,43 +298,54 @@ void myInitOGLFun(){
     // tree 1
     tree.readOBJ("mesh/tree.obj", "texture/leaf.jpg");
     tree.scale(1.0f, 1.0f,1.0f);
-    tree.translate(2.0f, 0.0f, -5.0f);
+    tree.translate(2.0f, 0.5f, -15.0f);
     listObj[2] = tree; // sparar i array
 
     // tree 2
-    tree.translate(15.0f, -2.0f, 2.0f);
+    tree.translate(18.0f, -2.2f, 2.0f);
     listObj[3] = tree; // sparar i array
 
     //tree 3
-    tree.translate(20.0f, -1.0f, -6.0f);
+    tree.translate(-5.0f, 1.0f, -10.0f);
     listObj[4] = tree; // sparar i array
 
     //tree 4
-    tree.translate(-7.0f, 0.0f, -4.0f);
+    tree.translate(-25.0f, 2.3f, -20.0f);
     listObj[5] = tree; // sparar i array
 
     //tree 5
-    tree.translate(-30.0f, 2.0f, -10.0f);
+    tree.translate(-10.0f, 1.0f, -15.0f);
     listObj[6] = tree; // sparar i array
 
     //tree 5
-    tree.translate(-10.0f, 1.0f, 4.0f);
+    tree.translate(-10.0f, 0.0f, 4.0f);
     listObj[7] = tree; // sparar i array
 
-    //tree 6
+    //tree 8
     tree.translate(2.0f, 0.0f, 4.0f);
     listObj[8] = tree; // sparar i array
 
-    //tree 7
+    //tree 9
     tree.translate(8.0f, 0.0f, 4.0f);
     listObj[9] = tree; // sparar i array
+    
+    //tree 9
+    tree.translate(80.0f, 0.0f, 4.0f);
+    listObj[10] = tree; // sparar i array
 
     // House
     house.readOBJ("mesh/house.obj", "texture/wall.jpg");
     house.scale(0.3f, 0.3f, 0.3f);
-    house.translate(20.0f, 0.0f, -20.0f);
+    house.translate(30.0f, 0.0f, -20.0f);
     house.rotate(45.0f, 0.0f, 1.0f, 0.0f);
-    listObj[10] = house; // sparar i array
+    listObj[11] = house; // sparar i array
+    
+    // Stump
+    stump.readOBJ("mesh/stump.obj", "texture/stumptex.jpg");
+    stump.scale(0.7f, 0.7f, 0.7f);
+    stump.translate(-16.0f, 2.4f, -15.0f);
+    listObj[12] = stump; // sparar i array
+    
     /*----------------------------------------------------------*/
 
     /*------------------------SHADOWMAP-------------------------*/
