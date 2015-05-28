@@ -907,6 +907,8 @@ void externalControlStatusCallback( bool connected ){
  */
 void resetToCurrentTime() {
 
+// ----------------------MAC/UNIX TIME------- -----------------------
+	//*
    time_t now = time(0);
 
     struct tm tstruct;
@@ -916,14 +918,22 @@ void resetToCurrentTime() {
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
 	std::string tempTime(&buffer[0]);
-/*
+
+	//*/
+	/*
+// ------------------------------------------------------------------
+
+// ----------------------WINDOWS TIME--------- ----------------------
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
 	std::stringstream ss;
 	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
 	std::string tempTime = ss.str();
+
 */
+// ------------------------------------------------------------------
+
     std::string tempYear    = tempTime.substr(0,4);
     std::string tempMonth   = tempTime.substr(5,2);
     std::string tempDay     = tempTime.substr(8,2);
