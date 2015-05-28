@@ -45,7 +45,7 @@ void shadow::createFBOs(GLint fb_w, GLint fb_h)
     glDrawBuffer(GL_NONE);
     //glReadBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
-    
+
     //Does the GPU support current FBO configuration?
     if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE )
     {    sgct::MessageHandler::instance()->print("FrameBuffer in bad state!\n");   }
@@ -124,8 +124,8 @@ void shadow::shadowpass()
     //glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT); // Stämmer detta?
-    //glCullFace(GL_BACK);
+    //glCullFace(GL_FRONT); // Stämmer detta?
+    glCullFace(GL_BACK);
 
 }
 

@@ -19,9 +19,6 @@
 //For the time function
 #include <time.h>
 
-//#include "../cspice/include/SpiceUsr.h"
-//#include "../cspice/include/SpiceZfc.h"
-
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
 
@@ -156,8 +153,7 @@ sgct::SharedObject<glm::vec3> lDir;
 
 float fAmb = 0.2f; //Initialize to low for debugging purposes
 glm::vec4 sColor = glm::vec4(0.4f, 0.4f, 0.4f, 0.4f); //Initialize to low for debugging purposes
-//glm::vec3 lDir;
-//glm::vec3 vSunPos;
+
 
 //TIME
 enum timeVariables{YEAR = 0, MONTH = 1, DAY = 2, HOUR = 3, MINUTE = 4, SECOND = 5};
@@ -167,6 +163,8 @@ int lastSecond = 0;
 
 //OBJECTS
 model landscape;
+model house;
+model bench;
 model tree;
 model bush1;
 model sun;
@@ -176,12 +174,8 @@ sgct_utils::SGCTDome* newDome;
 // används ej till tga textur
 //Texture texure_tree1;
 
-//Funkar inte - objecten under försvinner!
-std::vector<model> objects;
-
-
 // Array with all models
-const int numberOfObjects = 7;
+const int numberOfObjects = 11;
 model listObj[numberOfObjects];
 
 glm::mat4 nyDepthMVP;
@@ -285,35 +279,57 @@ void myInitOGLFun(){
     // OBJECTS TO SCENE
     //Transformations from origo. ORDER MATTERS!
     landscape.readOBJ("mesh/landscape2.obj", "texture/landscape2.png");
-    landscape.translate(0.0f, -20.0f, 0.0f);
+    landscape.translate(0.0f, -4.0f, 0.0f);
     landscape.scale(1.0f, 1.0f, 1.0f);
     listObj[0] = landscape; // sparar i array
 
-    // tree 1
-    tree.readOBJ("mesh/tree.obj", "texture/tree_getto.jpeg");
-    tree.scale(1.0f, 1.0f,1.0f);
-    tree.translate(5.0f, -17.0f, -40.0f);
-    listObj[1] = tree; // sparar i array
+    // Bench
+    bench.readOBJ("mesh/bench.obj", "texture/box.png");
+    bench.scale(0.05f, 0.05f, 0.05f);
+    bench.translate(20.0f, 0.0f, -20.0f);
+    bench.rotate(40.0f, 0.0f, 1.0f, 0.0f);
+    listObj[1] = bench; // sparar i array
 
-    // tree 2
-    tree.translate(15.0f, 1.0f, 10.0f);
+    // tree 1
+    tree.readOBJ("mesh/tree.obj", "texture/leaf.jpg");
+    tree.scale(1.0f, 1.0f,1.0f);
+    tree.translate(2.0f, 0.0f, -5.0f);
     listObj[2] = tree; // sparar i array
 
-    //tree 3
-    tree.translate(20.0f, 1.0f, -20.0f);
+    // tree 2
+    tree.translate(15.0f, -2.0f, 2.0f);
     listObj[3] = tree; // sparar i array
 
-    //tree 4
-    tree.translate(-40.0f, 1.0f, 2.0f);
+    //tree 3
+    tree.translate(20.0f, -1.0f, -6.0f);
     listObj[4] = tree; // sparar i array
 
-    //tree 5
-    tree.translate(-20.0f, 1.0f, -10.0f);
+    //tree 4
+    tree.translate(-7.0f, 0.0f, -4.0f);
     listObj[5] = tree; // sparar i array
 
     //tree 5
-    tree.translate(-20.0f, 1.0f, 4.0f);
+    tree.translate(-30.0f, 2.0f, -10.0f);
     listObj[6] = tree; // sparar i array
+
+    //tree 5
+    tree.translate(-10.0f, 1.0f, 4.0f);
+    listObj[7] = tree; // sparar i array
+
+    //tree 6
+    tree.translate(2.0f, 0.0f, 4.0f);
+    listObj[8] = tree; // sparar i array
+
+    //tree 7
+    tree.translate(8.0f, 0.0f, 4.0f);
+    listObj[9] = tree; // sparar i array
+
+    // House
+    house.readOBJ("mesh/house.obj", "texture/wall.jpg");
+    house.scale(0.3f, 0.3f, 0.3f);
+    house.translate(20.0f, 0.0f, -20.0f);
+    house.rotate(45.0f, 0.0f, 1.0f, 0.0f);
+    listObj[10] = house; // sparar i array
     /*----------------------------------------------------------*/
 
     /*------------------------SHADOWMAP-------------------------*/
@@ -555,23 +571,23 @@ void myPostSyncPreDrawFun(){
 
     //Kallas endast 1gång/frame till skillnad från draw...
     /*------------------SUNPOSITION-----------------------*/
-
+    //Is required for the cluster to be synced! Calculations only made on the master.
     if( gEngine->isMaster() ) {
+
     calcSunPosition();
-    
+
     // Set light properties
     float fSunDis = 800;
-    
+
     fSunAngleTheta.setVal( fSunAngleTheta.getVal() + 40.0f*3.1415f/180.0f );
-    
+
     vSunPos.setVal(glm::vec3( fSunDis*sin(fSunAngleTheta.getVal())*cos(fSunAnglePhi.getVal()),fSunDis*sin(fSunAngleTheta.getVal())*sin(fSunAnglePhi.getVal()),fSunDis*cos(fSunAngleTheta.getVal())) );
-    
+
     lDir.setVal( glm::normalize(vSunPos.getVal()) );
-    
     }
-    
+
     calcSkyColor(fSunAnglePhi.getVal(), fSunAngleTheta.getVal(), fAmb, sColor);
-    
+
     /*---------------------------------------------*/
 
     /*------------------SHADOW MAP------------------*/
@@ -582,7 +598,7 @@ void myPostSyncPreDrawFun(){
 	winPtr->getFBOPtr()->unBind();
 
     // Compute the MVP matrix from the light's point of view
-    //glm::mat4 depthProjectionMatrix = glm::ortho<float>( -100, 100, -100, 100, 0.1, 150); //Denna ska användas sen!
+    //glm::mat4 depthProjectionMatrix = glm::ortho<float>( -100, 100, -100, 100, 0.1, 150); //Denna borde användas sen!
     glm::mat4 depthProjectionMatrix = gEngine->getActiveProjectionMatrix();
     glm::mat4 depthViewMatrix = glm::lookAt(vSunPos.getVal(), glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
@@ -636,7 +652,6 @@ void myDrawFun(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //glDisable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -743,7 +758,7 @@ void myDrawFun(){
 //	const int * coords;
 //	coords = gEngine->getActiveViewportPixelCoords();
 //	glViewport( coords[0], coords[1], coords[2], coords[3] );
-    //}
+    //
     /*----------------------------------------------*/
 
     glDisable( GL_CULL_FACE );
@@ -756,11 +771,11 @@ void myEncodeFun(){
     sgct::SharedData::instance()->writeBool( &reloadShader );
     sgct::SharedData::instance()->writeFloat( &fSunAnglePhi );
     sgct::SharedData::instance()->writeFloat( &fSunAngleTheta );
-    
+
     sgct::SharedData::instance()->writeObj( &vSunPos );
     sgct::SharedData::instance()->writeObj( &lDir );
-    
-    
+
+
     //GUI
     sgct::SharedData::instance()->writeBool( &timeIsTicking );
     sgct::SharedData::instance()->writeString( &date );
@@ -774,10 +789,10 @@ void myDecodeFun(){
     sgct::SharedData::instance()->readBool( &reloadShader );
     sgct::SharedData::instance()->readFloat( &fSunAnglePhi );
     sgct::SharedData::instance()->readFloat( &fSunAngleTheta );
-    
+
     sgct::SharedData::instance()->readObj( &vSunPos );
     sgct::SharedData::instance()->readObj( &lDir );
-    
+
     //GUI
     sgct::SharedData::instance()->readBool( &timeIsTicking );
     sgct::SharedData::instance()->readString( &date );
@@ -891,7 +906,7 @@ void externalControlStatusCallback( bool connected ){
  Function to calculate the current time, maybe needed to send this out to all the slaves later?
  */
 void resetToCurrentTime() {
-	/*
+
    time_t now = time(0);
 
     struct tm tstruct;
@@ -901,14 +916,14 @@ void resetToCurrentTime() {
     // for more information about date/time format
     strftime(buffer, sizeof(buffer), "%F-%X", &tstruct);
 	std::string tempTime(&buffer[0]);
-	*/
+/*
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
 	std::stringstream ss;
 	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
 	std::string tempTime = ss.str();
-
+*/
     std::string tempYear    = tempTime.substr(0,4);
     std::string tempMonth   = tempTime.substr(5,2);
     std::string tempDay     = tempTime.substr(8,2);
@@ -1058,11 +1073,13 @@ void checkTime(){
 void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor)
 {
 
+    gEngine->setClearColor(std::max(0.0f, std::min(0.7f * -cos(fSunTheta), 0.8f)), std::max(0.0f, std::min(0.7f * cos(fSunTheta), 0.7f)), std::max(0.5f, std::min(5.0f * sin(fSunTheta), 1.0f)), 1.0f);
+
     //Daylight
     if(fSunTheta >= 25.0f*3.1415/180.0 && fSunTheta <= 155.0f*3.1415/180.0)
     {
         //gEngine->setClearColor(std::max(0.0f, 0.3f* abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 1.3f*abs(fSunTheta)), 1.0f);
-        gEngine->setClearColor(0.0f/256.0f, 191.0f/256.0f, 255.0f/256.0f, 1.0f);
+        //gEngine->setClearColor(0.0f/256.0f, 191.0f/256.0f, 255.0f/256.0f, 1.0f);
         sColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         fAmb = 0.8f;
     }
@@ -1071,24 +1088,24 @@ void calcSkyColor(float fSunPhi, float fSunTheta, float &fAmb, glm::vec4 &sColor
     {
         sColor = glm::vec4(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
         //gEngine->setClearColor(std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.1f*abs(fSunTheta)), std::max(0.0f, 0.3f*abs(fSunTheta)), 1.0f);
-        gEngine->setClearColor(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
-        fAmb = 0.3f;
+        //gEngine->setClearColor(25.0f/256.0f, 25.0f/256.0f, 112.0f/256.0f, 1.0f);
+        fAmb = 0.4f;
     }
     //Dawn
     else if(fSunTheta < 25.0f*3.1415/180.0)
     {
         sColor = glm::vec4(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
         //gEngine->setClearColor(std::max(0.0f, 0.4f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.8f*abs(fSunTheta)), 1.0f);
-        gEngine->setClearColor(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
-        fAmb = 0.6f;
+        //gEngine->setClearColor(124.0f/256.0f, 234.0f/256.0f, 255.0f/256.0f, 1.0f);
+        fAmb = 0.7f;
     }
     //Dusk
     else // (fSunTheta > 155.0f*3.1415/180.0)
     {
         sColor = glm::vec4(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
         //gEngine->setClearColor(std::max(0.0f, 0.8f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), std::max(0.0f, 0.2f*abs(fSunTheta)), 1.0f);
-        gEngine->setClearColor(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
-        fAmb = 0.5f;
+        //gEngine->setClearColor(247.0f/256.0f, 21.0f/256.0f, 21.0f/256.0f, 1.0f);
+        fAmb = 0.6f;
     }
 }
 
