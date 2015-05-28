@@ -41,7 +41,7 @@ void main()
     vec3 R = 2.0* dot (N ,L) *L - L; // Could also have used the function reflect ()
     float dotRV = max ( dot (R , V) , 0.0) ;
     if ( dotNL == 0.0) dotRV = 0.0; // Do not show highlight on the dark side
-    vec3 shadedcolor = A + D * dotNL + S * dotRV;
+    vec3 shadedcolor = A + D * dotNL + S; // * dotRV;
     if(sTexColor.a > 0.0f)
         color =  sTexColor * vec4( shadedcolor , 1.0) ;
     else

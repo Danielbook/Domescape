@@ -270,7 +270,7 @@ void myInitOGLFun(){
     // OBJECTS TO SKY
     //sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
     sgct::TextureManager::instance()->loadTexure("sun", "texture/sun.jpg", true);
-    sun.createSphere(10.0f, 80);
+    sun.createSphere(47.0f, 200);
 
     skyDome.createSphere(600.0f, 100);
 
@@ -594,7 +594,7 @@ void myPostSyncPreDrawFun(){
     calcSunPosition();
 
     // Set light properties
-    float fSunDis = 800;
+    float fSunDis = 502;
 
     fSunAngleTheta.setVal( fSunAngleTheta.getVal() + 40.0f*3.1415f/180.0f );
 
